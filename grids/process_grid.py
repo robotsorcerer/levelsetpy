@@ -1,8 +1,8 @@
 import numpy as np
 from utils import *
-from boundary import addGhostPeriodic
+from BoundaryCondition import addGhostPeriodic
 
-def processGrid(gridIn, data):
+def processGrid(gridIn, data=None):
     """
      processGrid: Construct a grid data structure, and check for consistency.
 
@@ -123,27 +123,27 @@ def processGrid(gridIn, data):
     #----------------------------------------------------------------------------
     # Now we should have a partially complete structure in gridOut.
 
-    if(gridOut.dim):
+    if(isfield(gridOut, 'dim')):
         if(gridOut.dim > maxDimension):
-            logger.fatal('dimension > {}, may be dangerously large'.format(maxDimension));
+            logger.fatal('Grid dimension > {}, may be dangerously large'.format(maxDimension));
         if(gridOut.dim < 0):
-            logger.fatal('dimension must be positive');
+            logger.fatal('Grid dimension must be positive');
     else:
-        logger.fatal('grid structure must contain dimension');
+        logger.fatal('Grid structure must contain dimension');
 
     #----------------------------------------------------------------------------
     # Process grid boundaries.
-
-    if(gridOut.min):
-        if(gridOut.min.shape[0]!=gridOut.dim.shape[0]):
-            if(isinstance(gridOut.min, float) or isinstance(gridOut.min, int)):
+    # print(gridOut.dim)
+    if(isfield(gridOut, 'min')):
+        if(not isColumnLength(gridOut.min, gridOut.dim)):
+            if(isscalar(gridOut.min)):
                 gridOut.min = gridOut.min * np.ones((gridOut.dim, 1));
             else:
                 logger.fatal('min field is not column vector of length dim or a scalar');
     else:
         gridOut.min = defaultMin * np.ones((gridOut.dim, 1));
 
-    if(gridOut.max):
+    if(isfield(gridOut, 'max')):
         if(not isColumnLength(gridOut.max, gridOut.dim)):
             if(isscalar(gridOut.max)):
                 gridOut.max = gridOut.max * np.ones((gridOut.dim, 1));
@@ -158,7 +158,7 @@ def processGrid(gridIn, data):
     #----------------------------------------------------------------------------
     # Check N field if necessary.  If N is missing but dx is present, we will
     # determine N later.
-    if(gridOut.N):
+    if(isfield(gridOut, 'N')):
         if(np.any(gridOut.N <= 0)):
             logger.fatal('number of grid cells must be strictly positive');
         if(not isColumnLength(gridOut.N, gridOut.dim)):
@@ -171,7 +171,7 @@ def processGrid(gridIn, data):
     # Check dx field if necessary.  If dx is missing but N is present, infer
     # dx.  If both are present, we will check for consistency later.  If
     # neither are present, use the defaults.
-    if gridOut.dx:
+    if isfield(gridOut, 'dx'):
         if(np.any(gridOut.dx <= 0)):
             logger.fatal('grid cell size dx must be strictly positive');
         if(not isColumnLength(gridOut.dx, gridOut.dim)):
@@ -179,7 +179,7 @@ def processGrid(gridIn, data):
                 gridOut.dx *= ones(gridOut.dim, 1);
         else:
             logger.fatal('dx field is not column vector of length dim or a scalar');
-    elif gridOut.N:
+    elif isfield(gridOut, 'N'):
         # Only N field is present, so infer dx.
         gridOut.dx = np.divide((gridOut.max - gridOut.min),  (gridOut.N - 1))
     else:
@@ -188,7 +188,7 @@ def processGrid(gridIn, data):
         gridOut.dx = np.divide((gridOut.max - gridOut.min), (gridOut.N - 1))
 
     #----------------------------------------------------------------------------
-    if(gridOut.vs):
+    if isfield(gridOut, 'vs'):
         if(iscell(gridOut.vs)):
             if(not isColumnLength(gridOut.vs, gridOut.dim)):
                 logger.fatal('vs field is not column cell vector of length dim');
@@ -200,15 +200,20 @@ def processGrid(gridIn, data):
             logger.fatal('vs field is not a cell vector');
     else:
         gridOut.vs = cell(gridOut.dim, 1)
-    for i in range(gridOut.dim):
-        gridOut.vs[i] = expand(np.arange(gridOut.min[i], gridOut.max[i], gridOut.dx[i]), 1);
+        # print('gridOut.dx ', gridOut.dx)
+        for i in range(gridOut.dim):
+            # print(f'gridOut.min[{i}]: {gridOut.min[i, 0]}, gridOut.max[{i}]: {gridOut.max[i, 0]}, gridOut.dx[{i}]: {gridOut.dx[i]}')
+            gridOut.vs[i] = expand(np.arange(gridOut.min[i], gridOut.max[i]+gridOut.dx[i], gridOut.dx[i]), 1);
+            # gridOut.vs[i] = np.linspace(gridOut.min[i], gridOut.max[i])
+            print(f'gridOut.vs[{i}]: ', gridOut.vs[i].shape, gridOut.dx[i])
 
     # Now we can check for consistency between dx and N, based on the size of
     # the vectors in vs.  Note that if N is present, it will be a vector.  If
     # N is not yet a field, set it to be consistent with the size of vs.
 
-    if gridOut.N:
+    if isfield(gridOut, 'N'):
         for i in range(gridOut.dim):
+            print(f'gridOut.N[{i}]:, {gridOut.N[i]}, {len(gridOut.vs[i])}')
             if(gridOut.N[i] != len(gridOut.vs[i])):
                 logger.fatal(f'Inconsistent grid size in dimension {i}');
     else:
@@ -217,7 +222,7 @@ def processGrid(gridIn, data):
         gridOut.N[i] = len(gridOut.vs[i])
 
     #----------------------------------------------------------------------------
-    if(gridOut.xs):
+    if(isfield(gridOut, 'xs')):
         if(iscell(gridOut.xs)):
             if(not isColumnLength(gridOut.xs, gridOut.dim)):
                 logger.fatal('xs field is not column cell vector of length dim');
@@ -233,65 +238,72 @@ def processGrid(gridIn, data):
             logger.fatal('xs field is not a cell vector');
     else:
         gridOut.xs = cell(gridOut.dim, 1)
-        if(gridOut.dim > 1):
-            # see https://www.scivision.dev/matlab-python-meshgrid-ndgrid/
-            [ gridOut.xs[:] ] = np.meshgrid(gridOut.vs[:], indexing='ij');
+        # see https://www.scivision.dev/matlab-python-meshgrid-ndgrid/
+        if(gridOut.dim ==3):
+            gridOut.xs = np.meshgrid(gridOut.vs[0], gridOut.vs[1], gridOut.vs[2], indexing='ij');
+        elif(gridOut.dim ==2):
+            gridOut.xs = np.meshgrid(gridOut.vs[0], gridOut.vs[1], indexing='ij');
         else:
             gridOut.xs[0] = gridOut.vs[0];
 
     #----------------------------------------------------------------------------
-    if(gridOut.bdry):
+    if isfield(gridOut, 'bdry'):
         if(iscell(gridOut.bdry)):
             if(not isColumnLength(gridOut.bdry, gridOut.dim)):
-                logger.fatal('bdry field is not column cell vector of length dim');
+                # print(gridOut.bdry)
+                logger.fatal(f'bdry field is not column cell vector of length dim: {gridOut.dim}');
             else:
-                pass
+                logger.warn('Did notcheck if entries are function handles')
         else:
             if(isscalar(gridOut.bdry)):
                 bdry = gridOut.bdry;
                 gridOut.bdry = cell(gridOut.dim, 1);
-                [ gridOut.bdry[:] ] = bdry
+                gridOut.bdry[:] = bdry
             else:
                 logger.fatal('bdry field is not a cell vector or a scalar');
     else:
         gridOut.bdry = cell(gridOut.dim, 1);
-        [ gridOut.bdry[:] ] = defaultBdry
+        gridOut.bdry[:] = defaultBdry
 
     #----------------------------------------------------------------------------
-    if(gridOut.bdryData):
+    if(isfield(gridOut,'bdryData')):
         if(iscell(gridOut.bdryData)):
-            if(~isColumnLength(gridOut.bdryData, gridOut.dim)):
-              logger.fatal('bdryData field is not column cell vector of length dim');
+            if(not isColumnLength(gridOut.bdryData, gridOut.dim)):
+                logger.fatal('bdryData field is not column cell vector of length dim');
+            else:
+                logger.warn('Maybe not worth checking that entries are structures')
         else:
             if(isscalar(gridOut.bdryData)):
                 bdryData = gridOut.bdryData;
                 gridOut.bdryData = cell(gridOut.dim, 1);
-                [ gridOut.bdryData[:] ] = bdryData
+                gridOut.bdryData[:] = bdryData
             else:
                 logger.fatal('bdryData field is not a cell vector or a scalar');
     else:
         gridOut.bdryData = cell(gridOut.dim, 1);
-        [ gridOut.bdryData[:] ] = defaultBdryData
+        gridOut.bdryData[:] = defaultBdryData
 
     #----------------------------------------------------------------------------
     if((gridOut.dim == 2) or (gridOut.dim == 3)):
-        if(gridOut.axis):
+        if(isfield(gridOut, 'axis')):
             for i in range(gridOut.dim):
-                if(gridOut.axis(2 * i - 1) != gridOut.min(i)):
-                    logger.fatal('axis and min fields do not agree');
-            if(gridOut.axis(2 * i) is not gridOut.max(i)):
-                logger.fatal('axis and max fields do not agree');
+                if(gridOut.axis[2 * i] != gridOut.min[i]):
+                    error('axis and min fields do not agree');
+                if(gridOut.axis[2 * i] is not gridOut.max[i]):
+                    error('axis and max fields do not agree');
         else:
             gridOut.axis = zeros(1, 2 * gridOut.dim);
             for i in range(gridOut.dim):
-                gridOut.axis[2 * i - 1 : 2 * i] = [ gridOut.min[i], gridOut.max[i] ];
+                # print('rhs: ', [ gridOut.min[i], gridOut.max[i] ])
+                gridOut.axis[0, 2*i : 2*i+2] = [ gridOut.min[i], gridOut.max[i] ];
+                #print(f'gridOut.axis: {gridOut.axis}')
     else:
         gridOut.axis = [];
 
     #----------------------------------------------------------------------------
-    if(gridOut.shape):
+    if(isfield(gridOut, 'shape')):
         if(gridOut.dim == 1):
-            if(np.any(gridOut.shape != [ gridOut.N, 1 ])):
+            if(np.any(gridOut.shape != (gridOut.N, 1) )):
                 logger.fatal('shape and N fields do not agree');
         else:
             if(np.any(gridOut.shape != gridOut.N.T)):
@@ -304,9 +316,10 @@ def processGrid(gridIn, data):
 
     #----------------------------------------------------------------------------
     # check data parameter for consistency
-    if(ndims(data) != len(gridOut.shape)):
-        logger.fatal('data parameter does not agree in dimension with grid');
-    if(np.any(size(data) != gridOut.shape)):
-        logger.fatal('data parameter does not agree in array size with grid');
+    if data:
+        if(ndims(data) != len(gridOut.shape)):
+            logger.fatal('data parameter does not agree in dimension with grid');
+        if(np.any(size(data) != gridOut.shape)):
+            logger.fatal('data parameter does not agree in array size with grid');
 
     return  gridOut

@@ -5,7 +5,7 @@ from hamiltonians import genericHam, genericPartial
 
 def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     """
-     [data, tau, extraOuts] = ...
+     [data, tau, extraOuts] = \
        HJIPDE_solve(data0, tau, schemeData, minWith, extraargs)
          Solves HJIPDE with initial conditions data0, at times tau, and with
          parameters schemeData and extraArgs
@@ -266,33 +266,33 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         if extraArgs.deleteLastPlot:
             extraArgs.visualize.deleteLastPlot = extraArgs.deleteLastPlot;
             del extraArgs.deleteLastPlot;
-            # logger.warning(['we now use extraArgs.visualize.deleteLastPlot instead'...
+            # logger.warning(['we now use extraArgs.visualize.deleteLastPlot instead'\
             #     'of extraArgs.deleteLastPlot']);
 
 
         if extraArgs.fig_num:
             extraArgs.visualize.figNum = extraArgs.fig_num;
             del extraArgs.fig_num;
-            # logger.warning(['we now use extraArgs.visualize.figNum instead'...
+            # logger.warning(['we now use extraArgs.visualize.figNum instead'\
             #     'of extraArgs.fig_num']);
 
 
         if extraArgs.fig_filename:
             extraArgs.visualize.figFilename = extraArgs.fig_filename;
             del extraArgs.fig_filename;
-            # logger.warning(['we now use extraArgs.visualize.figFilename instead'...
+            # logger.warning(['we now use extraArgs.visualize.figFilename instead'\
             #     'of extraArgs.fig_filename']);
 
 
         if extraArgs.target:
-            # logger.warning(['you wrote extraArgs.target instead of' ...
+            # logger.warning(['you wrote extraArgs.target instead of' \
             #     'extraArgs.targetFunction'])
             extraArgs.targetFunction = extraArgs.target;
             del extraArgs.target;
 
 
         if extraArgs.targets:
-            # logger.warning(['you wrote extraArgs.targets instead of' ...
+            # logger.warning(['you wrote extraArgs.targets instead of' \
             #     'extraArgs.targetFunction'])
             extraArgs.targetFunction = extraArgs.targets;
             del extraArgs.targets;
@@ -300,14 +300,14 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
         if extraArgs.obstacle:
             extraArgs.obstacleFunction = extraArgs.obstacle;
-            # logger.warning(['you wrote extraArgs.obstacle instead of' ...
+            # logger.warning(['you wrote extraArgs.obstacle instead of' \
             #     'extraArgs.obstacleFunction'])
             del extraArgs.obstacle;
 
 
         if extraArgs.obstacles:
             extraArgs.obstacleFunction = extraArgs.obstacles;
-            # logger.warning(['you wrote extraArgs.obstacles instead of' ...
+            # logger.warning(['you wrote extraArgs.obstacles instead of' \
             #     'extraArgs.obstacleFunction'])
             del extraArgs.obstacles;
 
@@ -317,13 +317,13 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     ## Extract the information from extraargs
     # Quiet mode
     if extraArgs.quiet and extraArgs.quiet:
-        print('HJIPDE_solve running in quiet mode...')
+        print('HJIPDE_solve running in quiet mode\')
         quiet = True;
 
 
     # Low memory mode
     if extraArgs.lowMemory and extraArgs.lowMemory:
-        print('HJIPDE_solve running in low memory mode...')
+        print('HJIPDE_solve running in low memory mode\')
         lowMemory = True;
 
         # Save the output in reverse order
@@ -586,15 +586,15 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         # ## Visualize Inital Value Function/Set
         #
         # #---Visualize Initial Value Set----------------------------------------
-        # if extraArgs.,initialValueSet') and...
+        # if extraArgs.,initialValueSet') and\
         #         extraArgs.visualize.initialValueSet
         #
         #     if ~extraArgs.,'otColorVS0')
         #         extraArgs.visualize.plotColorVS0 = 'g';
         #
         #
-        #     extraOuts.hVS0 = visSetIm(...
-        #         gPlot, dataPlot, extraArgs.visualize.plotColorVS0,...
+        #     extraOuts.hVS0 = visSetIm(\
+        #         gPlot, dataPlot, extraArgs.visualize.plotColorVS0,\
         #         sliceLevel, eAT_visSetIm);
         #
         #     if extraArgs.,'otAlphaVS0')
@@ -603,7 +603,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         #
         #
         # #---Visualize Initial Value Function-----------------------------------
-        # if extraArgs.,initialValueFunction') and...
+        # if extraArgs.,initialValueFunction') and\
         #         extraArgs.visualize.initialValueFunction
         #
         #     # If we're making a 3D plot, mark so we know to view this at an
@@ -622,15 +622,15 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         #
         #
         #     # Visualize Initial Value function (hVF0)
-        #     [extraOuts.hVF0]= visFuncIm(gPlot,dataPlot,...
-        #         extraArgs.visualize.plotColorVF0,...
+        #     [extraOuts.hVF0]= visFuncIm(gPlot,dataPlot,\
+        #         extraArgs.visualize.plotColorVF0,\
         #         extraArgs.visualize.plotAlphaVF0);
         #
         #
         # ## Visualize Target Function/Set
         #
         # #---Visualize Target Set-----------------------------------------------
-        # if extraArgs.,targetSet') ...
+        # if extraArgs.,targetSet') \
         #         and extraArgs.visualize.targetSet
         #
         #
@@ -638,7 +638,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         #         extraArgs.visualize.plotColorTS = 'g';
         #
         #
-        #     extraOuts.hTS = visSetIm(gPlot, targPlot, ...
+        #     extraOuts.hTS = visSetIm(gPlot, targPlot, \
         #         extraArgs.visualize.plotColorTS, sliceLevel, eAT_visSetIm);
         #
         #     if extraArgs.,'otAlphaTS')
@@ -647,7 +647,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         #
         #
         # #---Visualize Target Function------------------------------------------
-        # if extraArgs.,targetFunction') and...
+        # if extraArgs.,targetFunction') and\
         #         extraArgs.visualize.targetFunction
         #     # If we're making a 3D plot, mark so we know to view this at an
         #     # angle appropriate for 3D
@@ -665,15 +665,15 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         #
         #
         #     # Visualize Target function (hTF)
-        #     [extraOuts.hTF]= visFuncIm(gPlot,targPlot,...
-        #         extraArgs.visualize.plotColorTF,...
+        #     [extraOuts.hTF]= visFuncIm(gPlot,targPlot,\
+        #         extraArgs.visualize.plotColorTF,\
         #         extraArgs.visualize.plotAlphaTF);
         #
         #
         # ## Visualize Obstacle Function/Set
         #
         # #---Visualize Obstacle Set---------------------------------------------
-        # if extraArgs.,obstacleSet') ...
+        # if extraArgs.,obstacleSet') \
         #         and extraArgs.visualize.obstacleSet
         #
         #     if ~extraArgs.,'otColorOS')
@@ -681,12 +681,12 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         #
         #
         #     # Visualize obstacle set (hOS)
-        #     extraOuts.hOS = visSetIm(gPlot, obsPlot, ...
+        #     extraOuts.hOS = visSetIm(gPlot, obsPlot, \
         #         extraArgs.visualize.plotColorOS, sliceLevel, eAO_visSetIm);
         #
         #
         # #---Visualize Obstacle Function----------------------------------------
-        # if  extraArgs.,obstacleFunction') ...
+        # if  extraArgs.,obstacleFunction') \
         #         and extraArgs.visualize.obstacleFunction
         #     # If we're making a 3D plot, mark so we know to view this at an
         #     # angle appropriate for 3D
@@ -704,17 +704,17 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         #
         #
         #     # Visualize function
-        #     [extraOuts.hOF]= visFuncIm(gPlot,-obsPlot,...
-        #         extraArgs.visualize.plotColorOF,...
+        #     [extraOuts.hOF]= visFuncIm(gPlot,-obsPlot,\
+        #         extraArgs.visualize.plotColorOF,\
         #         extraArgs.visualize.plotAlphaOF);
         #
         # ## Visualize Value Function/Set
         # #---Visualize Value Set Heat Map---------------------------------------
-        # if extraArgs.,valueSetHeatMap') and...
+        # if extraArgs.,valueSetHeatMap') and\
         #         extraArgs.visualize.valueSetHeatMap
         #     maxVal = max(abs(data0(:)));
         #     clims = [-maxVal-1 maxVal+1];
-        #     extraOuts.hVSHeat = imagesc(...
+        #     extraOuts.hVSHeat = imagesc(\
         #         gPlot.vs{1},gPlot.vs{2},dataPlot,clims);
         #     if extraArgs.,'lormap')
         #         colormap(extraArgs.visualize.colormap)
@@ -729,19 +729,19 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         #
         #
         # #---Visualize Value Set------------------------------------------------
-        # if extraArgs.,valueSet') and...
+        # if extraArgs.,valueSet') and\
         #         extraArgs.visualize.valueSet
         #
         #     if ~extraArgs.,'otColorVS')
         #         extraArgs.visualize.plotColorVS = 'b';
         #
         #
-        #     extraOuts.hVS = visSetIm(gPlot, dataPlot, ...
+        #     extraOuts.hVS = visSetIm(gPlot, dataPlot, \
         #         extraArgs.visualize.plotColorVS, sliceLevel, eAT_visSetIm);
         #
         #
         # #---Visualize Value Function-------------------------------------------
-        # if extraArgs.,valueFunction') and ...
+        # if extraArgs.,valueFunction') and \
         #         extraArgs.visualize.valueFunction
         #     # If we're making a 3D plot, mark so we know to view this at an
         #     # angle appropriate for 3D
@@ -759,8 +759,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         #
         #
         #     # Visualize Value function (hVF)
-        #     [extraOuts.hVF]= visFuncIm(gPlot,dataPlot,...
-        #         extraArgs.visualize.plotColorVF,...
+        #     [extraOuts.hVF]= visFuncIm(gPlot,dataPlot,\
+        #         extraArgs.visualize.plotColorVF,\
         #         extraArgs.visualize.plotAlphaVF);
         #
         #
@@ -791,7 +791,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         #
         #
         # # Grid and axis
-        # if extraArgs.,viewGrid') and ...
+        # if extraArgs.,viewGrid') and \
         #         ~extraArgs.visualize.viewGrid
         #     grid off
         #
@@ -865,14 +865,13 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
     ## Numerical approximation functions
     dissType = 'global';
-    [schemeData.dissFunc, integratorFunc, schemeData.derivFunc] = getNumericalFuncs(dissType, accuracy);
+    schemeData.dissFunc, integratorFunc, schemeData.derivFunc = getNumericalFuncs(dissType, accuracy);
 
     # if we're doing minWithZero or zero as the comp method, actually implement
     # correctly using level set toolbox
     if compMethod=='minWithZero' or compMethod=='zero':
         schemeFunc = termRestrictUpdate;
-        schemeData.innerFunc = @termLaxFriedrichs;
-        schemeData.innerData = schemeData;
+        schemeData.innerFunc = termLaxFriedrichs;
         schemeData.innerData = schemeData;
         schemeData.positive = 0;
 
@@ -880,10 +879,10 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     ## Time integration
     integratorOptions = odeCFLset('factorCFL', 0.8, 'singleStep', 'on');
 
-    startTime = cputime;
+    startTime = cputime();
 
     ## Stochastic additive terms
-    if extraArgs.addGaussianNoiseStandardDeviation
+    if extraArgs.addGaussianNoiseStandardDeviation:
         # We are taking all the previous scheme terms and adding noise to it
         # Save all the previous terms as the deterministic component in detFunc
         detFunc = schemeFunc;
@@ -891,120 +890,114 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         # The full computation scheme will include this added term so clear
         # out the schemeFunc so we can pack everything back in later with the
         # new stuff
-        clear schemeFunc schemeData;
+        del schemeFunc, schemeData;
 
         # Create the Hessian term corresponding to white noise diffusion
-        stochasticFunc = @termTraceHessian;
+        stochasticFunc = termTraceHessian;
         stochasticData.grid = g;
-        stochasticData.L = extraArgs.addGaussianNoiseStandardDeviation';
+        stochasticData.L = extraArgs.addGaussianNoiseStandardDeviation.T;
         stochasticData.R = extraArgs.addGaussianNoiseStandardDeviation;
-        stochasticData.hessianFunc = @hessianSecond;
+        stochasticData.hessianFunc = hessianSecond;
 
         # Add the (saved) deterministic terms and the (new) stochastic term
         # together into the complete scheme
-        schemeFunc = @termSum;
-        schemeData.innerFunc = { detFunc; stochasticFunc };
-        schemeData.innerData = { detData; stochasticData };
+        schemeFunc = termSum;
+        schemeData.innerFunc = [ detFunc, stochasticFunc ]
+        schemeData.innerData = [ detData, stochasticData ]
 
 
     ## Initialize PDE solution
     data0size = size(data0);
 
-    if numDims(data0) == gDim
+    if numDims(data0) == gDim:
         # New computation
-        if keepLast
+        if keepLast:
             data = data0;
-        elif lowMemory
-            data = single(data0);
-        else
-            data = zeros([data0size(1:gDim) length(tau)]);
-            data(clns[:], 1) = data0;
+        elif lowMemory:
+            data = data0.astype(np.float32)
+        else:
+            data = np.zeros((data0size[0:gDim] +(len(tau), )));
+            data[clns[:], 0] = data0;
 
 
         istart = 2;
-    elif numDims(data0) == gDim + 1
+    elif numDims(data0) == gDim + 1:
         # Continue an old computation
-        if keepLast
-            data = data0(clns[:], data0size());
-        elif lowMemory
-            data = single(data0(clns[:], data0size()));
-        else
-            data = zeros([data0size(1:gDim) length(tau)]);
-            data(clns[:], 1:data0size()) = data0;
+        if keepLast:
+            data = data0[clns[:], data0size()]; # check these indexing
+        elif lowMemory:
+            data = data0[clns[:], data0size()].astype(np.float32)
+        else:
+            data = np.zeros((data0size[:gDim]+(len(tau), )]))
+            data[clns[:], 0:data0size()] = data0;
 
 
         # Start at custom starting index if specified
-        if extraArgs.istart
+        if extraArgs.istart:
             istart = extraArgs.istart;
-        else
-            istart = data0size()+1;
+        else:
+            istart = data0size()+1; # don't know what this is
 
-    else
+    else:
         error('Inconsistent initial condition dimension!')
 
 
 
-    if extraArgs.')&...
-            extraArgs.ignoreBoundary
-        [~, dataTrimmed] = truncateGrid(...
-            g, data0, g.min+4*g.dx, g.max-4*g.dx);
+    if extraArgs.ignoreBoundary and extraArgs.ignoreBoundary:
+        _, dataTrimmed = truncateGrid(g, data0, g.min+4*g.dx, g.max-4*g.dx);
 
 
-    for i = istart:length(tau)
-        if ~quiet
-            print('tau(i) = #f\n', tau(i))
+    for i in range(istart, len(tau)):
+        if not quiet:
+            print('tau(i) = #f ', tau[i])
 
         ## Variable schemeData
-        if extraArgs.SDModFunc
-            if extraArgs.SDModParams
+        if extraArgs.SDModFunc:
+            if extraArgs.SDModParams:
                 paramsIn = extraArgs.SDModParams;
-            else
+            else:
                 paramsIn = [];
 
 
-            schemeData = extraArgs.SDModFunc(schemeData, i, tau, data, obstacles, ...
-                paramsIn);
+            schemeData = extraArgs.SDModFunc(schemeData, i, tau, data, obstacles, paramsIn);
 
 
-        if keepLast
+        if keepLast:
             y0 = data;
-        elif lowMemory
-            if flipOutput
-                y0 = data(clns[:], 1);
-            else
-                y0 = data(clns[:], size(data, g.dim+1));
+        elif lowMemory:
+            if flipOutput:
+                y0 = data[clns[:], 0];
+            else:
+                y0 = data[clns[:], size(data, g.dim)];
 
 
-        else
-            y0 = data(clns[:], i-1);
+        else:
+            y0 = data[clns[:], i-1];
 
-        y = y0(:);
+        y = expand(y0.flatten(), 1);
 
 
-        tNow = tau(i-1);
+        tNow = tau[i-1];
 
         ## Main integration loop to get to the next tau(i)
-        while tNow < tau(i) - small
+        while tNow < tau(i) - small:
             # Save previous data if needed
-            if strcmp(compMethod, 'minVOverTime') || ...
-                    strcmp(compMethod, 'maxVOverTime')
+            if compMethod =='minVOverTime' or compMethod =='maxVOverTime':
                 yLast = y;
 
 
-            if ~quiet
-                print('  Computing [#f #f]...\n', tNow, tau(i))
+            if not quiet:
+                print('  Computing [{} {}] \n'.format(tNow, tau[i]))
 
 
 
             # Solve hamiltonian and apply to value function (y) to get updated
-            # value function
-            [tNow, y] = feval(integratorFunc, schemeFunc, [tNow tau(i)], y, ...
-                integratorOptions, schemeData);
+            # value function # integrator function is an odeCFL function
+            tNow, y = integratorFunc(schemeFunc, [tNow, tau[i]], y, \
+                                        integratorOptions, schemeData)
 
-
-
-            if any(isnan(y))
-                keyboard
+            if np.any(np.isnan(y)):
+                logger.fatal(f'Nans encountered in the integrated result {y}')
 
 
 
@@ -1015,7 +1008,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
             # 1. If not discounting at all OR not discounting using Kene's
             #    method, do normal compMethod first
-            if ~extraArgs.discountMode || ...
+            if ~extraArgs.discountMode || \
                     ~strcmp(extraArgs.discountMode, 'Kene')
 
                 #   compMethod
@@ -1028,8 +1021,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                 # - 'minVWithV0' to do min with original data (default)
                 # - 'maxVWithV0' to do max with original data
 
-                if strcmp(compMethod, 'zero') ...
-                        || strcmp(compMethod, 'set')...
+                if strcmp(compMethod, 'zero') \
+                        || strcmp(compMethod, 'set')\
                         || strcmp(compMethod, 'none')
                     # note: compMethod 'zero' is handled at the beginning of
                     # the code. compMethod 'set' and 'none' require no
@@ -1042,8 +1035,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                     y = min(y,data0(:));
                 elif strcmp(compMethod, 'maxVWithV0')
                     y = max(y,data0(:));
-                elif strcmp(compMethod, 'maxVWithL')...
-                        || strcmp(compMethod, 'maxVwithL') ...
+                elif strcmp(compMethod, 'maxVWithL')\
+                        || strcmp(compMethod, 'maxVwithL') \
                         || strcmp(compMethod, 'maxVWithTarget')
                     if ~extraArgs.targetFunction
                         error('Need to define target function l(x)!')
@@ -1054,8 +1047,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                         target_i = targets(clns[:], i);
                         y = max(y, target_i(:));
 
-                elif strcmp(compMethod, 'minVWithL') ...
-                        || strcmp(compMethod, 'minVwithL') ...
+                elif strcmp(compMethod, 'minVWithL') \
+                        || strcmp(compMethod, 'minVwithL') \
                         || strcmp(compMethod, 'minVWithTarget')
                     if ~extraArgs.targetFunction
                         error('Need to define target function l(x)!')
@@ -1074,17 +1067,17 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
                 # 2. If doing discounting but not using Kene's method, default
                 #    to Jaime's method from ICRA 2019 paper
-                if extraArgs.discountFactor and ...
-                        extraArgs.discountFactor and ...
-                        (~extraArgs.discountMode || ...
+                if extraArgs.discountFactor and \
+                        extraArgs.discountFactor and \
+                        (~extraArgs.discountMode || \
                         strcmp(extraArgs.discountMode,'Kene'))
                     y = extraArgs.discountFactor*y;
 
                     if extraArgs.targetFunction
-                        y = y + ...
+                        y = y + \
                             (1-extraArgs.discountFactor).*extraArgs.targets(:);
                     else
-                        y = y + ...
+                        y = y + \
                             (1-extraArgs.discountFactor).*data0(:);
 
 
@@ -1093,9 +1086,9 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
                 # 3. If we are doing Kene's discounting from minimum discounted
                 #    rewards paper, do that now and do compmethod with it
-            elif extraArgs.discountFactor and ...
-                    extraArgs.discountFactor and ...
-                    extraArgs.discountMode and ...
+            elif extraArgs.discountFactor and \
+                    extraArgs.discountFactor and \
+                    extraArgs.discountMode and \
                     strcmp(extraArgs.discountMode,'Kene')
 
                 if ~extraArgs.targetFunction
@@ -1110,14 +1103,14 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                 # Discount
                 ytemp = extraArgs.discountFactor*ytemp;
 
-                if strcmp(compMethod, 'minVWithL') ...
-                        || strcmp(compMethod, 'minVwithL') ...
+                if strcmp(compMethod, 'minVWithL') \
+                        || strcmp(compMethod, 'minVwithL') \
                         || strcmp(compMethod, 'minVWithTarget')
                     # Take min
                     ytemp = min(ytemp, targettemp(:));
 
-                elif strcmp(compMethod, 'maxVWithL')...
-                        || strcmp(compMethod, 'maxVwithL') ...
+                elif strcmp(compMethod, 'maxVWithL')\
+                        || strcmp(compMethod, 'maxVwithL') \
                         || strcmp(compMethod, 'maxVWithTarget')
                     # Take max
                     ytemp = max(ytemp, targettemp(:));
@@ -1172,9 +1165,9 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         # If we're stopping once converged, print how much change there was in
         # the last iteration
         if stopConverge
-            if extraArgs.')&...
+            if extraArgs.')&\
                     extraArgs.ignoreBoundary
-                [~, dataNew] = truncateGrid(...
+                [~, dataNew] = truncateGrid(\
                     g, data_i, g.min+4*g.dx, g.max-4*g.dx);
                 change = max(abs(dataNew(:)-dataTrimmed(:)));
                 dataTrimmed = dataNew;
@@ -1228,9 +1221,9 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         ## Stop computation if we've converged
         if stopConverge and change < convergeThreshold
 
-            if extraArgs.discountFactor and ...
-                    extraArgs.discountFactor and ...
-                    extraArgs.discountAnneal and ...
+            if extraArgs.discountFactor and \
+                    extraArgs.discountFactor and \
+                    extraArgs.discountAnneal and \
                     extraArgs.discountFactor ~= 1
 
                 if strcmp(extraArgs.discountAnneal, 'soft')
@@ -1239,12 +1232,12 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                     if abs(1-extraArgs.discountFactor) < .00005
                         extraArgs.discountFactor = 1;
 
-                    print('\nDiscount factor: #f\n\n', ...
+                    print('\nDiscount factor: #f\n\n', \
                         extraArgs.discountFactor)
-                elif strcmp(extraArgs.discountAnneal, 'hard') ...
+                elif strcmp(extraArgs.discountAnneal, 'hard') \
                         || extraArgs.discountAnneal==1
                     extraArgs.discountFactor = 1;
-                    print('\nDiscount factor: #f\n\n', ...
+                    print('\nDiscount factor: #f\n\n', \
                         extraArgs.discountFactor)
 
             else
@@ -1260,8 +1253,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
         ## If commanded, visualize the level set.
 
-        if (extraArgs.visualize and ...
-                (isstruct(extraArgs.visualize) || extraArgs.visualize == 1))...
+        if (extraArgs.visualize and \
+                (isstruct(extraArgs.visualize) || extraArgs.visualize == 1))\
                 || (extraArgs.makeVideo and extraArgs.makeVideo)
             timeCount = timeCount + 1;
 
@@ -1384,16 +1377,16 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                     for ii = length(idx):-1:1
                         plotDimsTemp(idx(ii)) = 0;
                         if strcmp(obsMode, 'time-varying')
-                            [~, obsPlot] = proj(gPlot, obsPlot, ~plotDimsTemp,...
+                            [~, obsPlot] = proj(gPlot, obsPlot, ~plotDimsTemp,\
                                 projpt{ii});
 
 
                         if strcmp(targMode, 'time-varying')
-                            [~, targPlot] = proj(gPlot, targPlot, ~plotDimsTemp,...
+                            [~, targPlot] = proj(gPlot, targPlot, ~plotDimsTemp,\
                                 projpt{ii});
 
 
-                        [gPlot, dataPlot] = proj(gPlot, dataPlot, ~plotDimsTemp,...
+                        [gPlot, dataPlot] = proj(gPlot, dataPlot, ~plotDimsTemp,\
                             projpt{ii});
                         plotDimsTemp = ones(1,gPlot.dim);
 
@@ -1418,12 +1411,12 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             ## Visualize Target Function/Set
 
             #---Visualize Target Set-----------------------------------------------
-            if strcmp(targMode, 'time-varying') ...
-                    and extraArgs.,targetSet') ...
+            if strcmp(targMode, 'time-varying') \
+                    and extraArgs.,targetSet') \
                     and extraArgs.visualize.targetSet
 
                 # Visualize obstacle set (hOS)
-                extraOuts.hTS = visSetIm(gPlot, targPlot, ...
+                extraOuts.hTS = visSetIm(gPlot, targPlot, \
                     extraArgs.visualize.plotColorTS, sliceLevel, eAT_visSetIm);
 
                 if extraArgs.,'otAlphaTS')
@@ -1433,25 +1426,25 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
             #---Visualize Target Function------------------------------------------
-            if  strcmp(targMode, 'time-varying') ...
-                    and extraArgs.,targetFunction')...
+            if  strcmp(targMode, 'time-varying') \
+                    and extraArgs.,targetFunction')\
                     and extraArgs.visualize.targetFunction
 
                 # Visualize function
-                [extraOuts.hTF]= visFuncIm(gPlot,targPlot,...
-                    extraArgs.visualize.plotColorTF,...
+                [extraOuts.hTF]= visFuncIm(gPlot,targPlot,\
+                    extraArgs.visualize.plotColorTF,\
                     extraArgs.visualize.plotAlphaTF);
 
 
             ## Visualize Obstacle Function/Set
 
             #---Visualize Obstacle Set-----------------------------------------
-            if strcmp(obsMode, 'time-varying') ...
-                    and extraArgs.,obstacleSet') ...
+            if strcmp(obsMode, 'time-varying') \
+                    and extraArgs.,obstacleSet') \
                     and extraArgs.visualize.obstacleSet
 
                 # Visualize obstacle set (hOS)
-                extraOuts.hOS = visSetIm(gPlot, obsPlot, ...
+                extraOuts.hOS = visSetIm(gPlot, obsPlot, \
                     extraArgs.visualize.plotColorOS, sliceLevel, eAO_visSetIm);
 
                 if extraArgs.,'otAlphaOS')
@@ -1460,27 +1453,27 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
             #---Visualize Obstacle Function------------------------------------
-            if  strcmp(obsMode, 'time-varying') ...
+            if  strcmp(obsMode, 'time-varying') \
                     and extraArgs.visualize.obstacleFunction
 
                 # Visualize function
-                [extraOuts.hOF]= visFuncIm(gPlot,-obsPlot,...
-                    extraArgs.visualize.plotColorOF,...
+                [extraOuts.hOF]= visFuncIm(gPlot,-obsPlot,\
+                    extraArgs.visualize.plotColorOF,\
                     extraArgs.visualize.plotAlphaOF);
 
             ## Visualize Value Function/Set
             #---Visualize Value Set Heat Map-----------------------------------
-            if extraArgs.,valueSetHeatMap') and...
+            if extraArgs.,valueSetHeatMap') and\
                     extraArgs.visualize.valueSetHeatMap
-                extraOuts.hVSHeat = imagesc(...
+                extraOuts.hVSHeat = imagesc(\
                     gPlot.vs{1},gPlot.vs{2},dataPlot,clims);
                 #colorbar
 
             #---Visualize Value Set--------------------------------------------
-            if extraArgs.,valueSet') and...
+            if extraArgs.,valueSet') and\
                     extraArgs.visualize.valueSet
 
-                extraOuts.hVS = visSetIm(gPlot, dataPlot, ...
+                extraOuts.hVS = visSetIm(gPlot, dataPlot, \
                     extraArgs.visualize.plotColorVS, sliceLevel, eAT_visSetIm);
 
 
@@ -1488,30 +1481,30 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                 extraOuts.hVS.FaceAlpha = extraArgs.visualize.plotAlphaVS;
 
             #---Visualize Value Function---------------------------------------
-            if extraArgs.,valueFunction') and ...
+            if extraArgs.,valueFunction') and \
                     extraArgs.visualize.valueFunction
                 # Visualize Target function (hTF)
-                [extraOuts.hVF]= visFuncIm(gPlot,dataPlot,...
-                    extraArgs.visualize.plotColorVF,...
+                [extraOuts.hVF]= visFuncIm(gPlot,dataPlot,\
+                    extraArgs.visualize.plotColorVF,\
                     extraArgs.visualize.plotAlphaVF);
 
 
 
             #---Update Title---------------------------------------------------
-            if ~extraArgs.,dtTime') and...
+            if ~extraArgs.,dtTime') and\
                     ~extraArgs.,convergeTitle')
                 title(['t = ' num2str(tNow,'#4.2f') ' s'])
-            elif extraArgs.,dtTime') and floor(...
-                    extraArgs.visualize.dtTime/((tau()-tau(1))/length(tau))) ...
+            elif extraArgs.,dtTime') and floor(\
+                    extraArgs.visualize.dtTime/((tau()-tau(1))/length(tau))) \
                     == timeCount
 
                 title(['t = ' num2str(tNow,'#4.2f') ' s'])
                 timeCount = 0;
-            elif extraArgs.')&...
-                    extraArgs.stopConverge and...
-                    extraArgs.,convergeTitle') and...
+            elif extraArgs.')&\
+                    extraArgs.stopConverge and\
+                    extraArgs.,convergeTitle') and\
                     extraArgs.visualize.convergeTitle
-                title(['t = ' num2str(tNow, '#4.2f') ...
+                title(['t = ' num2str(tNow, '#4.2f') \
                     ' s, max change = ' num2str(change,'#4.4f')])
             else
                 title(['t = ' num2str(tNow,'#4.2f') ' s'])
@@ -1526,7 +1519,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
             if extraArgs.,figFilename')
-                export_fig(sprintf('#s#d', ...
+                export_fig(sprintf('#s#d', \
                     extraArgs.visualize.figFilename, i), '-png')
 
 
@@ -1559,7 +1552,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
 
-    function [dissFunc, integratorFunc, derivFunc] = ...
+    function [dissFunc, integratorFunc, derivFunc] = \
         getNumericalFuncs(dissType, accuracy)
     # Dissipation
     switch(dissType)

@@ -1,6 +1,8 @@
 import logging
 import numpy as np
-from utils import Bundle
+from utils import *
+from grids import processGrid
+from BoundaryCondition import addGhostExtrapolate, addGhostPeriodic
 
 logger = logging.getLogger(__name__)
 
@@ -30,30 +32,32 @@ def  createGrid(grid_min, grid_max, N, pdDims=None, process=True, low_mem=False)
         pdDims = []
 
     # Input checks
-    if not isinstance(N, np.ndarray):
-        N = N*np.ones(grid_min.shape)
+    if isscalar(N):
+        N = N*ones(grid_min.shape)
 
-    if not (isinstance(grid_min, np.ndarray) or isinstance(grid_min, np.ndarray) or isinstance(grid_max, np.ndarray) or isinstance(N, np.ndarray)):
+    if not isvector(grid_min) or not isvector(grid_max) or not isvector(N):
         logger.fatal('grid_min, grid_max, N must all be vectors!')
 
-    assert len(grid_min)== len(grid_max), 'grid min and grid_max must have the same number of elements!'
+    assert numel(grid_min)==numel(grid_max), 'grid min and grid_max must have the same number of elements!'
 
-    assert len(grid_min)== len(N), 'grid min, grid_max, and N must have the same number of elements!'
+    assert numel(grid_min)== numel(N), 'grid min, grid_max, and N must have the same number of elements!'
 
     def to_column_mat(A):
         n,m = A.shape
         if n<m:
             return A.T
+        else:
+            return A
 
-    to_column_mat(grid_min)
-    to_column_mat(grid_max);
-    to_column_mat(N);
+    grid_min = to_column_mat(grid_min)
+    grid_max = to_column_mat(grid_max);
+    N = to_column_mat(N);
 
     # Create the grid
     g = Bundle(dict(
                     dim=len(grid_min), min=grid_min,
-                    max=grid_max, N=N, bdry= [[] for i in range(len(grid_min))] #=(len(grid_min, 1))
-    ))
+                    max=grid_max, N=N, bdry= cell(len(grid_min), 1)
+                    ))
 
     # g.bdry = cell(g.dim, 1);
     for i in range(g.dim):
@@ -65,9 +69,9 @@ def  createGrid(grid_min, grid_max, N, pdDims=None, process=True, low_mem=False)
 
     if low_mem:
       g.dx = np.divide(grid_max - grid_min, N-1)
-      g.vs = [[] for i in range(g.dim)] #cell(g.dim, 1);
+      g.vs = cell(g.dim, 1);
       for i in range(g.dim):
-          g.vs[i] = expand(np.arange(grid_min[i],  grid_max[i],  g.dx[i]), 1)
+          g.vs[i] = expand(np.arange(grid_min[i,0],  grid_max[i,0],  g.dx[i,0]), 1)
     elif process:
       g = processGrid(g)
     return g
