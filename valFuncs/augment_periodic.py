@@ -1,5 +1,5 @@
 import numpy as np
-import addGhostPeriodic
+from BoundaryCondition import addGhostPeriodic
 
 def augmentPeriodicData(g, data):
 

@@ -163,7 +163,7 @@ def processGrid(gridIn, data=None):
             logger.fatal('number of grid cells must be strictly positive');
         if(not isColumnLength(gridOut.N, gridOut.dim)):
             if(isscalar(gridOut.N)):
-                gridOut.N *= np.ones((gridOut.dim, 1)).astype(np.int64);
+                gridOut.N *= np.ones((gridOut.dim, 1));
             else:
                 logger.fatal('N field is not column vector of length dim or a scalar');
 
@@ -184,7 +184,7 @@ def processGrid(gridIn, data=None):
         gridOut.dx = np.divide((gridOut.max - gridOut.min),  (gridOut.N - 1))
     else:
         # Neither field is present, so use default N and infer dx
-        gridOut.N = defaultN * ones(gridOut.dim, 1).astype(np.int64);
+        gridOut.N = defaultN * ones(gridOut.dim, 1);
         gridOut.dx = np.divide((gridOut.max - gridOut.min), (gridOut.N - 1))
 
     #----------------------------------------------------------------------------
@@ -202,10 +202,10 @@ def processGrid(gridIn, data=None):
         gridOut.vs = cell(gridOut.dim, 1)
         # print('gridOut.dx ', gridOut.dx)
         for i in range(gridOut.dim):
-            # print(f'gridOut.min[{i}]: {gridOut.min[i, 0]}, gridOut.max[{i}]: {gridOut.max[i, 0]}, gridOut.N[{i}]: {gridOut.N[i,0]}')
-            # gridOut.vs[i] = expand(np.arange(gridOut.min[i], gridOut.max[i]+gridOut.dx[i], gridOut.dx[i]), 1);
-            gridOut.vs[i] = expand(np.linspace(gridOut.min[i,0], gridOut.max[i,0], num=gridOut.N[i,0]), 1)
-            # print(f'gridOut.vs[{i}]: ', gridOut.vs[i].shape, gridOut.dx[i])
+            # print(f'gridOut.min[{i}]: {gridOut.min[i, 0]}, gridOut.max[{i}]: {gridOut.max[i, 0]}, gridOut.dx[{i}]: {gridOut.dx[i]}')
+            gridOut.vs[i] = expand(np.arange(gridOut.min[i], gridOut.max[i]+gridOut.dx[i], gridOut.dx[i]), 1);
+            # gridOut.vs[i] = np.linspace(gridOut.min[i], gridOut.max[i])
+            print(f'gridOut.vs[{i}]: ', gridOut.vs[i].shape, gridOut.dx[i])
 
     # Now we can check for consistency between dx and N, based on the size of
     # the vectors in vs.  Note that if N is present, it will be a vector.  If
@@ -213,7 +213,7 @@ def processGrid(gridIn, data=None):
 
     if isfield(gridOut, 'N'):
         for i in range(gridOut.dim):
-            # print(f'gridOut.N[{i}]:, {gridOut.N[i]}, {len(gridOut.vs[i])}')
+            print(f'gridOut.N[{i}]:, {gridOut.N[i]}, {len(gridOut.vs[i])}')
             if(gridOut.N[i] != len(gridOut.vs[i])):
                 logger.fatal(f'Inconsistent grid size in dimension {i}');
     else:
