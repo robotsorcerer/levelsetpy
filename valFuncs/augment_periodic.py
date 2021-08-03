@@ -6,7 +6,7 @@ def augmentPeriodicData(g, data):
     # Dealing with periodicity
     for i  in range(g.dim):
         # these might require a closer supervision/debug
-        if g.bdry and isinstance(g.bdry[i], addGhostPeriodic):
+        if isfield(g, 'bdry') and isinstance(g.bdry[i], addGhostPeriodic):
             # Grid points
             g.vs[i] = np.concatenate((g.vs[i], g.vs[i][-1] + g.dx[i]), 0);
 

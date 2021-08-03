@@ -6,12 +6,11 @@ logger = logging.getLogger(__name__)
 
 class Bundle(object):
     def __init__(self, dicko):
-        self.keys = [k for k, v in dicko.items()]
         for var, val in dicko.items():
             object.__setattr__(self, var, val)
 
 def isfield(bund, field):
-    return True if field in bund.keys else False
+    return True if field in bund.__dict__.keys() else False
 
 def cputime():
     return time.time()
@@ -77,7 +76,7 @@ def cell(grid_len, dim=1):
     return [[] for i in range(grid_len)]
 
 def iscell(cs):
-    if isinstance(cs, list):
+    if isinstance(cs, list) or isinstance(cs, np.ndarray):
         return True
     else:
         return False

@@ -40,7 +40,7 @@ def proj(g, data, dimsToRemove, xs=None, NOut=None, process=True):
         gOut = g;
         dataOut = data;
         logger.warning('Input and output dimensions are the same!')
-        return
+        return gOut, dataOut
 
     # By default, do a projection
     if not xs:
@@ -51,30 +51,30 @@ def proj(g, data, dimsToRemove, xs=None, NOut=None, process=True):
     if np.char.isnumeric(xs) and len(xs) != np.count_nonzero(dimsToRemove):
         logger.fatal('Dimension of xs and dims do not match!')
 
-    if not NOut:
-        NOut = g.N[np.logical_not(dimsToRemove)]
-
+    if NOut is None:
+        NOut = expand(g.N[np.logical_not(dimsToRemove)], 1)
     dataDims = numDims(data);
     if np.any(data) and np.logical_not(dataDims == g.dim or dataDims == g.dim+1) \
         and not isinstance(data, list):
         logger.fatal('Inconsistent input data dimensions!')
 
     # Project data
+    # print('NOut ', NOut.shape)
     if dataDims == g.dim:
         gOut, dataOut = projSingle(g, data, dimsToRemove, xs, NOut, process);
 
     else: # dataDims == g.dim + 1
-        # Project grid
-        gOut = projSingle(g, None, dimsToRemove, xs, NOut, process);
+        gOut, _ = projSingle(g, np.empty((0, 0)), dimsToRemove, xs, NOut, process);
 
         # Project data
         if isinstance(data, list):
             numTimeSteps = len(data)
         else:
-            numTimeSteps = data.shape[dataDims]
+            numTimeSteps = data.shape[dataDims-1]
             colonsIn = [[':'] for i in range(g.dim)] #repmat({':'}, 1, g.dim);
 
-        dataOut = zeros([NOut.T, numTimeSteps]);
+        # print(f'Nout: {NOut.T.shape}, {dataDims}')
+        dataOut = np.zeros(NOut.T.shape + (numTimeSteps, ))
         colonsOut =  [[':'] for i in range(g.dim)] #repmat({':'}, 1, gOut.dim);
 
         for i in range(numTimeSteps):
@@ -125,24 +125,31 @@ def projSingle(g, data, dims, xs, NOut, process):
             logger.fatal('Must perform min or max projection when not specifying grid!')
     else:
         dims = dims.astype(bool)
-        gOut.dim = np.count_nonzero(np.logical_not(dims));
-        gOut.min = g.min[np.logical_not(dims)];
-        gOut.max = g.max[np.logical_not(dims)];
-        gOut.bdry = g.bdry[np.logical_not(dims)];
+        gOut = Bundle(dict(
+                dim = np.count_nonzero(np.logical_not(dims)),
+                min = expand(g.min[np.logical_not(dims)], 1),
+                max = expand(g.max[np.logical_not(dims)], 1),
+                # N = None,
+                bdry = None, #expand(np.asarray(g.bdry), 1) if isinstance(g.bdry, list) else g.bdry
+        ))
+        g.bdry = expand(np.asarray(g.bdry), 1) if isinstance(g.bdry, list) else g.bdry
+        gOut.bdry = expand(g.bdry[np.logical_not(dims)], 1) #.squeeze()#.tolist();
 
         if numel(NOut) == 1:
             gOut.N = NOut@ones(gOut.dim, 1);
         else:
             gOut.N = NOut;
 
+
         # Process the grid to populate the remaining fields if necessary
         if process:
+            # print('b4 proc: gOut.N ', gOut.N.shape, gOut.N.T)
             gOut = processGrid(gOut);
+            # print('aft proc: gOut.N ', gOut.N.shape, gOut.N.T)
 
         # Only compute the grid if value function is not requested
         if not data: #nargout < 2
-            logger.fatal(f'{data} cannot be None')
-            return
+            return gOut, None
 
     # 'min' or 'max'
     if np.char.isnumeric(xs):
@@ -157,14 +164,12 @@ def projSingle(g, data, dims, xs, NOut, process):
                 logger.fatal('xs must be a vector, ''min'', or ''max''!')
 
         dataOut = data;
-        return
+        return gOut, dataOut
 
     # Take a slice
     # Preprocess periodic dimensions
     g, data = augmentPeriodicData(g, data);
 
-    # temp = interpn(g.vs{1}, g.vs{2}, g.vs{3}, g.vs{4}, data, g.vs{1}, xs(1), ...
-    #   g.vs{3}, xs(2));
     eval_pt = cell(g.dim, 1);
     xsi = 1;
     for i in range(g.dim):
@@ -185,6 +190,6 @@ def projSingle(g, data, dims, xs, NOut, process):
 
     dataOut = temp.squeeze();
 
-    # interpn(g.vs{1}, g.vs{3}, dataOut, gOut.xs{1}, gOut.xs{2})
     dataOut = np.interp(g.vs[np.logical_not(dims)], dataOut, gOut.xs[:]);
+
     return gOut, dataOut

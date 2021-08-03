@@ -124,6 +124,7 @@ def processGrid(gridIn, data=None):
     # Now we should have a partially complete structure in gridOut.
 
     if(isfield(gridOut, 'dim')):
+        #print('hasDim')
         if(gridOut.dim > maxDimension):
             logger.fatal('Grid dimension > {}, may be dangerously large'.format(maxDimension));
         if(gridOut.dim < 0):
@@ -183,7 +184,7 @@ def processGrid(gridIn, data=None):
         # Only N field is present, so infer dx.
         gridOut.dx = np.divide((gridOut.max - gridOut.min),  (gridOut.N - 1))
     else:
-        # Neither field is present, so use default N and infer dx
+        logger.warn('Neither fields dx nor dN is present, so use default N and infer dx')
         gridOut.N = defaultN * ones(gridOut.dim, 1).astype(np.int64);
         gridOut.dx = np.divide((gridOut.max - gridOut.min), (gridOut.N - 1))
 
@@ -200,13 +201,10 @@ def processGrid(gridIn, data=None):
             logger.fatal('vs field is not a cell vector');
     else:
         gridOut.vs = cell(gridOut.dim, 1)
-        # print('gridOut.dx ', gridOut.dx)
+        # print(f'gridOut.N {gridOut.N}')
         for i in range(gridOut.dim):
-            # print(f'gridOut.min[{i}]: {gridOut.min[i, 0]}, gridOut.max[{i}]: {gridOut.max[i, 0]}, gridOut.N[{i}]: {gridOut.N[i,0]}')
-            # gridOut.vs[i] = expand(np.arange(gridOut.min[i], gridOut.max[i]+gridOut.dx[i], gridOut.dx[i]), 1);
             gridOut.vs[i] = expand(np.linspace(gridOut.min[i,0], gridOut.max[i,0], num=gridOut.N[i,0]), 1)
-            # print(f'gridOut.vs[{i}]: ', gridOut.vs[i].shape, gridOut.dx[i])
-
+            # print(f'gridOut.vs[i] {gridOut.vs[i].shape}, gridOut.min: {gridOut.min[i,0]}, gridOut.max: {gridOut.max[i,0]}, gridOut.N[{i}]: {gridOut.N[i,0]}')
     # Now we can check for consistency between dx and N, based on the size of
     # the vectors in vs.  Note that if N is present, it will be a vector.  If
     # N is not yet a field, set it to be consistent with the size of vs.
@@ -245,6 +243,7 @@ def processGrid(gridIn, data=None):
             gridOut.xs = np.meshgrid(gridOut.vs[0], gridOut.vs[1], indexing='ij');
         else:
             gridOut.xs[0] = gridOut.vs[0];
+        # print(f'gridOut.xs: {len(gridOut.xs)}, {gridOut.xs[0].shape}')
 
     #----------------------------------------------------------------------------
     if isfield(gridOut, 'bdry'):
@@ -253,7 +252,8 @@ def processGrid(gridIn, data=None):
                 # print(gridOut.bdry)
                 logger.fatal(f'bdry field is not column cell vector of length dim: {gridOut.dim}');
             else:
-                logger.warn('Did notcheck if entries are function handles')
+                # logger.warn('Did not check if entries are function handles')
+                pass
         else:
             if(isscalar(gridOut.bdry)):
                 bdry = gridOut.bdry;
@@ -262,8 +262,9 @@ def processGrid(gridIn, data=None):
             else:
                 logger.fatal('bdry field is not a cell vector or a scalar');
     else:
-        gridOut.bdry = cell(gridOut.dim, 1);
-        gridOut.bdry[:] = defaultBdry
+        # gridOut.bdry = cell(gridOut.dim, 1);
+        gridOut.bdry = np.zeros((gridOut.dim, 1)).fill(defaultBdry)
+        # gridOut.bdry[:] = defaultBdry
 
     #----------------------------------------------------------------------------
     if(isfield(gridOut,'bdryData')):
@@ -294,7 +295,6 @@ def processGrid(gridIn, data=None):
         else:
             gridOut.axis = zeros(1, 2 * gridOut.dim);
             for i in range(gridOut.dim):
-                # print('rhs: ', [ gridOut.min[i], gridOut.max[i] ])
                 gridOut.axis[0, 2*i : 2*i+2] = [ gridOut.min[i], gridOut.max[i] ];
                 #print(f'gridOut.axis: {gridOut.axis}')
     else:
