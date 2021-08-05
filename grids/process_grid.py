@@ -2,7 +2,7 @@ import numpy as np
 from utils import *
 from BoundaryCondition import addGhostPeriodic
 
-def processGrid(gridIn, data=None):
+def processGrid(gridIn, data=None, sparse_flag=False):
     """
      processGrid: Construct a grid data structure, and check for consistency.
 
@@ -74,6 +74,8 @@ def processGrid(gridIn, data=None):
        data: Double array.  Optional.  If present, the data array is checked
        for consistency with the grid.
 
+       sparse_flag: Whether to make a sparse or dense grid. Default = False
+
      Output Parameters:
 
        gridOut: the full structure described for gridIn above.
@@ -91,8 +93,8 @@ def processGrid(gridIn, data=None):
       new version  8/23/12 fixed some floating point problems with N and dx.
 
 
-       Translated to Python by Lekan on 7/26/2021
-      #----------------------------------------------------------------------------
+     Lekan Molux, Python, 7/26/2021
+     ----------------------------------------------------------------------------
     """
     defaultMin = 0;
     defaultMax = 1;
@@ -216,6 +218,7 @@ def processGrid(gridIn, data=None):
                 logger.fatal(f'Inconsistent grid size in dimension {i}');
     else:
         gridOut.N = zeros(gridOut.dim, 1)
+
     for i in range(gridOut.dim):
         gridOut.N[i] = len(gridOut.vs[i])
 
@@ -238,9 +241,9 @@ def processGrid(gridIn, data=None):
         gridOut.xs = cell(gridOut.dim, 1)
         # see https://www.scivision.dev/matlab-python-meshgrid-ndgrid/
         if(gridOut.dim ==3):
-            gridOut.xs = np.meshgrid(gridOut.vs[0], gridOut.vs[1], gridOut.vs[2], indexing='ij');
+            gridOut.xs = np.meshgrid(gridOut.vs[0], gridOut.vs[1], gridOut.vs[2], indexing='ij', sparse=sparse_flag);
         elif(gridOut.dim ==2):
-            gridOut.xs = np.meshgrid(gridOut.vs[0], gridOut.vs[1], indexing='ij');
+            gridOut.xs = np.meshgrid(gridOut.vs[0], gridOut.vs[1], indexing='ij', sparse=sparse_flag);
         else:
             gridOut.xs[0] = gridOut.vs[0];
         # print(f'gridOut.xs: {len(gridOut.xs)}, {gridOut.xs[0].shape}')
@@ -276,13 +279,11 @@ def processGrid(gridIn, data=None):
         else:
             if(isscalar(gridOut.bdryData)):
                 bdryData = gridOut.bdryData;
-                gridOut.bdryData = cell(gridOut.dim, 1);
-                gridOut.bdryData[:] = bdryData
+                gridOut.bdryData = [bdryData for i in range(gridOut.dim)]
             else:
                 logger.fatal('bdryData field is not a cell vector or a scalar');
     else:
-        gridOut.bdryData = cell(gridOut.dim, 1);
-        gridOut.bdryData[:] = defaultBdryData
+        gridOut.bdryData = [defaultBdryData for i in range(gridOut.dim)]
 
     #----------------------------------------------------------------------------
     if((gridOut.dim == 2) or (gridOut.dim == 3)):
@@ -296,7 +297,6 @@ def processGrid(gridIn, data=None):
             gridOut.axis = zeros(1, 2 * gridOut.dim);
             for i in range(gridOut.dim):
                 gridOut.axis[0, 2*i : 2*i+2] = [ gridOut.min[i], gridOut.max[i] ];
-                #print(f'gridOut.axis: {gridOut.axis}')
     else:
         gridOut.axis = [];
 
@@ -310,7 +310,7 @@ def processGrid(gridIn, data=None):
                 logger.fatal('shape and N fields do not agree');
     else:
         if(gridOut.dim == 1):
-            gridOut.shape = [ gridOut.N, 1 ];
+            gridOut.shape = np.hstack([ gridOut.N, [1] ])
         else:
             gridOut.shape = gridOut.N.T;
 

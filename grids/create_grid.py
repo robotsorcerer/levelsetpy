@@ -18,7 +18,7 @@ def  createGrid(grid_min, grid_max, N, pdDims=None, process=True, low_mem=False)
        grid_min, grid_max - minimum and maximum bounds on computation domain
        N                  - number of grid points in each dimension
        pdDims             - periodic dimensions (eg. pdDims = [2 3] if 2nd and
-                              3rd dimensions are periodic)
+                                                    3rd dimensions are periodic)
        process            - specifies whether to call processGrid to generate
                             grid points
 
@@ -42,13 +42,6 @@ def  createGrid(grid_min, grid_max, N, pdDims=None, process=True, low_mem=False)
 
     assert numel(grid_min)== numel(N), 'grid min, grid_max, and N must have the same number of elements!'
 
-    def to_column_mat(A):
-        n,m = A.shape
-        if n<m:
-            return A.T
-        else:
-            return A
-
     grid_min = to_column_mat(grid_min)
     grid_max = to_column_mat(grid_max);
     N = to_column_mat(N);
@@ -63,7 +56,7 @@ def  createGrid(grid_min, grid_max, N, pdDims=None, process=True, low_mem=False)
     for i in range(g.dim):
         if np.any(i == pdDims):
             g.bdry[i] = addGhostPeriodic;
-            g.max[i] = g.min[i] + (g.max[i] - g.min[i]) * (1 - 1/g.N[i]);
+            g.max[i,0] = g.min[i,0] + (g.max[i,0] - g.min[i,0]) * (1 - 1/g.N[i,0]);
         else:
             g.bdry[i] = addGhostExtrapolate
 

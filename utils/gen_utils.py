@@ -31,6 +31,13 @@ def size(A, dim=None):
         return A.shape[dim]
     return A.shape
 
+def to_column_mat(A):
+    n,m = A.shape
+    if n<m:
+        return A.T
+    else:
+        return A
+
 def numel(A):
     if isinstance(A, list):
         A = np.asarray(A)
