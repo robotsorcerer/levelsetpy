@@ -30,7 +30,6 @@ def proj(g, data, dimsToRemove, xs=None, NOut=None, process=True):
                             Outputs:
                             gOut    - grid corresponding to projected data
                             dataOut - projected data
-                            See proj_test.m
     """
     # Input checking
     if len(dimsToRemove) != g.dim:
@@ -114,8 +113,6 @@ def projSingle(g, data, dims, xs, NOut, process):
        gOut    - grid corresponding to projected data
        dataOut - projected data
 
-     See proj_test.py
-
      Original by Sylvia; Python by Lekan July 29. 2021
     """
 
@@ -129,7 +126,6 @@ def projSingle(g, data, dims, xs, NOut, process):
                 dim = np.count_nonzero(np.logical_not(dims)),
                 min = expand(g.min[np.logical_not(dims)], 1),
                 max = expand(g.max[np.logical_not(dims)], 1),
-                # N = None,
                 bdry = None, #expand(np.asarray(g.bdry), 1) if isinstance(g.bdry, list) else g.bdry
         ))
         g.bdry = expand(np.asarray(g.bdry), 1) if isinstance(g.bdry, list) else g.bdry
