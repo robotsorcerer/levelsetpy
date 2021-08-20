@@ -1,7 +1,13 @@
+import copy
 from utils import *
 import numpy as np
 from datetime import datetime
 from hamiltonians import genericHam, genericPartial
+from ExplicitIntegration import *
+from SpatialDerivative import upwindFirstENO2
+import matplotlib
+# matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     """
@@ -207,7 +213,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
     if not compMethod: compMethod = 'minVOverTime'
 
-    if not extraArgs: extraArgs = []
+    if not extraArgs: extraArgs = Bundle(dict())
 
     extraOuts = [];
     quiet = False;
@@ -218,95 +224,94 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     small = 1e-4;
     g = schemeData.grid;
     gDim = g.dim;
-    clns = [[':'] for i in range(gDim)]
+    # clns = [[':'] for i in range(gDim)]
 
     ## Backwards compatible
 
-    if extraArgs.low_memory:
-        extraArgs.lowMemory = extraArgs.low_memory;
+    if isfield(extraArgs, 'low_memory'):
+        extraArgs.lowMemory = copy.deepcopy(extraArgs.low_memory)
         del extraArgs.low_memory;
-        logger.warning('we now use lowMemory instead of low_memory');
+        warn('we now use lowMemory instead of low_memory');
 
 
     if extraArgs.flip_output:
-        extraArgs.flipOutput = extraArgs.flip_output;
+        extraArgs.flipOutput = copy.deepcopy(extraArgs.flip_output)
         del extraArgs.flip_output;
         logger.warning('we now use flipOutput instead of flip_output');
 
 
     if extraArgs.stopSet:
-        extraArgs.stopSetInclude = extraArgs.stopSet;
+        extraArgs.stopSetInclude = copy.deepcopy(extraArgs.stopSet)
         del extraArgs.stopSet;
         logger.warning('we now use stopSetInclude instead of stopSet');
 
 
-    if extraArgs.visualize:
+    if isfield(extraArgs, 'visualize'):
         if not isinstance (extraArgs.visualize, Bundle) and \
                     extraArgs.visualize:
             # remove visualize boolean
             del extraArgs.visualize;
 
             # reset defaults
-            extraArgs.visualize.initialValueSet = 1;
-            extraArgs.visualize.valueSet = 1;
+            extraArgs.visualize = Bundle(dict(initialValueSet = 1,
+                                                valueSet = 1))
 
-
-        if extraArgs.RS_level:
+        if isfield(extraArgs, 'RS_level'):
             extraArgs.visualize.sliceLevel = extraArgs.RS_level;
             del extraArgs.RS_level;
             logger.warning(f'we now use extraArgs.visualize.sliceLevel instead of {extraArgs.RS_level}')
 
 
-        if extraArgs.plotData:
+        if isfield(extraArgs, 'plotData'):
             extraArgs.visualize.plotData = extraArgs.plotData;
             del extraArgs.plotData;
             logger.warning(f'we now use extraArgs.visualize.plotData instead of {extraArgs.plotData}');
 
 
-        if extraArgs.deleteLastPlot:
+        if isfield(extraArgs, 'deleteLastPlot'):
             extraArgs.visualize.deleteLastPlot = extraArgs.deleteLastPlot;
             del extraArgs.deleteLastPlot;
-            # logger.warning(['we now use extraArgs.visualize.deleteLastPlot instead'\
-            #     'of extraArgs.deleteLastPlot']);
+            logger.warning('we now use extraArgs.visualize.deleteLastPlot instead'
+                            'of extraArgs.deleteLastPlot');
 
 
-        if extraArgs.fig_num:
-            extraArgs.visualize.figNum = extraArgs.fig_num;
+        if isfield(extraArgs, 'fig_num'):
+            extraArgs.visualize.figNum = copy.deepcopy(extraArgs.fig_num)
             del extraArgs.fig_num;
             # logger.warning(['we now use extraArgs.visualize.figNum instead'\
             #     'of extraArgs.fig_num']);
 
 
-        if extraArgs.fig_filename:
-            extraArgs.visualize.figFilename = extraArgs.fig_filename;
+        if isfield(extraArgs, 'fig_filename'):
+            extraArgs.visualize.figFilename =copy.deepcopy( extraArgs.fig_filename)
             del extraArgs.fig_filename;
             # logger.warning(['we now use extraArgs.visualize.figFilename instead'\
             #     'of extraArgs.fig_filename']);
 
 
-        if extraArgs.target:
+        if isfield(extraArgs, 'target'):
             # logger.warning(['you wrote extraArgs.target instead of' \
             #     'extraArgs.targetFunction'])
-            extraArgs.targetFunction = extraArgs.target;
+            extraArgs.targetFunction = copy.deepcopy(extraArgs.target)
             del extraArgs.target;
 
 
-        if extraArgs.targets:
+        if isfield(extraArgs, 'targets'):
             # logger.warning(['you wrote extraArgs.targets instead of' \
             #     'extraArgs.targetFunction'])
-            extraArgs.targetFunction = extraArgs.targets;
+            extraArgs.targetFunction = copy.deepcopy(extraArgs.targets)
             del extraArgs.targets;
 
 
-        if extraArgs.obstacle:
-            extraArgs.obstacleFunction = extraArgs.obstacle;
+        if isfield(extraArgs, 'obstacle'):
+            extraArgs.obstacleFunction = copy.deepcopy(extraArgs.obstacle)
             # logger.warning(['you wrote extraArgs.obstacle instead of' \
             #     'extraArgs.obstacleFunction'])
             del extraArgs.obstacle;
 
 
-        if extraArgs.obstacles:
-            extraArgs.obstacleFunction = extraArgs.obstacles;
+        if isfield(extraArgs, 'obstacles'):
+            extraArgs.obstacleFunction = copy.deepcopy(extraArgs.obstacles)
             # logger.warning(['you wrote extraArgs.obstacles instead of' \
             #     'extraArgs.obstacleFunction'])
             del extraArgs.obstacles;
@@ -316,14 +321,14 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
     ## Extract the information from extraargs
     # Quiet mode
-    if extraArgs.quiet and extraArgs.quiet:
-        print('HJIPDE_solve running in quiet mode\')
+    if isfield(extraArgs, 'quiet') and extraArgs.quiet:
+        print('HJIPDE_solve running in quiet mode')
         quiet = True;
 
 
     # Low memory mode
-    if extraArgs.lowMemory and extraArgs.lowMemory:
-        print('HJIPDE_solve running in low memory mode\')
+    if isfield(extraArgs, 'lowMemory') and extraArgs.lowMemory:
+        info('HJIPDE_solve running in low memory mode')
         lowMemory = True;
 
         # Save the output in reverse order
@@ -334,7 +339,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
     # Only keep latest data (saves memory)
-    if extraArgs.keepLast and extraArgs.keepLast:
+    if isfield(extraArgs, 'flipOutput') and extraArgs.keepLast:
         keepLast = True;
 
 
@@ -342,7 +347,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     obsMode = 'none';
 
 
-    if extraArgs.obstacleFunction:
+    if isfield(extraArgs, 'obstacleFunction'):
         obstacles = extraArgs.obstacleFunction;
 
         # are obstacles moving or not?
@@ -351,7 +356,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             obstacle_i = obstacles;
         elif numDims(obstacles) == gDim + 1:
             obsMode = 'time-varying';
-            obstacle_i = obstacles(clns[:], 1);
+            obstacle_i = obstacles[0, ...];
         else:
             error('Inconsistent obstacle dimensions!')
 
@@ -366,7 +371,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     #---Extract the information about targets----------------------------------
     targMode = 'none';
 
-    if extraArgs.targetFunction:
+    if isfield(extraArgs, 'targetFunction'):
         targets = extraArgs.targetFunction;
 
         # is target function moving or not?
@@ -375,7 +380,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             target_i = targets;
         elif numDims(targets) == gDim + 1:
             targMode = 'time-varying';
-            target_i = targets(clns[:], 1);
+            target_i = targets[0, ...];
         else:
             error('Inconsistent target dimensions!')
 
@@ -384,14 +389,12 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     #---Stopping Conditions----------------------------------------------------
 
     # Check validity of stopInit if needed
-    if extraArgs.stopInit:
+    if isfield(extraArgs, 'stopInit'):
         if not isvector(extraArgs.stopInit) or gDim is not len(extraArgs.stopInit):
             error('stopInit must be a vector of length g.dim!')
 
-
-
-    if extraArgs.stopSetInclude or extraArgs.stopSetIntersect:
-        if extraArgs.stopSetInclude:
+    if isfield(extraArgs,'stopSetInclude') or isfield(extraArgs,'stopSetIntersect'):
+        if isfield(extraArgs,'stopSetInclude'):
             stopSet = extraArgs.stopSetInclude
         else:
             stopSet = extraArgs.stopSetIntersect;
@@ -403,7 +406,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         setInds = stopSet[stopSet < 0];
 
         # Check validity of stopLevel if needed
-        if extraArgs.stopLevel:
+        if isfield(extraArgs, 'stopLevel'):
             stopLevel = extraArgs.stopLevel;
         else:
             stopLevel = 0;
@@ -411,7 +414,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
     ## Visualization
-    if (extraArgs.visualize and extraArgs.visualize) or (extraArgs.makeVideo and extraArgs.makeVideo):
+    if (isfield(extraArgs, 'visualize') and isinstance(extraArgs.visualize, Bundle))\
+            or (isfield(extraArgs, 'makeVideo' and extraArgs.makeVideo):
         # Mark initial iteration, state that for the first plot we need
         # lighting
         timeCount = 0;
@@ -447,7 +451,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         # Extract the information about plotData
         plotDims = ones(gDim, 1);
         projpt = [];
-        if extraArgs.visualize.plotData:
+        if isfield(extraArgs.visualize, 'plotData'):
             # Dimensions to visualize
             # It will be an array of 1s and 0s with 1s means that dimension should
             # be plotted.
@@ -469,12 +473,12 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
         #---Defaults-----------------------------------------------------------
 
-        if extraArgs.obstacleFunction and extraArgs.visualize:
-            if not extraArgs.visualize.obstacleSet):
-                extraArgs.visualize.obstacleSet = 1;
+        if isfield(extraArgs, 'obstacleFunction') and isfield(extraArgs, 'visualize'):
+            if not isfield(extraArgs.visualize, 'obstacleSet'):
+                extraArgs.visualize.obstacleSet = 1
 
-        if extraArgs.targetFunction and extraArgs.visualize:
-            if not extraArgs.visualize.targetSet:
+        if isfield(extraArgs, 'targetFunction') and isfield(extraArgs, 'visualize'):
+            if not isfield(extraArgs.visualize, 'targetSet'):
                 extraArgs.visualize.targetSet = 1;
 
         # grid on
@@ -487,7 +491,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             projDims = gDim - pDims;
 
         # Set level set slice
-        if extraArgs.visualize.sliceLevel:
+        if isfield(extraArgs.visualize, 'sliceLevel'):
             sliceLevel = extraArgs.visualize.sliceLevel;
         else:
             sliceLevel = 0;
@@ -495,7 +499,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
         # Do we want to see every single plot at every single time step, or
         # only the most recent one?
-        if extraArgs.visualize.deleteLastPlot:
+        if isfield(extraArgs.visualize, 'deleteLastPlot'):
             deleteLastPlot = extraArgs.visualize.deleteLastPlot
         else:
             deleteLastPlot = False;
@@ -506,28 +510,27 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         if (projDims == 0):
             gPlot = g;
             dataPlot = data0;
-            if extraArgs.obstacleFunction:
+            if isfield(extraArgs, 'obstacleFunction'):
                 obsPlot = obstacle_i;
 
-            if extraArgs.targetFunction:
+            if isfield(extraArgs, 'targetFunction'):
                 targPlot = target_i;
         else:
             # if projpt is a cell, project each dimensions separately. This
             # allows us to take the union/intersection through some dimensions
             # and to project at a particular slice through other dimensions.
             if isinstance(projpt, list):
-                idx = np.where(plotDims==0)[0]
+                idx = np.where(plotDims==0)#[0]
                 plotDimsTemp = ones(size(plotDims));
                 gPlot = g;
                 dataPlot = data0;
-                if extraArgs.obstacleFunction:
+                if isfield(extraArgs, 'obstacleFunction'):
                     obsPlot = obstacle_i;
 
-                if extraArgs.targetFunction:
+                if isfield(extraArgs, 'targetFunction'):
                     targPlot = target_i;
 
-
-                for ii in range(length(idx[0])-1, 0, -1):
+                for ii in range(len(idx[0])-1, 0, -1):
                     plotDimsTemp(idx[ii]) = 0;
                     if extraArgs.obstacleFunction:
                         _, obsPlot = proj(gPlot, obsPlot, np.logical_not(plotDimsTemp), projpt[ii]);
@@ -547,233 +550,224 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                     [_, targPlot] = proj(g, target_i, np.logical_not(plotDims), projpt);
         #---Initialize Figure--------------------------------------------------
 
-        #
-        # # Initialize the figure for visualization
-        # if extraArgs.,'gNum')
-        #     f = figure(extraArgs.visualize.figNum);
-        # else
-        #     f = figure;
-        #
-        #
-        # # Clear figure unless otherwise specified
-        # if ~extraArgs.,'ldOn')|| ~extraArgs.visualize.holdOn
-        #     clf
-        #
-        # hold on
-        # grid on
-        #
-        # # Set defaults
-        # eAT_visSetIm.sliceDim = gPlot.dim;
-        # eAT_visSetIm.applyLight = False;
-        # if extraArgs.,lineWidth')
-        #     eAT_visSetIm.LineWidth = extraArgs.visualize.lineWidth;
-        #     eAO_visSetIm.LineWidth = extraArgs.visualize.lineWidth;
-        # else
-        #     eAO_visSetIm.LineWidth = 2;
-        #
-        #
-        # # If we're stopping once we hit an initial condition requirement, plot
-        # # said requirement
-        # if extraArgs.stopInit
-        #     projectedInit = extraArgs.stopInit(logical(plotDims));
-        #     if nnz(plotDims) == 2
-        #         plot(projectedInit(1), projectedInit(2), 'b*')
-        #     elif nnz(plotDims) == 3
-        #         plot3(projectedInit(1), projectedInit(2), projectedInit(3), 'b*')
-        #
-        #
-        #
-        # ## Visualize Inital Value Function/Set
-        #
-        # #---Visualize Initial Value Set----------------------------------------
-        # if extraArgs.,initialValueSet') and\
-        #         extraArgs.visualize.initialValueSet
-        #
-        #     if ~extraArgs.,'otColorVS0')
-        #         extraArgs.visualize.plotColorVS0 = 'g';
-        #
-        #
-        #     extraOuts.hVS0 = visSetIm(\
-        #         gPlot, dataPlot, extraArgs.visualize.plotColorVS0,\
-        #         sliceLevel, eAT_visSetIm);
-        #
-        #     if extraArgs.,'otAlphaVS0')
-        #         extraOuts.hVS0.FaceAlpha = extraArgs.visualize.plotAlphaVS0;
-        #
-        #
-        #
-        # #---Visualize Initial Value Function-----------------------------------
-        # if extraArgs.,initialValueFunction') and\
-        #         extraArgs.visualize.initialValueFunction
-        #
-        #     # If we're making a 3D plot, mark so we know to view this at an
-        #     # angle appropriate for 3D
-        #     if gPlot.dim >= 2
-        #         view3D = 1;
-        #
-        #
-        #     # Set up default parameters
-        #     if ~extraArgs.,'otColorVF0')
-        #         extraArgs.visualize.plotColorVF0 = 'g';
-        #
-        #
-        #     if ~extraArgs.,'otAlphaVF0')
-        #         extraArgs.visualize.plotAlphaVF0 = .5;
-        #
-        #
-        #     # Visualize Initial Value function (hVF0)
-        #     [extraOuts.hVF0]= visFuncIm(gPlot,dataPlot,\
-        #         extraArgs.visualize.plotColorVF0,\
-        #         extraArgs.visualize.plotAlphaVF0);
-        #
-        #
-        # ## Visualize Target Function/Set
-        #
-        # #---Visualize Target Set-----------------------------------------------
-        # if extraArgs.,targetSet') \
-        #         and extraArgs.visualize.targetSet
-        #
-        #
-        #     if ~extraArgs.,'otColorTS')
-        #         extraArgs.visualize.plotColorTS = 'g';
-        #
-        #
-        #     extraOuts.hTS = visSetIm(gPlot, targPlot, \
-        #         extraArgs.visualize.plotColorTS, sliceLevel, eAT_visSetIm);
-        #
-        #     if extraArgs.,'otAlphaTS')
-        #         extraOuts.hTS.FaceAlpha = extraArgs.visualize.plotAlphaTS;
-        #
-        #
-        #
-        # #---Visualize Target Function------------------------------------------
-        # if extraArgs.,targetFunction') and\
-        #         extraArgs.visualize.targetFunction
-        #     # If we're making a 3D plot, mark so we know to view this at an
-        #     # angle appropriate for 3D
-        #     if gPlot.dim >= 2
-        #         view3D = 1;
-        #
-        #
-        #     # Set up default parameters
-        #     if ~extraArgs.,'otColorTF')
-        #         extraArgs.visualize.plotColorTF = 'g';
-        #
-        #
-        #     if ~extraArgs.,'otAlphaTF')
-        #         extraArgs.visualize.plotAlphaTF = .5;
-        #
-        #
-        #     # Visualize Target function (hTF)
-        #     [extraOuts.hTF]= visFuncIm(gPlot,targPlot,\
-        #         extraArgs.visualize.plotColorTF,\
-        #         extraArgs.visualize.plotAlphaTF);
-        #
-        #
-        # ## Visualize Obstacle Function/Set
-        #
-        # #---Visualize Obstacle Set---------------------------------------------
-        # if extraArgs.,obstacleSet') \
-        #         and extraArgs.visualize.obstacleSet
-        #
-        #     if ~extraArgs.,'otColorOS')
-        #         extraArgs.visualize.plotColorOS = 'r';
-        #
-        #
-        #     # Visualize obstacle set (hOS)
-        #     extraOuts.hOS = visSetIm(gPlot, obsPlot, \
-        #         extraArgs.visualize.plotColorOS, sliceLevel, eAO_visSetIm);
-        #
-        #
-        # #---Visualize Obstacle Function----------------------------------------
-        # if  extraArgs.,obstacleFunction') \
-        #         and extraArgs.visualize.obstacleFunction
-        #     # If we're making a 3D plot, mark so we know to view this at an
-        #     # angle appropriate for 3D
-        #     if gPlot.dim >= 2
-        #         view3D = 1;
-        #
-        #
-        #     # Set up default parameters
-        #     if ~extraArgs.,'otColorOF')
-        #         extraArgs.visualize.plotColorOF = 'r';
-        #
-        #
-        #     if ~extraArgs.,'otAlphaOF')
-        #         extraArgs.visualize.plotAlphaOF = .5;
-        #
-        #
-        #     # Visualize function
-        #     [extraOuts.hOF]= visFuncIm(gPlot,-obsPlot,\
-        #         extraArgs.visualize.plotColorOF,\
-        #         extraArgs.visualize.plotAlphaOF);
-        #
-        # ## Visualize Value Function/Set
-        # #---Visualize Value Set Heat Map---------------------------------------
-        # if extraArgs.,valueSetHeatMap') and\
-        #         extraArgs.visualize.valueSetHeatMap
-        #     maxVal = max(abs(data0(:)));
-        #     clims = [-maxVal-1 maxVal+1];
-        #     extraOuts.hVSHeat = imagesc(\
-        #         gPlot.vs{1},gPlot.vs{2},dataPlot,clims);
-        #     if extraArgs.,'lormap')
-        #         colormap(extraArgs.visualize.colormap)
-        #     else
-        #         cmapAutumn = colormap('autumn');
-        #         cmapCool = colormap('cool');
-        #         cmap(1:32,:) = cmapCool(64:-2:1,:);
-        #         cmap(33:64,:) = cmapAutumn(64:-2:1,:);
-        #         colormap(cmap);
-        #
-        #     colorbar
-        #
-        #
-        # #---Visualize Value Set------------------------------------------------
-        # if extraArgs.,valueSet') and\
-        #         extraArgs.visualize.valueSet
-        #
-        #     if ~extraArgs.,'otColorVS')
-        #         extraArgs.visualize.plotColorVS = 'b';
-        #
-        #
-        #     extraOuts.hVS = visSetIm(gPlot, dataPlot, \
-        #         extraArgs.visualize.plotColorVS, sliceLevel, eAT_visSetIm);
-        #
-        #
-        # #---Visualize Value Function-------------------------------------------
-        # if extraArgs.,valueFunction') and \
-        #         extraArgs.visualize.valueFunction
-        #     # If we're making a 3D plot, mark so we know to view this at an
-        #     # angle appropriate for 3D
-        #     if gPlot.dim >= 2
-        #         view3D = 1;
-        #
-        #
-        #     # Set up default parameters
-        #     if ~extraArgs.,'otColorVF')
-        #         extraArgs.visualize.plotColorVF = 'b';
-        #
-        #
-        #     if ~extraArgs.,'otAlphaVF')
-        #         extraArgs.visualize.plotAlphaVF = .5;
-        #
-        #
-        #     # Visualize Value function (hVF)
-        #     [extraOuts.hVF]= visFuncIm(gPlot,dataPlot,\
-        #         extraArgs.visualize.plotColorVF,\
-        #         extraArgs.visualize.plotAlphaVF);
-        #
-        #
-        #
-        # ## General Visualization Stuff
-        #
-        # #---Set Angle, Lighting, axis, Labels, Title---------------------------
-        #
+
+        # Initialize the figure for visualization
+        fig = plt.figure(figsize=winsize);
+        fig.tight_layout()
+        ax = fig.add_subplot(1, 1, 1)
+
+
+        # Clear figure unless otherwise specified
+        plt.clf()
+
+        ax.grid('on')
+
+        # Set defaults
+        eAT_visSetIm = Bundle(dict(sliceDim = gPlot.dim,
+                                    applyLight = False))
+        if isfield(extraArgs.visualize, 'lineWidth'):
+            eAT_visSetIm.LineWidth = extraArgs.visualize.lineWidth;
+            eAO_visSetIm.LineWidth = extraArgs.visualize.lineWidth;
+        else:
+            eAO_visSetIm.LineWidth = 2;
+
+
+        # If we're stopping once we hit an initial condition requirement, plot
+        # said requirement
+        if extraArgs.stopInit:
+            projectedInit = extraArgs.stopInit(plotDims.astype(bool))
+            if np.nonzero(plotDims) == 2:
+                ax.plot(projectedInit[0], projectedInit[1], 'b*')
+            elif np.nonzero(plotDims) == 3:
+                ax.plot_wireframe(projectedInit[0], projectedInit[1], projectedInit[2], 'b*')
+
+
+
+        ## Visualize Inital Value Function/Set
+
+        #---Visualize Initial Value Set----------------------------------------
+        if isfield(extraArgs.visualize, 'initialValueSet') and
+                extraArgs.visualize.initialValueSet"
+
+            if not isfield(extraArgs.visualize,'plotColorVS0'):
+                extraArgs.visualize.plotColorVS0 = 'g';
+
+
+            extraOuts.hVS0 = visSetIm(\
+                gPlot, dataPlot, extraArgs.visualize.plotColorVS0,\
+                sliceLevel, eAT_visSetIm);
+
+            if isfield(extraArgs.visualize,'plotAlphaVS0'):
+                extraOuts.hVS0.FaceAlpha = extraArgs.visualize.plotAlphaVS0;
+
+
+
+        #---Visualize Initial Value Function-----------------------------------
+        if isfield(extraArgs.visualize, 'initialValueFunction') and \
+                extraArgs.visualize.initialValueFunction:
+
+            # If we're making a 3D plot, mark so we know to view this at an
+            # angle appropriate for 3D
+            if gPlot.dim >= 2:
+                view3D = 1;
+
+            # Set up default parameters
+            if isfield(extraArgs.visualize,'plotColorVF0'):
+                extraArgs.visualize.plotColorVF0 = 'g';
+
+
+            if not isfield(extraArgs.visualize,'plotAlphaVF0'):
+                extraArgs.visualize.plotAlphaVF0 = .5;
+
+
+            # Visualize Initial Value function (hVF0)
+            extraOuts.hVF0= visFuncIm(gPlot,dataPlot,\
+                extraArgs.visualize.plotColorVF0,\
+                extraArgs.visualize.plotAlphaVF0);
+
+
+        ## Visualize Target Function/Set
+
+        #---Visualize Target Set-----------------------------------------------
+        if isfield(extraArgs.visualize, 'targetSet')  \
+                and extraArgs.visualize.targetSet:
+
+
+            if not isfield(extraArgs.visualize,'plotColorTS'):
+                extraArgs.visualize.plotColorTS = 'g';
+
+
+            extraOuts.hTS = visSetIm(gPlot, targPlot, \
+                extraArgs.visualize.plotColorTS, sliceLevel, eAT_visSetIm);
+
+            if isfield(extraArgs.visualize,'plotAlphaTS')
+                extraOuts.hTS.FaceAlpha = extraArgs.visualize.plotAlphaTS;
+
+
+
+        #---Visualize Target Function------------------------------------------
+        if isfield(extraArgs.visualize, 'targetFunction') and
+                extraArgs.visualize.targetFunction:
+            # If we're making a 3D plot, mark so we know to view this at an
+            # angle appropriate for 3D
+            if gPlot.dim >= 2
+                view3D = 1
+
+            # Set up default parameters
+            if not isfield(extraArgs.visualize,'plotColorTF'):
+                extraArgs.visualize.plotColorTF = 'g';
+
+
+            if not isfield(extraArgs.visualize,'plotAlphaTF'):
+                extraArgs.visualize.plotAlphaTF = .5;
+
+
+            # Visualize Target function (hTF)
+            extraOuts.hTF= visFuncIm(gPlot,targPlot,\
+                extraArgs.visualize.plotColorTF,\
+                extraArgs.visualize.plotAlphaTF);
+
+
+        ## Visualize Obstacle Function/Set
+
+        #---Visualize Obstacle Set---------------------------------------------
+        if isfield(extraArgs.visualize, 'obstacleSet') \
+                and extraArgs.visualize.obstacleSet:
+
+            if not isfield(extraArgs.visualize,'plotColorOS'):
+                extraArgs.visualize.plotColorOS = 'r';
+
+
+            # Visualize obstacle set (hOS)
+            extraOuts.hOS = visSetIm(gPlot, obsPlot, \
+                extraArgs.visualize.plotColorOS, sliceLevel, eAO_visSetIm);
+
+
+        #---Visualize Obstacle Function----------------------------------------
+        if  isfield(extraArgs.visualize, 'obstacleFunction') \
+                and extraArgs.visualize.obstacleFunction
+            # If we're making a 3D plot, mark so we know to view this at an
+            # angle appropriate for 3D
+            if gPlot.dim >= 2
+                view3D = 1;
+
+
+            # Set up default parameters
+            if not isfield(extraArgs.visualize,'plotColorOF'):
+                extraArgs.visualize.plotColorOF = 'r';
+
+
+            if not isfield(extraArgs.visualize,'plotAlphaOF'):
+                extraArgs.visualize.plotAlphaOF = .5;
+
+
+            # Visualize function
+            [extraOuts.hOF]= visFuncIm(gPlot,-obsPlot,\
+                extraArgs.visualize.plotColorOF,\
+                extraArgs.visualize.plotAlphaOF);
+
+        ## Visualize Value Function/Set
+        #---Visualize Value Set Heat Map---------------------------------------
+        if isfield(extraArgs.visualize, 'valueSetHeatMap') and
+                extraArgs.visualize.valueSetHeatMap:
+            maxVal = max(abs(data0(:)));
+            clims = [-maxVal-1, maxVal+1];
+            # fix this later
+            extraOuts.hVSHeat = ax.imshow(np.hstack((gPlot.vs[0],gPlot.vs[1])),\
+                                            cmap=dataPlot,vmin=clims[0], \
+                                            vmax=clims[1], origin='lower');
+            # if isfield(extraArgs.visualize,'colormap'):
+            #     plt.colormap(extraArgs.visualize.colormap)
+            # else:
+            #     cmapAutumn = colormap('autumn');
+            #     cmapCool = colormap('cool');
+            #     cmap[:32,:] = cmapCool(64:-2:1,:);
+            #     cmap[32:64,:] = cmapAutumn(64:-2:1,:);
+            #     colormap(cmap);
+            fig.colorbar()
+
+
+        #---Visualize Value Set------------------------------------------------
+        if isfield(extraArgs.visualize, 'valueSet') and extraArgs.visualize.valueSet:
+
+            if not isfield(extraArgs.visualize,'plotColorVS'):
+                extraArgs.visualize.plotColorVS = 'b'
+
+            extraOuts.hVS = visSetIm(gPlot, dataPlot, extraArgs.visualize.plotColorVS, sliceLevel, eAT_visSetIm)
+
+
+        #---Visualize Value Function-------------------------------------------
+        if isfield(extraArgs.visualize, 'valueFunction') and  extraArgs.visualize.valueFunction:
+            # If we're making a 3D plot, mark so we know to view this at an
+            # angle appropriate for 3D
+            if gPlot.dim >= 2:
+                view3D = 1
+
+            # Set up default parameters
+            if not isfield(extraArgs.visualize,'plotColorVF'):
+                extraArgs.visualize.plotColorVF = 'b'
+
+            if not isfield(extraArgs.visualize,'plotAlphaVF'):
+                extraArgs.visualize.plotAlphaVF = .5
+
+
+            # Visualize Value function (hVF)
+            extraOuts.hVF= visFuncIm(gPlot,dataPlot,\
+                extraArgs.visualize.plotColorVF,\
+                extraArgs.visualize.plotAlphaVF);
+
+
+
+        ## General Visualization Stuff
+
+        #---Set Angle, Lighting, axis, Labels, Title---------------------------
+
+        # fix this later
         # # Set Angle
-        # if pDims >2 || view3D || extraArgs.,viewAngle')
-        #     if extraArgs.,viewAngle')
+        # if pDims >2 or view3D or isfield(extraArgs.visualize, 'viewAngle'):
+        #     if isfield(extraArgs.visualize, 'viewAngle'):
         #         view(extraArgs.visualize.viewAngle)
-        #     else
+        #     else:
         #         view(30,10)
         #
         #
@@ -787,9 +781,9 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         #         c.Position = extraArgs.visualize.camlightPosition;
         #     else
         #         c.Position = [-30 -30 -30];
-        #
-        #
-        #
+
+
+
         # # Grid and axis
         # if extraArgs.,viewGrid') and \
         #         ~extraArgs.visualize.viewGrid
@@ -800,21 +794,21 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         #     axis(extraArgs.visualize.viewAxis)
         #
         # axis square
-        #
-        # # Labels
-        # if extraArgs.,xTitle')
-        #     xlabel(extraArgs.visualize.xTitle, 'interpreter','latex')
-        #
-        #
-        # if extraArgs.,yTitle')
-        #     ylabel(extraArgs.visualize.yTitle,'interpreter','latex')
-        #
-        #
-        # if extraArgs.,zTitle')
-        #     zlabel(extraArgs.visualize.zTitle,'interpreter','latex')
-        #
-        #
-        # title(['t = ' num2str(0) ' s'])
+
+        # Labels
+        if isfield(extraArgs.visualize, 'xTitle'):
+            ax.set_xlabel(extraArgs.visualize.xTitle)
+
+
+        if isfield(extraArgs.visualize, 'yTitle'):
+            ax.set_ylabel(extraArgs.visualize.yTitle)
+
+
+        if extraArgs.,zTitle')
+            ax.set_zlabel(extraArgs.visualize.zTitle)
+
+        # ax.set_title(f't = {0} ')
+        # gcf = plt.gcf()
         # set(gcf,'Color','white')
         #
         # if extraArgs.,fontSize')
@@ -823,33 +817,20 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         #
         # if extraArgs.,lineWidth')
         #     set(gca,'LineWidth',extraArgs.visualize.lineWidth)
-        #
-        #
+
+
         # drawnow;
-        #
-        # # If we're making a video, grab the frame
-        # if extraArgs.makeVideo and extraArgs.makeVideo
-        #     current_frame = getframe(gcf); #gca does just the plot
-        #     writeVideo(vout,current_frame);
-        #
-        #
-        # # If we're saving each figure, do so now
-        # if extraArgs.,figFilename')
-        #     export_fig(sprintf('#s#d', extraArgs.visualize.figFilename, 0), '-png')
-        #
-
-
 
     ## Extract dynamical system if needed
-    if schemeData.dynSys:
+    if isfield(schemeData, 'dynSys'):
         schemeData.hamFunc = genericHam;
         schemeData.partialFunc = genericPartial;
 
 
     stopConverge = False;
-    if extraArgs.stopConverge:
+    if isfield(extraArgs, 'stopConverge'):
         stopConverge = extraArgs.stopConverge;
-        if extraArgs.convergeThreshold:
+        if isfield(extraArgs, 'convergeThreshold'):
             convergeThreshold = extraArgs.convergeThreshold;
         else:
             convergeThreshold = 1e-5;
@@ -858,8 +839,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     ## SchemeFunc and SchemeData
     schemeFunc = termLaxFriedrichs;
     # Extract accuracy parameter o/w set default accuracy
-    accuracy = 'veryHigh';
-    if schemeData.accuracy:
+    accuracy = 'medium' #'veryHigh'; # sylvia used veryHigh in her code
+    if isfield(schemeData, 'accuracy'):
         accuracy = schemeData.accuracy;
 
 
@@ -924,19 +905,19 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     elif numDims(data0) == gDim + 1:
         # Continue an old computation
         if keepLast:
-            data = data0[clns[:], data0size()]; # check these indexing
+            data = data0[data0size[-1], ...]; # check these indexing
         elif lowMemory:
-            data = data0[clns[:], data0size()].astype(np.float32)
+            data = data0[data0size[-1], ...].astype(np.float32)
         else:
             data = np.zeros((data0size[:gDim]+(len(tau), )]))
-            data[clns[:], 0:data0size()] = data0;
+            data[:data0size[-1], ...] = data0;
 
 
         # Start at custom starting index if specified
         if extraArgs.istart:
             istart = extraArgs.istart;
         else:
-            istart = data0size()+1; # don't know what this is
+            istart = data0size[-1]+1;
 
     else:
         error('Inconsistent initial condition dimension!')
@@ -966,21 +947,21 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             y0 = data;
         elif lowMemory:
             if flipOutput:
-                y0 = data[clns[:], 0];
+                y0 = data[ 0,...];
             else:
-                y0 = data[clns[:], size(data, g.dim)];
+                y0 = data[size(data, g.dim), ...];
 
 
         else:
-            y0 = data[clns[:], i-1];
+            y0 = data[i-1, ...]
 
-        y = expand(y0.flatten(), 1);
+        y = np.expand(y0.flatten(), 1);
 
 
         tNow = tau[i-1];
 
         ## Main integration loop to get to the next tau(i)
-        while tNow < tau(i) - small:
+        while tNow < tau[i] - small:
             # Save previous data if needed
             if compMethod =='minVOverTime' or compMethod =='maxVOverTime':
                 yLast = y;
@@ -1547,41 +1528,34 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     if extraArgs.makeVideo and extraArgs.makeVideo
         vout.close
 
+    return data, tau, extraOuts
+
+    def getNumericalFuncs(dissType='global', accuracy='medium'):
+        # Dissipation
+        if (dissType == 'global'):
+            dissFunc = artificialDissipationGLF
+        # elif (dissType == 'local'):
+        #     dissFunc = artificialDissipationLLF
+        # elif (dissType == 'locallocal'):
+        #     dissFunc = artificialDissipationLLLF
+        # else:
+            error('Unknown dissipation function #s'.format(dissType))
 
 
+        # Accuracy
+        # if accuracy is 'low':
+        #     derivFunc = upwindFirstFirst
+        #     integratorFunc = odeCFL1
+        if accuracy is 'medium':
+            derivFunc = upwindFirstENO2
+            integratorFunc = odeCFL2
+        # elif accuracy is 'high':
+        #     derivFunc = upwindFirstENO3
+        #     integratorFunc = odeCFL3
+        # elif accuracy is 'veryHigh':
+        #     derivFunc = upwindFirstWENO5
+        #     integratorFunc = odeCFL3
+        else:
+            error('Unknown accuracy level #s'.format(accuracy))
 
-
-
-    function [dissFunc, integratorFunc, derivFunc] = \
-        getNumericalFuncs(dissType, accuracy)
-    # Dissipation
-    switch(dissType)
-        case 'global'
-            dissFunc = @artificialDissipationGLF;
-        case 'local'
-            dissFunc = @artificialDissipationLLF;
-        case 'locallocal'
-            dissFunc = @artificialDissipationLLLF;
-        otherwise
-            error('Unknown dissipation function #s', dissType);
-
-
-    # Accuracy
-    switch(accuracy)
-        case 'low'
-            derivFunc = @upwindFirstFirst;
-            integratorFunc = @odeCFL1;
-        case 'medium'
-            derivFunc = @upwindFirstENO2;
-            integratorFunc = @odeCFL2;
-        case 'high'
-            derivFunc = @upwindFirstENO3;
-            integratorFunc = @odeCFL3;
-        case 'veryHigh'
-            derivFunc = @upwindFirstWENO5;
-            integratorFunc = @odeCFL3;
-        otherwise
-            error('Unknown accuracy level #s', accuracy);
-
-
-return data, tau, extraOuts
+        return dissFunc, integratorFunc, derivFunc

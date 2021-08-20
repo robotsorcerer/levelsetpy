@@ -1,7 +1,6 @@
-import numpy as np
-from utils import zeros, ones, numel
+from utils import zeros, ones, numel, logger, np
 
-def = shapeCylinder(grid, ignoreDims=[], center=None, radius=1):
+def shapeCylinder(grid, ignoreDims=[], center=None, radius=1):
     """
      shapeCylinder: implicit surface function for a cylinder.
 
@@ -15,7 +14,6 @@ def = shapeCylinder(grid, ignoreDims=[], center=None, radius=1):
        Intervals, circles and spheres (if ignoreDims is empty).
        Slabs (if ignoreDims contains all dimensions except one).
 
-     parameters:
      Input Parameters:
 
        grid: Grid structure (see processGrid.m for details).
@@ -57,7 +55,7 @@ def = shapeCylinder(grid, ignoreDims=[], center=None, radius=1):
 
     #---------------------------------------------------------------------------
     # Signed distance function calculation.
-    data = zeros(grid.shape);
+    data = zeros(grid.shape[0]);
     for i in range(len(grid.dim)):
         if(i != ignoreDims[i]):
             data += (grid.xs[i] - center[i]*center[i])
@@ -66,7 +64,7 @@ def = shapeCylinder(grid, ignoreDims=[], center=None, radius=1):
     #---------------------------------------------------------------------------
     # Warn the user if there is no sign change on the grid
     #  (ie there will be no implicit surface to visualize).
-    if(all(data.flatten() < 0) || (all(data[:] > 0))):
+    if(np.all(data.flatten() < 0) or (np.all(data.flatten() > 0))):
         logger.warn(f'Implicit surface not visible because function has '
                 'single sign on grid');
     return data

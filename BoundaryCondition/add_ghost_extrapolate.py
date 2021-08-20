@@ -43,6 +43,8 @@ def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
      Ian Mitchell, 5/12/03
      modified to allow choice of dimension, Ian Mitchell, 5/27/03
      modified to allow ghostData input structure & renamed, Ian Mitchell, 1/13/04
+
+     Lekan Molu, Circa, August Week I, 2021
     """
     if not width:
         width = 1;

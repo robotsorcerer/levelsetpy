@@ -244,8 +244,11 @@ def processGrid(gridIn, data=None, sparse_flag=False):
             gridOut.xs = np.meshgrid(gridOut.vs[0], gridOut.vs[1], gridOut.vs[2], indexing='ij', sparse=sparse_flag);
         elif(gridOut.dim ==2):
             gridOut.xs = np.meshgrid(gridOut.vs[0], gridOut.vs[1], indexing='ij', sparse=sparse_flag);
-        else:
-            gridOut.xs[0] = gridOut.vs[0];
+        elif(gridOut.dim ==1):
+            gridOut.xs[0] = gridOut.vs[0]
+        elif (gridOut.dim>3):
+            gridOut.xs = np.meshgrid(*gridOut.vs, indexing='ij', sparse=sparse_flag);
+
         # print(f'gridOut.xs: {len(gridOut.xs)}, {gridOut.xs[0].shape}')
 
     #----------------------------------------------------------------------------
@@ -301,18 +304,19 @@ def processGrid(gridIn, data=None, sparse_flag=False):
         gridOut.axis = [];
 
     #----------------------------------------------------------------------------
+    Nshape = tuple(gridOut.N.squeeze())
     if(isfield(gridOut, 'shape')):
         if(gridOut.dim == 1):
-            if(np.any(gridOut.shape != (gridOut.N, 1) )):
+            if(np.any(gridOut.shape != (Nshape + (1,)) )):
                 logger.fatal('shape and N fields do not agree');
         else:
             if(np.any(gridOut.shape != gridOut.N.T)):
                 logger.fatal('shape and N fields do not agree');
     else:
         if(gridOut.dim == 1):
-            gridOut.shape = np.hstack([ gridOut.N, [1] ])
+            gridOut.shape = (Nshape + (1,))
         else:
-            gridOut.shape = gridOut.N.T;
+            gridOut.shape = Nshape
 
     #----------------------------------------------------------------------------
     # check data parameter for consistency

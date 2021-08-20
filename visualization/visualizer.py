@@ -28,7 +28,7 @@ class Visualizer():
         if self._fontdict is None:
             self._fontdict = {'fontsize':12, 'fontweight':'bold'}
 
-    def visGrid(self, gs, dim, colors=None, save_dir=None):
+    def visGrid(self, gs, dim, colors=None, save_dir=None, title=None):
         # see helper OC/visualization/visGrid.m
         if not colors:
             colors = ['blue', 'red', 'yellow', 'orange', 'green', 'black']
@@ -41,6 +41,8 @@ class Visualizer():
                     linestyle='-', color=colors[0])
             ax.xaxis.set_tick_params(labelsize=self._labelsize)
             ax.yaxis.set_tick_params(labelsize=self._labelsize)
+            if title:
+                ax.set_title(title, fontdict=self._fontdict)
 
             self._fig.tight_layout()
             # if save_dir:
@@ -63,7 +65,10 @@ class Visualizer():
                 ax.set_xlabel('x', fontdict=self._fontdict)
                 ax.set_ylabel('y', fontdict=self._fontdict)
 
-            plt.title(f'Gridsplitter along {len(gs)} dims')
+            if not title:
+                title = f'Gridsplitter along {len(gs)} dims'
+                
+            plt.title(title)
             plt.show()
 
         elif dim==3:

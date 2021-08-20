@@ -36,14 +36,14 @@ def proj(g, data, dimsToRemove, xs=None, NOut=None, process=True):
         logger.fatal('Dimensions are inconsistent!')
 
     if np.count_nonzero(np.logical_not(dimsToRemove)) == g.dim:
-        gOut = g;
-        dataOut = data;
+        gOut = g
+        dataOut = data
         logger.warning('Input and output dimensions are the same!')
         return gOut, dataOut
 
     # By default, do a projection
     if not xs:
-        xs = 'min';
+        xs = 'min'
 
     # If a slice is requested, make sure the specified point has the correct
     # dimension
@@ -52,7 +52,7 @@ def proj(g, data, dimsToRemove, xs=None, NOut=None, process=True):
 
     if NOut is None:
         NOut = expand(g.N[np.logical_not(dimsToRemove)], 1)
-    dataDims = numDims(data);
+    dataDims = numDims(data)
     if np.any(data) and np.logical_not(dataDims == g.dim or dataDims == g.dim+1) \
         and not isinstance(data, list):
         logger.fatal('Inconsistent input data dimensions!')
@@ -60,27 +60,27 @@ def proj(g, data, dimsToRemove, xs=None, NOut=None, process=True):
     # Project data
     # print('NOut ', NOut.shape)
     if dataDims == g.dim:
-        gOut, dataOut = projSingle(g, data, dimsToRemove, xs, NOut, process);
+        gOut, dataOut = projSingle(g, data, dimsToRemove, xs, NOut, process)
 
     else: # dataDims == g.dim + 1
-        gOut, _ = projSingle(g, np.empty((0, 0)), dimsToRemove, xs, NOut, process);
+        gOut, _ = projSingle(g, np.empty((0, 0)), dimsToRemove, xs, NOut, process)
 
         # Project data
         if isinstance(data, list):
             numTimeSteps = len(data)
         else:
             numTimeSteps = data.shape[dataDims-1]
-            colonsIn = [[':'] for i in range(g.dim)] #repmat({':'}, 1, g.dim);
+            colonsIn = [[':'] for i in range(g.dim)] #repmat({':'}, 1, g.dim)
 
         # print(f'Nout: {NOut.T.shape}, {dataDims}')
         dataOut = np.zeros(NOut.T.shape + (numTimeSteps, ))
-        colonsOut =  [[':'] for i in range(g.dim)] #repmat({':'}, 1, gOut.dim);
+        colonsOut =  [[':'] for i in range(g.dim)] #repmat({':'}, 1, gOut.dim)
 
         for i in range(numTimeSteps):
             if isinstance(data, list):
-                _, dataOut[colonsOut[:],i] = projSingle(g, data[i], dimsToRemove, xs, NOut, process);
+                _, dataOut[colonsOut[:],i] = projSingle(g, data[i], dimsToRemove, xs, NOut, process)
             else:
-                _, dataOut[colonsOut[:],i] = projSingle(g, data[colonsIn[:],i], dimsToRemove, xs, NOut, process);
+                _, dataOut[colonsOut[:],i] = projSingle(g, data[colonsIn[:],i], dimsToRemove, xs, NOut, process)
 
     return gOut, dataOut
 
@@ -113,7 +113,8 @@ def projSingle(g, data, dims, xs, NOut, process):
        gOut    - grid corresponding to projected data
        dataOut - projected data
 
-     Original by Sylvia; Python by Lekan July 29. 2021
+     Original by Sylvia;
+     Python by Lekan July 29. 2021
     """
 
     # Create ouptut grid by keeping dimensions that we are not collapsing
@@ -129,18 +130,18 @@ def projSingle(g, data, dims, xs, NOut, process):
                 bdry = None, #expand(np.asarray(g.bdry), 1) if isinstance(g.bdry, list) else g.bdry
         ))
         g.bdry = expand(np.asarray(g.bdry), 1) if isinstance(g.bdry, list) else g.bdry
-        gOut.bdry = expand(g.bdry[np.logical_not(dims)], 1) #.squeeze()#.tolist();
+        gOut.bdry = expand(g.bdry[np.logical_not(dims)], 1) #.squeeze()#.tolist()
 
         if numel(NOut) == 1:
-            gOut.N = NOut@ones(gOut.dim, 1);
+            gOut.N = NOut@ones(gOut.dim, 1)
         else:
-            gOut.N = NOut;
+            gOut.N = NOut
 
 
         # Process the grid to populate the remaining fields if necessary
         if process:
             # print('b4 proc: gOut.N ', gOut.N.shape, gOut.N.T)
-            gOut = processGrid(gOut);
+            gOut = processGrid(gOut)
             # print('aft proc: gOut.N ', gOut.N.shape, gOut.N.T)
 
         # Only compute the grid if value function is not requested
@@ -149,43 +150,43 @@ def projSingle(g, data, dims, xs, NOut, process):
 
     # 'min' or 'max'
     if np.char.isnumeric(xs):
-        dimsToProj = np.nonzero(dims)[0];
+        dimsToProj = np.nonzero(dims)[0]
 
         for i in range(len(dimsToProj)-1, -1, -1):
             if xs=='min':
-                data = np.squeeze(np.min(data, dimsToProj[i]));
+                data = np.squeeze(np.min(data, dimsToProj[i]))
             elif xs=='max':
-                data = np.squeeze(np.max(data, dimsToProj[i]));
+                data = np.squeeze(np.max(data, dimsToProj[i]))
             else:
                 logger.fatal('xs must be a vector, ''min'', or ''max''!')
 
-        dataOut = data;
+        dataOut = data
         return gOut, dataOut
 
     # Take a slice
     # Preprocess periodic dimensions
-    g, data = augmentPeriodicData(g, data);
+    g, data = augmentPeriodicData(g, data)
 
-    eval_pt = cell(g.dim, 1);
-    xsi = 1;
+    eval_pt = cell(g.dim, 1)
+    xsi = 1
     for i in range(g.dim):
         if dims[i]:
             # If this dimension is periodic, wrap the input point to the correct period
             if (isfield(g, 'bdry') and isinstance(g.bdry[i], addGhostPeriodic)):
-                period = max(g.vs[i]) - min(g.vs[i]);
+                period = max(g.vs[i]) - min(g.vs[i])
                 while xs[xsi] > max(g.vs[i]):
-                    xs[xsi] -= period;
+                    xs[xsi] -= period
                 while xs[xsi] < min(g.vs[i]):
-                    xs[xsi] += period;
-            eval_pt[i] = xs[xsi];
-            xsi += 1;
+                    xs[xsi] += period
+            eval_pt[i] = xs[xsi]
+            xsi += 1
         else:
-            eval_pt[i] = g.vs[i];
+            eval_pt[i] = g.vs[i]
 
-    temp = np.interp(g.vs[:], data, eval_pt[:]);
+    temp = np.interp(g.vs[:], data, eval_pt[:])
 
-    dataOut = temp.squeeze();
+    dataOut = temp.squeeze()
 
-    dataOut = np.interp(g.vs[np.logical_not(dims)], dataOut, gOut.xs[:]);
+    dataOut = np.interp(g.vs[np.logical_not(dims)], dataOut, gOut.xs[:])
 
     return gOut, dataOut

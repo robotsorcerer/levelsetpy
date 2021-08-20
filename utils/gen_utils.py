@@ -9,6 +9,19 @@ class Bundle(object):
         for var, val in dicko.items():
             object.__setattr__(self, var, val)
 
+    def __dtype__(self):
+        return Bundle
+
+def strcmp(str1, str2):
+    if str1==str2:
+        return True
+    return False
+    
+def isbundle(self, bund):
+    if isinstance(bund, Bundle):
+        return True
+    return False
+
 def isfield(bund, field):
     return True if field in bund.__dict__.keys() else False
 

@@ -11,8 +11,7 @@ def augmentPeriodicData(g, data):
             g.vs[i] = np.concatenate((g.vs[i], g.vs[i][-1] + g.dx[i]), 0);
 
             # Input data; eg. data = cat(:, data, data(:,:,1))
-            colons1 = [[':'] for i in range(g.dim)]
-            colons1[i] = 1;
-            data = np.concatenate((data, data[colons1[:]]), i)
+            to_app = np.expand_dims(data[..., i], i)
+            data = np.concatenate((data, to_app), i)
 
     return g, data

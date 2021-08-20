@@ -2,14 +2,16 @@ import numpy as np
 from math import pi
 from utils import expand, zeros, Bundle, ones
 from grids import createGrid
-from valFuncs import proj, HJIPDE_solve
+from valFuncs import proj, HJIPDE_solve, eval_u
 from visualization import visSetIm
+from InitialConditions import shapeCylinder
+from DynamicalSystems import *
 import matplotlib.pyplot as plt
 
 import logging
 logger = logging.getLogger(__name__)
 
-def tutorial():
+def main():
     """
       Reproduces Sylvia's Tutorial on BRS
          1. Run Backward Reachable Set (BRS) with a goal
@@ -84,9 +86,13 @@ def tutorial():
 
     ## Pack problem parameters
 
+    #do dStep3 here
+    new_params = dict(x=zeros(1, 3), wRange=[-wMax, wMax], speed=speed, \
+                      xhist=zeros(1, 3), uhist=zeros(1,3))
+    dubins_default_params.update(new_params)
+
     # Define dynamic system
-    # obj = DubinsCar(x, wMax, speed, dMax)
-    dCar = DubinsCar(zeros(1, 3), wMax, speed); #do dStep3 here
+    dCar = DubinsCar(**dubins_default_params)
 
     # Put grid and dynamic systems into schemeData
     schemeData = Bundle(dict(grid = g, dynSys = dCar, accuracy = 'high',
@@ -105,30 +111,30 @@ def tutorial():
     ## If you have obstacles, compute them here
 
     ## Compute value function
-    HJIextraArgs = Bundle(dict())
-    HJIextraArgs.visualize = Bundle(dict())
-
-    #HJIextraArgs.visualize = True; #show plot
-    HJIextraArgs.visualize.valueSet = 1;
-    HJIextraArgs.visualize.initialValueSet = 1;
-    HJIextraArgs.visualize.figNum = 1; #set figure number
-    HJIextraArgs.visualize.deleteLastPlot = True; #delete previous plot as you update
-
-    # uncomment if you want to see a 2D slice
-    # HJIextraArgs.visualize.plotData = Bundle(dict())
-    #HJIextraArgs.visualize.plotData.plotDims = [1 1 0]; #plot x, y
-    #HJIextraArgs.visualize.plotData.projpt = [0]; #project at theta = 0
-    #HJIextraArgs.visualize.viewAngle = [0,90]; # view 2D
+    HJIextraArgs = Bundle(dict(
+                            visualize = Bundle(dict(
+                            valueSet = 1,
+                            initialValueSet = 1,
+                            figNum = 1, #set figure number
+                            deleteLastPlot = True, #delete previous plot as you update
+                            plotData = Bundle(dict(
+                            # comment these if you don't want to see a 2D slice
+                            plotDims = [1, 1, 0], #plot x, y
+                            projpt = [0], #project at theta = 0
+                            )),
+                            viewAngle = [0,90], # view 2D
+                            )),
+                            ))
 
     #[data, tau, extraOuts] = ...
     # HJIPDE_solve(data0, tau, schemeData, minWith, extraArgs)
-    [data, tau2, _] = HJIPDE_solve(data0, tau, schemeData, 'none', HJIextraArgs);
+    [data, tau2, _] = HJIPDE_solve(data0, tau, schemeData, 'None', HJIextraArgs);
 
     ## Compute optimal trajectory from some initial state
     if compTraj:
 
         #set the initial state
-        xinit = expand(np.array((2, 2, -pi)), 0)
+        xinit = np.array(([[2, 2, -pi]]))
 
         #check if this initial state is in the BRS/BRT
         #value = eval_u(g, data, x)
@@ -145,7 +151,7 @@ def tutorial():
                                 visualize = True, #show plot
                                 fig_num = 2, #figure number
                                 #we want to see the first two dimensions (x and y)
-                                projDim = expand(np.array((1 1 0)), 0)
+                                projDim = np.array([[1, 1, 0]])
                             ))
 
 
@@ -154,8 +160,7 @@ def tutorial():
 
             # [traj, traj_tau] = ...
             # computeOptTraj(g, data, tau, dynSys, extraArgs)
-            [traj, traj_tau] = ...
-              computeOptTraj(g, dataTraj, tau2, dCar, TrajextraArgs);
+            [traj, traj_tau] = computeOptTraj(g, dataTraj, tau2, dCar, TrajextraArgs);
 
             # fig = plt.gcf()
             # plt.clf()
