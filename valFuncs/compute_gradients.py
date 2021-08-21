@@ -23,6 +23,7 @@ def computeGradients(g, data, dim=None, derivFunc=None):
       dims.fill(True)
 
     if not derivFunc:
+      # this computes the gradients of the value function
       derivFunc = upwindFirstWENO5;
 
 

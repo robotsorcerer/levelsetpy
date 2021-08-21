@@ -12,11 +12,33 @@ class Bundle(object):
     def __dtype__(self):
         return Bundle
 
+def quickarray(start=0, end, step=1):
+    return list(range(start, end, step))
+
+
+def ismember(a, b):
+    # See https://stackoverflow.com/questions/15864082/python-equivalent-of-matlabs-ismember-function
+    bind = {}
+    for i, elt in enumerate(b):
+        if elt not in bind:
+            bind[elt] = i
+    return [bind.get(itm, None) for itm in a]  # None can be replaced by any other "not in b" value
+
+def omin(y, ylast):
+    if numDim(ylast)>1:
+        ylast = ylast.flatten()
+    return min(np.insert(ylast, 0, y))
+
+def omax(y, ylast):
+    if numDim(ylast)>1:
+        ylast = ylast.flatten()
+    return max(np.insert(ylast, 0, y))
+
 def strcmp(str1, str2):
     if str1==str2:
         return True
     return False
-    
+
 def isbundle(self, bund):
     if isinstance(bund, Bundle):
         return True
@@ -100,6 +122,30 @@ def iscell(cs):
         return True
     else:
         return False
+
+def isnumeric(A):
+    if isinstance(A, np.ndarray):
+        dtype = A.dtype
+    else:
+        dtype = type(A)
+
+    acceptable_types=[np.float64, np.float32, np.int64, np.int32, float, int]
+
+    if dtype in acceptable_types:
+        return True
+    return False
+
+def isfloat(A):
+    if isinstance(A, np.ndarray):
+        dtype = A.dtype
+    else:
+        dtype = type(A)
+
+    acceptable_types=[np.float64, np.float32, float]
+
+    if dtype in acceptable_types:
+        return True
+    return False
 
 def isscalar(x):
     if (isinstance(x, np.ndarray) and numel(x)==1):

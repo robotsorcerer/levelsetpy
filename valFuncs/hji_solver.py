@@ -786,7 +786,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
         # # Grid and axis
         # if extraArgs.,viewGrid') and \
-        #         ~extraArgs.visualize.viewGrid
+        #         not extraArgs.visualize.viewGrid
         #     grid off
         #
         #
@@ -856,14 +856,13 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         schemeData.innerData = schemeData;
         schemeData.positive = 0;
 
-
     ## Time integration
     integratorOptions = odeCFLset('factorCFL', 0.8, 'singleStep', 'on');
 
     startTime = cputime();
 
     ## Stochastic additive terms
-    if extraArgs.addGaussianNoiseStandardDeviation:
+    if isfield(extraArgs, 'addGaussianNoiseStandardDeviation'):
         # We are taking all the previous scheme terms and adding noise to it
         # Save all the previous terms as the deterministic component in detFunc
         detFunc = schemeFunc;
@@ -875,10 +874,10 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
         # Create the Hessian term corresponding to white noise diffusion
         stochasticFunc = termTraceHessian;
-        stochasticData.grid = g;
-        stochasticData.L = extraArgs.addGaussianNoiseStandardDeviation.T;
-        stochasticData.R = extraArgs.addGaussianNoiseStandardDeviation;
-        stochasticData.hessianFunc = hessianSecond;
+        stochasticData = Bundle(dict(grid = g,
+                L = extraArgs.addGaussianNoiseStandardDeviation.T,
+                R = extraArgs.addGaussianNoiseStandardDeviation,
+                hessianFunc = hessianSecond))
 
         # Add the (saved) deterministic terms and the (new) stochastic term
         # together into the complete scheme
@@ -898,10 +897,10 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             data = data0.astype(np.float32)
         else:
             data = np.zeros((data0size[0:gDim] +(len(tau), )));
-            data[clns[:], 0] = data0;
+            data[0, ...] = data0;
 
 
-        istart = 2;
+        istart = 1;
     elif numDims(data0) == gDim + 1:
         # Continue an old computation
         if keepLast:
@@ -914,7 +913,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
         # Start at custom starting index if specified
-        if extraArgs.istart:
+        if isfield(extraArgs, 'istart')
             istart = extraArgs.istart;
         else:
             istart = data0size[-1]+1;
@@ -924,21 +923,20 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
 
-    if extraArgs.ignoreBoundary and extraArgs.ignoreBoundary:
+    if isfield(extraArgs,'ignoreBoundary') and extraArgs.ignoreBoundary:
         _, dataTrimmed = truncateGrid(g, data0, g.min+4*g.dx, g.max-4*g.dx);
 
 
     for i in range(istart, len(tau)):
         if not quiet:
-            print('tau(i) = #f ', tau[i])
+            print(f'tau[{i}] {tau[i]}')
 
         ## Variable schemeData
-        if extraArgs.SDModFunc:
-            if extraArgs.SDModParams:
+        if isfield(extraArgs, 'SDModFunc'):
+            if isfield(extraArgs, 'SDModParams'):
                 paramsIn = extraArgs.SDModParams;
             else:
                 paramsIn = [];
-
 
             schemeData = extraArgs.SDModFunc(schemeData, i, tau, data, obstacles, paramsIn);
 
@@ -968,7 +966,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
             if not quiet:
-                print('  Computing [{} {}] \n'.format(tNow, tau[i]))
+                print(f'Computing {tNow}, {tau[i]}')
 
 
 
@@ -989,9 +987,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
             # 1. If not discounting at all OR not discounting using Kene's
             #    method, do normal compMethod first
-            if ~extraArgs.discountMode || \
-                    ~strcmp(extraArgs.discountMode, 'Kene')
-
+            if not isfield(extraArgs, 'discountMode') or not strcmp(extraArgs.discountMode, 'Kene'):
                 #   compMethod
                 # - 'set' or 'none' to compute reachable set (not tube)
                 # - 'zero' or 'minWithZero' to min Hamiltonian with zero
@@ -1002,106 +998,95 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                 # - 'minVWithV0' to do min with original data (default)
                 # - 'maxVWithV0' to do max with original data
 
-                if strcmp(compMethod, 'zero') \
-                        || strcmp(compMethod, 'set')\
-                        || strcmp(compMethod, 'none')
-                    # note: compMethod 'zero' is handled at the beginning of
-                    # the code. compMethod 'set' and 'none' require no
-                    # computation.
-                elif strcmp(compMethod, 'minVOverTime') #Min over Time
-                    y = min(y, yLast);
-                elif strcmp(compMethod, 'maxVOverTime')
-                    y = max(y, yLast);
-                elif strcmp(compMethod, 'minVWithV0')#Min with data0
-                    y = min(y,data0(:));
-                elif strcmp(compMethod, 'maxVWithV0')
-                    y = max(y,data0(:));
-                elif strcmp(compMethod, 'maxVWithL')\
-                        || strcmp(compMethod, 'maxVwithL') \
-                        || strcmp(compMethod, 'maxVWithTarget')
-                    if ~extraArgs.targetFunction
+                # if strcmp(compMethod, 'zero') \
+                #         or strcmp(compMethod, 'set')
+                #         or strcmp(compMethod, 'none'):
+                #     # note: compMethod 'zero' is handled at the beginning of
+                #     # the code. compMethod 'set' and 'none' require no
+                #     # computation.
+                #     pass
+                if strcmp(compMethod, 'minVOverTime'):  #Min over Time
+                    y = omin(y, yLast)
+                elif strcmp(compMethod, 'maxVOverTime'):
+                    y = omax(y, yLast)
+                elif strcmp(compMethod, 'minVWithV0'): #Min with data0
+                    y = omin(y,data0)
+                elif strcmp(compMethod, 'maxVWithV0'):
+                    y = max(y,data0)
+                elif strcmp(compMethod, 'maxVWithL'): \
+                        or strcmp(compMethod, 'maxVwithL') \
+                        or strcmp(compMethod, 'maxVWithTarget'):
+                    if not isfield(extraArgs, 'targetFunction'):
                         error('Need to define target function l(x)!')
 
-                    if numDims(targets) == gDim
-                        y = max(y, targets(:));
-                    else
-                        target_i = targets(clns[:], i);
-                        y = max(y, target_i(:));
+                    if numDims(targets) == gDim:
+                        y = omax(y, targets)
+                    else:
+                        target_i = targets[i, ...];
+                        y = omax(y, target_i);
 
-                elif strcmp(compMethod, 'minVWithL') \
-                        || strcmp(compMethod, 'minVwithL') \
-                        || strcmp(compMethod, 'minVWithTarget')
-                    if ~extraArgs.targetFunction
+                elif strcmp(compMethod, 'minVWithL') or  strcmp(compMethod, 'minVwithL') or  strcmp(compMethod, 'minVWithTarget'):
+                    if not isfield(extraArgs, 'targetFunction'):
                         error('Need to define target function l(x)!')
 
-                    if numDims(targets) == gDim
-                        y = min(y, targets(:));
-                    else
-                        target_i = targets(clns[:], i);
-                        y = min(y, target_i(:));
+                    if numDims(targets) == gDim:
+                        y = omin(y, targets)
+                    else:
+                        target_i = targets[i,...];
+                        y = omin(y, target_i)
 
 
-                else
+                else:
                     error('Check which compMethod you are using')
 
 
 
                 # 2. If doing discounting but not using Kene's method, default
                 #    to Jaime's method from ICRA 2019 paper
-                if extraArgs.discountFactor and \
+                if isfield(extraArgs, 'discountFactor') and \
                         extraArgs.discountFactor and \
-                        (~extraArgs.discountMode || \
-                        strcmp(extraArgs.discountMode,'Kene'))
-                    y = extraArgs.discountFactor*y;
+                        (not eisfield(extraArgs, 'discountMode') or \
+                        strcmp(extraArgs.discountMode,'Kene')):
+                    y *=extraArgs.discountFactor
 
-                    if extraArgs.targetFunction
-                        y = y + \
-                            (1-extraArgs.discountFactor).*extraArgs.targets(:);
-                    else
-                        y = y + \
-                            (1-extraArgs.discountFactor).*data0(:);
-
-
-
-
+                    if isfield(extraArgs, 'targetFunction'):
+                        y +=(1-extraArgs.discountFactor)*extraArgs.targets.flatten();
+                    else:
+                        y +=(1-extraArgs.discountFactor)*data0.flatten();
 
                 # 3. If we are doing Kene's discounting from minimum discounted
                 #    rewards paper, do that now and do compmethod with it
-            elif extraArgs.discountFactor and \
-                    extraArgs.discountFactor and \
-                    extraArgs.discountMode and \
-                    strcmp(extraArgs.discountMode,'Kene')
+            elif isfield(extraArgs, 'discountFactor') and \
+                extraArgs.discountFactor and \
+                isfield(extraArgs, 'discountMode') and \
+                strcmp(extraArgs.discountMode,'Kene'):
 
-                if ~extraArgs.targetFunction
+                if not isfield(extraArgs, 'targetFunction'):
                     error('Need to define target function l(x)!')
 
 
                 # move everything below 0
-                maxVal = max(abs(extraArgs.targetFunction(:)));
+                maxVal = np.max(np.abs(extraArgs.targetFunction));
                 ytemp = y - maxVal;
                 targettemp = extraArgs.targetFunction - maxVal;
 
                 # Discount
-                ytemp = extraArgs.discountFactor*ytemp;
+                ytemp *= extraArgs.discountFactor;
 
-                if strcmp(compMethod, 'minVWithL') \
-                        || strcmp(compMethod, 'minVwithL') \
-                        || strcmp(compMethod, 'minVWithTarget')
+                if strcmp(compMethod, 'minVWithL')  or strcmp(compMethod, 'minVwithL')  or strcmp(compMethod, 'minVWithTarget'):
                     # Take min
-                    ytemp = min(ytemp, targettemp(:));
+                    ytemp = omin(ytemp, targettemp)
 
-                elif strcmp(compMethod, 'maxVWithL')\
-                        || strcmp(compMethod, 'maxVwithL') \
-                        || strcmp(compMethod, 'maxVWithTarget')
+                elif strcmp(compMethod, 'maxVWithL') or strcmp(compMethod, 'maxVwithL')  or strcmp(compMethod, 'maxVWithTarget'):
                     # Take max
-                    ytemp = max(ytemp, targettemp(:));
-                else
+                    ytemp = omax(ytemp, targettemp);
+                else:
                     error('check your compMethod!')
 
 
                 # restore height
                 y = ytemp + maxVal;
-            else
+            else:
                 # if this didn't work, check why
                 error('check your discountFactor and discountMode')
 
@@ -1110,123 +1095,107 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
             # "Mask" using obstacles
-            if extraArgs.obstacleFunction
-                if strcmp(obsMode, 'time-varying')
-                    obstacle_i = obstacles(clns[:], i);
+            if  isfield(extraArgs, 'obstacleFunction'):
+                if strcmp(obsMode, 'time-varying'):
+                    obstacle_i = obstacles[i,...];
 
-                y = max(y, -obstacle_i(:));
+                y = omax(y, -obstacle_i);
 
 
 
             # Update target function
-            if extraArgs.targetFunction
-                if strcmp(targMode, 'time-varying')
-                    target_i = targets(clns[:], i);
-
-
-
-
+            if isfield(extraArgs, 'targetFunction'):
+                if strcmp(targMode, 'time-varying'):
+                    target_i = targets[i.,...]
 
 
         # Reshape value function
-        data_i = reshape(y, g.shape);
-        if keepLast
+        data_i = y.reshape(g.shape)
+        if keepLast:
             data = data_i;
-        elif lowMemory
-            if flipOutput
-                data = cat(g.dim+1, reshape(y, g.shape), data);
-            else
-                data = cat(g.dim+1, data, reshape(y, g.shape));
-
-
-        else
-            data(clns[:], i) = data_i;
+        elif lowMemory:
+            if flipOutput:
+                data = np.concatenate((y.reshape(g.shape), data), g.dim+1)
+            else:
+                data = np.concatenate((data, y.reshape(g.shape)), g.dim+1)
+        else:
+            data[i,...] = data_i;
 
 
         # If we're stopping once converged, print how much change there was in
         # the last iteration
-        if stopConverge
-            if extraArgs.')&\
-                    extraArgs.ignoreBoundary
-                [~, dataNew] = truncateGrid(\
-                    g, data_i, g.min+4*g.dx, g.max-4*g.dx);
-                change = max(abs(dataNew(:)-dataTrimmed(:)));
+        if stopConverge:
+            if  isfield(extraArgs,'ignoreBoundary')  and extraArgs.ignoreBoundary:
+                _ , dataNew = truncateGrid(g, data_i, g.min+4*g.dx, g.max-4*g.dx);
+                change = np.max(np.abs(dataNew.flatten()-dataTrimmed.flatten()));
                 dataTrimmed = dataNew;
-                if ~quiet
-                    print('Max change since last iteration: #f\n', change)
+                if not quiet:
+                    info(f'Max change since last iteration: {change}')
 
-            else
-                change = max(abs(y - y0(:)));
-                if ~quiet
-                    print('Max change since last iteration: #f\n', change)
-
-
-
+            else:
+                change = np.max(np.abs(y - y0.flatten()));
+                if not quiet:
+                    info(f'Max change since last iteration: {change}')
 
         ## If commanded, stop the reachable set computation once it contains
         # the initial state.
-        if extraArgs.stopInit
+        if isfield(extraArgs, 'stopInit'):
             initValue = eval_u(g, data_i, extraArgs.stopInit);
-            if ~isnan(initValue) and initValue <= 0
-                extraOuts.stoptau = tau(i);
-                tau(i+1:) = [];
+            if not np.isnan(initValue) and initValue <= 0:
+                extraOuts.stoptau = tau[i];
+                tau[i+1:] = []; # check this
 
-                if ~lowMemory and ~keepLast
-                    data(clns[:], i+1:size(data, gDim+1)) = [];
+                if not lowMemory and not keepLast:
+                    data[i+1:size(data, gDim+1), ...] = [];
 
                 break
 
-
-
         ## Stop computation if reachable set contains a "stopSet"
-        if exist('stopSet', 'var')
-            dataInds = find(data_i(:) <= stopLevel);
+        if 'stopSet' in locals() or  'stopSet' in globals():
+            dataInds = np.nonzero(data_i <= stopLevel);
 
-            if extraArgs.stopSetInclude
-                stopSetFun = @all;
-            else
-                stopSetFun = @any;
+            if isfield(extraArgs, 'stopSetInclude'):
+                stopSetFun = np.all;
+            else:
+                stopSetFun = np.any;
 
 
             if stopSetFun(ismember(setInds, dataInds))
-                extraOuts.stoptau = tau(i);
-                tau(i+1:) = [];
+                extraOuts.stoptau = tau[i];
+                tau[i+1:] = [];
 
-                if ~lowMemory and ~keepLast
-                    data(clns[:], i+1:size(data, gDim+1)) = [];
+                if not lowMemory and not keepLast:
+                    data[i+1:size(data, gDim+1), ...] = [];
 
                 break
 
 
 
         ## Stop computation if we've converged
-        if stopConverge and change < convergeThreshold
+        if stopConverge and change < convergeThreshold:
 
-            if extraArgs.discountFactor and \
-                    extraArgs.discountFactor and \
-                    extraArgs.discountAnneal and \
-                    extraArgs.discountFactor ~= 1
+            if isfield(extraArgs, 'discountFactor') and \
+                extraArgs.discountFactor and \
+                isfield(extraArgs, 'discountAnneal') and \
+                extraArgs.discountFactor != 1:
 
-                if strcmp(extraArgs.discountAnneal, 'soft')
+                if strcmp(extraArgs.discountAnneal, 'soft'):
                     extraArgs.discountFactor = 1-((1-extraArgs.discountFactor)/2);
 
                     if abs(1-extraArgs.discountFactor) < .00005
                         extraArgs.discountFactor = 1;
 
-                    print('\nDiscount factor: #f\n\n', \
-                        extraArgs.discountFactor)
-                elif strcmp(extraArgs.discountAnneal, 'hard') \
-                        || extraArgs.discountAnneal==1
+                    info(f'Discount factor: {extraArgs.discountFactor}')
+                elif strcmp(extraArgs.discountAnneal, 'hard') or extraArgs.discountAnneal==1:
                     extraArgs.discountFactor = 1;
-                    print('\nDiscount factor: #f\n\n', \
-                        extraArgs.discountFactor)
+                    info(f'Discount factor: {extraArgs.discountFactor}')
 
-            else
-                extraOuts.stoptau = tau(i);
-                tau(i+1:) = [];
+            else:
+                extraOuts.stoptau = tau[i];
+                tau[i+1:] = [];
 
-                if ~lowMemory and ~keepLast
-                    data(clns[:], i+1:size(data, gDim+1)) = [];
+                if not lowMemory and not keepLast:
+                    data[i+1:size(data, gDim+1), ...] = [];
 
                 break
 
@@ -1234,91 +1203,86 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
         ## If commanded, visualize the level set.
 
-        if (extraArgs.visualize and \
-                (isstruct(extraArgs.visualize) || extraArgs.visualize == 1))\
-                || (extraArgs.makeVideo and extraArgs.makeVideo)
-            timeCount = timeCount + 1;
+        if (isfield(extraArgs, 'visualize')  and \
+                (isstruct(extraArgs.visualize) or extraArgs.visualize == 1)) \
+                or (extraArgs.makeVideo and extraArgs.makeVideo):
+            timeCount += 1;
 
             # Number of dimensions to be plotted and to be projected
-            pDims = nnz(plotDims);
-            if isnumeric(projpt)
-                projDims = length(projpt);
-            else
+            pDims = np.nonzero(plotDims);
+            if isnumeric(projpt.dtype):
+                projDims = len(projpt);
+            else:
                 projDims = gDim - pDims;
 
 
             # Basic Checks
-            if(length(plotDims) ~= gDim || projDims ~= (gDim - pDims))
+            if(len(plotDims) != gDim or projDims != (gDim - pDims)):
                 error('Mismatch between plot and grid dimensions!');
 
 
 
             #---Delete Previous Plot-------------------------------------------
 
-            if deleteLastPlot
-                if extraOuts.hOS and strcmp(obsMode, 'time-varying')
-                    if iscell(extraOuts.hOS)
-                        for hi = 1:length(extraOuts.hOS)
-                            delete(extraOuts.hOS{hi})
+            if deleteLastPlot:
+                if isfield(extraOuts, 'hOS') and strcmp(obsMode, 'time-varying'):
+                    if iscell(extraOuts.hOS):
+                        for hi in range(len(extraOuts.hOS)):
+                            del extraOuts.hOS[hi]
 
-                    else
-                        delete(extraOuts.hOS);
+                    else:
+                        del extraOuts.hOS
 
-
-
-                if extraOuts.hOF and strcmp(obsMode, 'time-varying')
-                    if iscell(extraOuts.hOF)
-                        for hi = 1:length(extraOuts.hOF)
-                            delete(extraOuts.hOF{hi})
-
-                    else
-                        delete(extraOuts.hOF);
+                if extraOuts.hOF and strcmp(obsMode, 'time-varying'):
+                    if iscell(extraOuts.hOF):
+                        for hi in range(len(extraOuts.hOF)):
+                            del extraOuts.hOS[hi]
+                    else:
+                        del extraOuts.hOS
 
 
-                if extraOuts.hTS and strcmp(targMode, 'time-varying')
-                    if iscell(extraOuts.hTS)
-                        for hi = 1:length(extraOuts.hTS)
-                            delete(extraOuts.hTS{hi})
+                if extraOuts.hTS and strcmp(targMode, 'time-varying'):
+                    if iscell(extraOuts.hTS):
+                        for hi in range(len(extraOuts.hTS)):
+                            del extraOuts.hTS[hi]
 
-                    else
-                        delete(extraOuts.hTS);
+                    else:
+                        del extraOuts.hTS
 
 
 
-                if extraOuts.hTF and strcmp(targMode, 'time-varying')
-                    if iscell(extraOuts.hTF)
-                        for hi = 1:length(extraOuts.hTF)
-                            delete(extraOuts.hTF{hi})
+                if extraOuts.hTF and strcmp(targMode, 'time-varying'):
+                    if iscell(extraOuts.hTF):
+                        for hi in range(len(extraOuts.hTF)):
+                            del extraOuts.hTF[hi]
 
-                    else
-                        delete(extraOuts.hTF);
-
-
-                if extraOuts.hVSHeat
-                    if iscell(extraOuts.hVSHeat)
-                        for hi = 1:length(extraOuts.hVSHeat)
-                            delete(extraOuts.hVSHeat{hi})
-
-                    else
-                        delete(extraOuts.hVSHeat);
+                    else:
+                        del extraOuts.hTF
 
 
-                if extraOuts.hVS
-                    if iscell(extraOuts.hVS)
-                        for hi = 1:length(extraOuts.hVS)
-                            delete(extraOuts.hVS{hi})
+                if isfield(extraOuts, 'hVSHeat'):
+                    if iscell(extraOuts.hVSHeat):
+                        for hi in range(len(extraOuts.hVSHeat)):
+                            del extraOuts.hVSHeat[hi]
 
-                    else
-                        delete(extraOuts.hVS);
+                    else:
+                        del extraOuts.hVSHeat
 
 
-                if extraOuts.hVF
-                    if iscell(extraOuts.hVF)
-                        for hi = 1:length(extraOuts.hVF)
-                            delete(extraOuts.hVF{hi})
+                if isfield(extraOuts, 'hVS'):
+                    if iscell(extraOuts.hVS):
+                        for hi in range(len(extraOuts.hVS)):
+                            del extraOuts.hVS[hi]
+                    else:
+                        del extraOuts.hVS
 
-                    else
-                        delete(extraOuts.hVF);
+
+                if isfield(extraOuts, 'hVF'):
+                    if iscell(extraOuts.hVF):
+                        for hi in range(len(extraOuts.hVF)):
+                            del extraOuts.hVF[hi]
+                    else:
+                        del extraOuts.hVF
 
 
 
@@ -1327,60 +1291,58 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             #---Perform Projections--------------------------------------------
 
             # Project
-            if projDims == 0
+            if projDims == 0:
                 gPlot = g;
                 dataPlot = data_i;
 
-                if strcmp(obsMode, 'time-varying')
+                if strcmp(obsMode, 'time-varying'):
                     obsPlot = obstacle_i;
 
-
-                if strcmp(targMode, 'time-varying')
+                if strcmp(targMode, 'time-varying'):
                     targPlot = target_i;
 
-            else
+            else:
                 # if projpt is a cell, project each dimensions separately. This
                 # allows us to take the union/intersection through some dimensions
                 # and to project at a particular slice through other dimensions.
-                if iscell(projpt)
-                    idx = find(plotDims==0);
+                if iscell(projpt):
+                    idx = np.nonzero(plotDims==0);
                     plotDimsTemp = ones(size(plotDims));
                     gPlot = g;
                     dataPlot = data_i;
-                    if strcmp(obsMode, 'time-varying')
+                    if strcmp(obsMode, 'time-varying'):
                         obsPlot = obstacle_i;
 
 
-                    if strcmp(targMode, 'time-varying')
+                    if strcmp(targMode, 'time-varying'):
                         targPlot = target_i;
 
 
-                    for ii = length(idx):-1:1
-                        plotDimsTemp(idx(ii)) = 0;
-                        if strcmp(obsMode, 'time-varying')
-                            [~, obsPlot] = proj(gPlot, obsPlot, ~plotDimsTemp,\
-                                projpt{ii});
+                    for ii in range(len(idx)-1, -1, -1):
+                        plotDimsTemp[idx[ii]] = 0;
+                        if strcmp(obsMode, 'time-varying'):
+                            _ , obsPlot = proj(gPlot, obsPlot, np.logical_not(plotDimsTemp),\
+                                projpt[ii]);
 
 
-                        if strcmp(targMode, 'time-varying')
-                            [~, targPlot] = proj(gPlot, targPlot, ~plotDimsTemp,\
-                                projpt{ii});
+                        if strcmp(targMode, 'time-varying'):
+                            _ , targPlot = proj(gPlot, targPlot, np.logical_not(plotDimsTemp),\
+                                projpt[ii]);
 
 
-                        [gPlot, dataPlot] = proj(gPlot, dataPlot, ~plotDimsTemp,\
-                            projpt{ii});
+                        gPlot, dataPlot = proj(gPlot, dataPlot, np.logical_not(plotDimsTemp), projpt[ii]);
                         plotDimsTemp = ones(1,gPlot.dim);
 
 
-                else
-                    [gPlot, dataPlot] = proj(g, data_i, ~plotDims, projpt);
+                else:
+                    gPlot, dataPlot = proj(g, data_i, np.logical_not(plotDims), projpt);
 
                     if strcmp(obsMode, 'time-varying')
-                        [~, obsPlot] = proj(g, obstacle_i, ~plotDims, projpt);
+                    _ , obsPlot = proj(g, obstacle_i, np.logical_not(plotDims), projpt);
 
 
                     if strcmp(targMode, 'time-varying')
-                        [~, targPlot] = proj(g, obstacle_i, ~plotDims, projpt);
+                    _ , targPlot = proj(g, obstacle_i, np.logical_not(plotDims), projpt);
 
 
 
@@ -1393,169 +1355,152 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
             #---Visualize Target Set-----------------------------------------------
             if strcmp(targMode, 'time-varying') \
-                    and extraArgs.,targetSet') \
-                    and extraArgs.visualize.targetSet
+                    and isfield(extraArgs.visualize, 'targetSet') \
+                    and extraArgs.visualize.targetSet:
 
                 # Visualize obstacle set (hOS)
                 extraOuts.hTS = visSetIm(gPlot, targPlot, \
                     extraArgs.visualize.plotColorTS, sliceLevel, eAT_visSetIm);
 
-                if extraArgs.,'otAlphaTS')
+                if isfield(extraArgs.visualize,'plotAlphaTS'):
                     extraOuts.hTS.FaceAlpha = extraArgs.visualize.plotAlphaTS;
 
 
 
 
             #---Visualize Target Function------------------------------------------
-            if  strcmp(targMode, 'time-varying') \
-                    and extraArgs.,targetFunction')\
-                    and extraArgs.visualize.targetFunction
+            if  strcmp(targMode, 'time-varying')  and isfield(extraArgs.visualize, 'targetSet')  and extraArgs.visualize.targetFunction:
 
                 # Visualize function
-                [extraOuts.hTF]= visFuncIm(gPlot,targPlot,\
-                    extraArgs.visualize.plotColorTF,\
-                    extraArgs.visualize.plotAlphaTF);
+                extraOuts.hTF= visFuncIm(gPlot,targPlot, extraArgs.visualize.plotColorTF, extraArgs.visualize.plotAlphaTF);
 
 
             ## Visualize Obstacle Function/Set
 
             #---Visualize Obstacle Set-----------------------------------------
             if strcmp(obsMode, 'time-varying') \
-                    and extraArgs.,obstacleSet') \
-                    and extraArgs.visualize.obstacleSet
+                    and isfield(extraArgs.visualize, 'obstacleSet') \
+                    and extraArgs.visualize.obstacleSet:
 
                 # Visualize obstacle set (hOS)
                 extraOuts.hOS = visSetIm(gPlot, obsPlot, \
                     extraArgs.visualize.plotColorOS, sliceLevel, eAO_visSetIm);
 
-                if extraArgs.,'otAlphaOS')
+                if isfield(extraArgs.visualize,'plotAlphaOS'):
                     extraOuts.hOS.FaceAlpha = extraArgs.visualize.plotAlphaOS;
-
-
 
             #---Visualize Obstacle Function------------------------------------
             if  strcmp(obsMode, 'time-varying') \
-                    and extraArgs.visualize.obstacleFunction
+                    and extraArgs.visualize.obstacleFunction:
 
                 # Visualize function
-                [extraOuts.hOF]= visFuncIm(gPlot,-obsPlot,\
+                extraOuts.hOF= visFuncIm(gPlot,-obsPlot,\
                     extraArgs.visualize.plotColorOF,\
                     extraArgs.visualize.plotAlphaOF);
 
             ## Visualize Value Function/Set
             #---Visualize Value Set Heat Map-----------------------------------
-            if extraArgs.,valueSetHeatMap') and\
+            if isfield(extraArgs.visualize, 'valueSetHeatMap') and\
                     extraArgs.visualize.valueSetHeatMap
-                extraOuts.hVSHeat = imagesc(\
-                    gPlot.vs{1},gPlot.vs{2},dataPlot,clims);
+                extraOuts.hVSHeat = plt.imshow(np.vstack((gPlot.vs[0],gPlot.vs[1])),cmap=dataPlot,\
+                    vmin=clims[0], vmax=clims[-1]);
                 #colorbar
 
             #---Visualize Value Set--------------------------------------------
-            if extraArgs.,valueSet') and\
-                    extraArgs.visualize.valueSet
+            if extraArgs.,valueSet') and extraArgs.visualize.valueSet:
 
                 extraOuts.hVS = visSetIm(gPlot, dataPlot, \
                     extraArgs.visualize.plotColorVS, sliceLevel, eAT_visSetIm);
 
 
-            if extraArgs.,'otAlphaVS')
+            if isfield(extraArgs.visualize,'plotAlphaVS'):
                 extraOuts.hVS.FaceAlpha = extraArgs.visualize.plotAlphaVS;
 
             #---Visualize Value Function---------------------------------------
-            if extraArgs.,valueFunction') and \
-                    extraArgs.visualize.valueFunction
+            if isfield(extraArgs.visualize, 'valueFunction') and \
+                    extraArgs.visualize.valueFunction:
                 # Visualize Target function (hTF)
-                [extraOuts.hVF]= visFuncIm(gPlot,dataPlot,\
-                    extraArgs.visualize.plotColorVF,\
-                    extraArgs.visualize.plotAlphaVF);
+                extraOuts.hVF= visFuncIm(gPlot,dataPlot, extraArgs.visualize.plotColorVF, extraArgs.visualize.plotAlphaVF);
 
 
-
-            #---Update Title---------------------------------------------------
-            if ~extraArgs.,dtTime') and\
-                    ~extraArgs.,convergeTitle')
-                title(['t = ' num2str(tNow,'#4.2f') ' s'])
-            elif extraArgs.,dtTime') and floor(\
-                    extraArgs.visualize.dtTime/((tau()-tau(1))/length(tau))) \
-                    == timeCount
-
-                title(['t = ' num2str(tNow,'#4.2f') ' s'])
-                timeCount = 0;
-            elif extraArgs.')&\
-                    extraArgs.stopConverge and\
-                    extraArgs.,convergeTitle') and\
-                    extraArgs.visualize.convergeTitle
-                title(['t = ' num2str(tNow, '#4.2f') \
-                    ' s, max change = ' num2str(change,'#4.4f')])
-            else
-                title(['t = ' num2str(tNow,'#4.2f') ' s'])
-
-            drawnow;
-
-
-            #---Save Video, Figure---------------------------------------------
-            if extraArgs.makeVideo and extraArgs.makeVideo
-                current_frame = getframe(gcf); #gca does just the plot
-                writeVideo(vout,current_frame);
-
-
-            if extraArgs.,figFilename')
-                export_fig(sprintf('#s#d', \
-                    extraArgs.visualize.figFilename, i), '-png')
+            # #---Update Title---------------------------------------------------
+            # if not isfield(extraArgs.visualize, 'dtTime') and not isfield(extraArgs.visualize, 'convergeTitle'):
+            #     title(f't = {tNow}')
+            # elif isfield(extraArgs.visualize, 'dtTime') and np.floor(\
+            #         extraArgs.visualize.dtTime/((tau()-tau(1))/length(tau)))  == timeCount :
+            #
+            #     title(['t = ' num2str(tNow,'#4.2f') ' s'])
+            #     timeCount = 0;
+            # elif isfield(extraArgs,'stopConverge') and  extraArgs.stopConverge and
+            #         extraArgs.,convergeTitle') and
+            #         extraArgs.visualize.convergeTitle
+            #     title(['t = ' num2str(tNow, '#4.2f') \
+            #         ' s, max change = ' num2str(change,'#4.4f')])
+            # else
+            #     title(['t = ' num2str(tNow,'#4.2f') ' s'])
+            #
+            # drawnow;
+            #
+            #
+            # #---Save Video, Figure---------------------------------------------
+            # if extraArgs.makeVideo and extraArgs.makeVideo
+            #     current_frame = getframe(gcf); #gca does just the plot
+            #     writeVideo(vout,current_frame);
+            #
+            #
+            # if extraArgs.,figFilename')
+            #     export_fig(sprintf('#s#d', \
+            #         extraArgs.visualize.figFilename, i), '-png')
 
 
+        # ## Save the results if needed
+        # if extraArgs.saveFilename
+        #     if mod(i, extraArgs.saveFrequency) == 0
+        #         ilast = i;
+        #         save(extraArgs.saveFilename, 'data', 'tau', 'ilast', '-v7.3')
 
 
-        ## Save the results if needed
-        if extraArgs.saveFilename
-            if mod(i, extraArgs.saveFrequency) == 0
-                ilast = i;
-                save(extraArgs.saveFilename, 'data', 'tau', 'ilast', '-v7.3')
+    # ## Finish up
+    # if extraArgs.discountFactor and extraArgs.discountFactor
+    #     extraOuts.discountFactor = extraArgs.discountFactor;
 
 
-
-
-    ## Finish up
-    if extraArgs.discountFactor and extraArgs.discountFactor
-        extraOuts.discountFactor = extraArgs.discountFactor;
-
-
-    Time = cputime;
-    if ~quiet
-        print('Total execution time #g seconds ', Time - startTime);
-
-
-    if extraArgs.makeVideo and extraArgs.makeVideo
-        vout.close
+    # Time = cputime;
+    # if not quiet
+    #     print('Total execution time #g seconds ', Time - startTime);
+    #
+    #
+    # if extraArgs.makeVideo and extraArgs.makeVideo
+    #     vout.close
 
     return data, tau, extraOuts
 
-    def getNumericalFuncs(dissType='global', accuracy='medium'):
-        # Dissipation
-        if (dissType == 'global'):
-            dissFunc = artificialDissipationGLF
-        # elif (dissType == 'local'):
-        #     dissFunc = artificialDissipationLLF
-        # elif (dissType == 'locallocal'):
-        #     dissFunc = artificialDissipationLLLF
-        # else:
-            error('Unknown dissipation function #s'.format(dissType))
+def getNumericalFuncs(dissType='global', accuracy='medium'):
+    # Dissipation
+    if (dissType == 'global'):
+        dissFunc = artificialDissipationGLF
+    # elif (dissType == 'local'):
+    #     dissFunc = artificialDissipationLLF
+    # elif (dissType == 'locallocal'):
+    #     dissFunc = artificialDissipationLLLF
+    # else:
+        error('Unknown dissipation function #s'.format(dissType))
 
 
-        # Accuracy
-        # if accuracy is 'low':
-        #     derivFunc = upwindFirstFirst
-        #     integratorFunc = odeCFL1
-        if accuracy is 'medium':
-            derivFunc = upwindFirstENO2
-            integratorFunc = odeCFL2
-        # elif accuracy is 'high':
-        #     derivFunc = upwindFirstENO3
-        #     integratorFunc = odeCFL3
-        # elif accuracy is 'veryHigh':
-        #     derivFunc = upwindFirstWENO5
-        #     integratorFunc = odeCFL3
-        else:
-            error('Unknown accuracy level #s'.format(accuracy))
+    # Accuracy
+    # if accuracy is 'low':
+    #     derivFunc = upwindFirstFirst
+    #     integratorFunc = odeCFL1
+    if accuracy is 'medium':
+        derivFunc = upwindFirstENO2
+        integratorFunc = odeCFL2
+    # elif accuracy is 'high':
+    #     derivFunc = upwindFirstENO3
+    #     integratorFunc = odeCFL3
+    # elif accuracy is 'veryHigh':
+    #     derivFunc = upwindFirstWENO5
+    #     integratorFunc = odeCFL3
+    else:
+        error('Unknown accuracy level #s'.format(accuracy))
 
-        return dissFunc, integratorFunc, derivFunc
+    return dissFunc, integratorFunc, derivFunc

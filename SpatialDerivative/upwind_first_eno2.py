@@ -46,7 +46,7 @@ def upwindFirstENO2(grid, data, dim, generateAll=0):
     if((dim < 0) or (dim > grid.dim)):
         error('Illegal dim parameter')
 
-    dxInv = 1 / grid.dx[dim]
+    dxInv = np.divide(1, grid.dx[dim])
 
     # How big is the stencil?
     stencil = 2

@@ -70,7 +70,7 @@ def computeOptTraj(g, data, tau, dynSys, extraArgs=Bundle({})):
     traj = np.empty((g.dim, tauLength))
     traj.fill(np.nan)
     traj[:,0] = dynSys.x;
-    tEarliest = 1;
+    tEarliest = 0;
 
     while iter <= tauLength:
         # Determine the earliest time that the current state is in the reachable set

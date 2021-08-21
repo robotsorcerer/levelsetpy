@@ -1,63 +1,49 @@
-function alpha = genericPartial(t, data, derivMin, derivMax, schemeData, dim)
-% alpha = genericPartial(t, data, derivMin, derivMax, schemeData, dim)
+from utils import *
 
-g = schemeData.grid;
-dynSys = schemeData.dynSys;
+def genericPartial(t, data, derivMin, derivMax, schemeData, dim):
+    g = schemeData.grid
+    dynSys = schemeData.dynSys
 
-if ismethod(dynSys, 'partialFunc')
-%   disp('Using partial function from dynamical system')
-  alpha = dynSys.partialFunc(t, data, derivMin, derivMax, schemeData, dim);
-  return
-end
+    if callable(dynSys, 'partialFunc'):
+        alpha = dynSys.partialFunc(t, data, derivMin, derivMax, schemeData, dim)
+        return alpha
 
-if ~isfield(schemeData, 'uMode')
-  schemeData.uMode = 'min';
-end
+    if not isfield(schemeData, 'uMode'):
+        schemeData.uMode = 'min'
 
-if ~isfield(schemeData, 'dMode')
-  schemeData.dMode = 'min';
-end
+    if not isfield(schemeData, 'dMode'):
+      schemeData.dMode = 'min'
 
-% TIdim = [];
-% dims = 1:dynSys.nx;
-% if isfield(schemeData, 'MIEdims')
-%   TIdim = schemeData.TIdim;
-%   dims = schemeData.MIEdims;
-% end
+    ## Compute control
+    if isfield(schemeData, 'uIn'):
+        # Control
+        uU = schemeData.uIn
+        uL = schemeData.uIn
 
-% x = cell(dynSys.nx, 1);
-% x(dims) = g.xs;
+    else:
+        # Optimal control assuming maximum deriv
+        uU = dynSys.get_opt_u(t, g.xs, derivMax, schemeData.uMode)
 
-%% Compute control
-if isfield(schemeData, 'uIn')
-  % Control
-  uU = schemeData.uIn;
-  uL = schemeData.uIn;
+        # Optimal control assuming minimum deriv
+        uL = dynSys.get_opt_u(t, g.xs, derivMin, schemeData.uMode)
 
-else
-  % Optimal control assuming maximum deriv
-  uU = dynSys.optCtrl(t, g.xs, derivMax, schemeData.uMode);
+    ## Compute disturbance
+    if isfield(schemeData, 'dIn'):
+        dU = schemeData.dIn
+        dL = schemeData.dIn
 
-  % Optimal control assuming minimum deriv
-  uL = dynSys.optCtrl(t, g.xs, derivMin, schemeData.uMode);
-end
+    else:
+        dU = dynSys.get_opt_v(t, g.xs, derivMax, schemeData.dMode)
+        dL = dynSys.get_opt_v(t, g.xs, derivMin, schemeData.dMode)
 
-%% Compute disturbance
-if isfield(schemeData, 'dIn')
-  dU = schemeData.dIn;
-  dL = schemeData.dIn;
+    ## Compute alpha
+    dxUU = dynSys.update_dynamics(schemeData.grid.xs, uU, dU, t=t)
+    dxUL = dynSys.update_dynamics(schemeData.grid.xs, uU, dL, t=t)
+    dxLL = dynSys.update_dynamics(schemeData.grid.xs, uL, dL, t=t)
+    dxLU = dynSys.update_dynamics(schemeData.grid.xs, uL, dU, t=t)
 
-else
-  dU = dynSys.optDstb(t, g.xs, derivMax, schemeData.dMode);
-  dL = dynSys.optDstb(t, g.xs, derivMin, schemeData.dMode);
-end
+    alpha = omax(np.abs(dxUU[dim]), np.abs(dxUL[dim]))
+    alpha = omax(alpha, np.abs(dxLL[dim]))
+    alpha = omax(alpha, np.abs(dxLU[dim]))
 
-%% Compute alpha
-dxUU = dynSys.dynamics(t, schemeData.grid.xs, uU, dU);
-dxUL = dynSys.dynamics(t, schemeData.grid.xs, uU, dL);
-dxLL = dynSys.dynamics(t, schemeData.grid.xs, uL, dL);
-dxLU = dynSys.dynamics(t, schemeData.grid.xs, uL, dU);
-alpha = max(abs(dxUU{dim}), abs(dxUL{dim}));
-alpha = max(alpha, abs(dxLL{dim}));
-alpha = max(alpha, abs(dxLU{dim}));
-end
+    return alpha

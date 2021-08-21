@@ -1,87 +1,59 @@
-function hamValue = genericHam(t, data, deriv, schemeData)
-% function hamValue = genericHam(t, data, deriv, schemeData)
+from utils import *
 
-%% Input unpacking
-dynSys = schemeData.dynSys;
+def genericHam(t, data, deriv, schemeData):
 
-if ~isfield(schemeData, 'uMode')
-  schemeData.uMode = 'min';
-end
+    # Input unpacking
+    dynSys = schemeData.dynSys
 
-if ~isfield(schemeData, 'dMode')
-  schemeData.dMode = 'max';
-end
+    if not isfield(schemeData, 'uMode'):
+        schemeData.uMode = 'min'
 
-if ~isfield(schemeData, 'tMode')
-  schemeData.tMode = 'backward';
-end
+    if not isfield(schemeData, 'dMode'):
+        schemeData.dMode = 'max'
 
-% Custom derivative for MIE
-if isfield(schemeData, 'deriv')
-  deriv = schemeData.deriv;
-end
+    if not isfield(schemeData, 'tMode'):
+        schemeData.tMode = 'backward'
 
-%% Optimal control and disturbance
-if isfield(schemeData, 'uIn')
-  u = schemeData.uIn;
-else
-  u = dynSys.optCtrl(t, schemeData.grid.xs, deriv, schemeData.uMode);
-end
+    # Custom derivative for MIE
+    if isfield(schemeData, 'deriv'):
+        deriv = schemeData.deriv
 
-if isfield(schemeData, 'dIn')
-  d = schemeData.dIn;
-else
-  d = dynSys.optDstb(t, schemeData.grid.xs, deriv, schemeData.dMode);
-end
+    ## Optimal control and disturbance
+    if isfield(schemeData, 'uIn'):
+        u = schemeData.uIn
+    else:
+        u = dynSys.get_opt_u(t, schemeData.grid.xs, deriv, schemeData.uMode)
 
-hamValue = 0;
-%% MIE
-if isfield(schemeData, 'side')
-  if strcmp(schemeData.side, 'lower')
-%     if schemeData.dissComp
-%       hamValue = hamValue - schemeData.dc;
-%     end
-%
-    TIderiv = -1;
-  elseif strcmp(schemeData.side, 'upper')
-%     if schemeData.dissComp
-%       hamValue = hamValue + schemeData.dc;
-%     end
+    if isfield(schemeData, 'dIn'):
+        d = schemeData.dIn
+    else:
+        d = dynSys.get_opt_v(t, schemeData.grid.xs, deriv, schemeData.dMode)
 
-%     hamValue = -hamValue;
-%     deriv{1} = -deriv{1};
-% %     if schemeData.trueMIEDeriv
-% %       deriv{2} = -deriv{2};
-% %     end
-    TIderiv = 1;
-  else
-    error('Side of an MIE function must be upper or lower!')
-  end
+    hamValue = 0
+    ## MIE
+    if isfield(schemeData, 'side'):
+        if strcmp(schemeData.side, 'lower'):
+            TIderiv = -1
+        elif strcmp(schemeData.side, 'upper'):
+            TIderiv = 1
+    else:
+        error('Side of an MIE function must be upper or lower!')
 
-%   if ~schemeData.trueMIEDeriv
-%     deriv(2) = computeGradients(schemeData.grid, data);
-%   end
-end
+    ## Plug optimal control into dynamics to compute Hamiltonian
+    dx = dynSys.update_dynamics(schemeData.grid.xs, u, d, t=t)
+    for i in range(dynSys.nx):
+        hamValue += deriv[i]*dx[i]
 
-%% Plug optimal control into dynamics to compute Hamiltonian
-dx = dynSys.dynamics(t, schemeData.grid.xs, u, d);
-for i = 1:dynSys.nx
-  hamValue = hamValue + deriv{i}.*dx{i};
-end
+    if isfield(dynSys, 'TIdim') and dynSys.TIdim:
+        TIdx = dynSys.TIdyn(t, schemeData.grid.xs, u, d)
+        hamValue += TIderiv*TIdx[0]
 
-if isprop(dynSys, 'TIdim') && ~isempty(dynSys.TIdim)
-  TIdx = dynSys.TIdyn(t, schemeData.grid.xs, u, d);
-  hamValue = hamValue + TIderiv*TIdx{1};
-end
+    ## Negate hamValue if backward reachable set
+    if strcmp(schemeData.tMode, 'backward'):
+        hamValue = -hamValue
 
-%% Negate hamValue if backward reachable set
-if strcmp(schemeData.tMode, 'backward')
-  hamValue = -hamValue;
-end
+    if isfield(schemeData, 'side'):
+        if strcmp(schemeData.side, 'upper'):
+            hamValue = -hamValue
 
-if isfield(schemeData, 'side')
-  if strcmp(schemeData.side, 'upper')
-    hamValue = -hamValue;
-  end
-end
-end
+    return hamValue
