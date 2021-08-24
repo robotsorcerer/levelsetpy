@@ -101,6 +101,8 @@ def termLaxFriedrichs(t, y, schemeData):
       Ian Mitchell 5/13/03
       Calling parameters significantly modified, Ian Mitchell 2/11/04.
       Updated to handle vector level sets.  Ian Mitchell 11/23/04.
+
+      Lekan Aug 18, 2021
     """
     #---------------------------------------------------------------------------
     # For vector level sets, ignore all the other elements.
