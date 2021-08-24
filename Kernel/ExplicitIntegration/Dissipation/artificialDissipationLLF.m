@@ -25,7 +25,7 @@ function [ diss, stepBound ] = ...
 %   diss	 Local Lax-Friedrichs dissipation for each node.
 %   stepBound	 CFL bound on timestep for stability.
 %
-% schemeData is a structure containing data specific to this type of 
+% schemeData is a structure containing data specific to this type of
 %   term approximation.  For this function it contains the field(s)
 %
 %   .grid	 Grid structure.
@@ -56,8 +56,8 @@ function [ diss, stepBound ] = ...
 
 
 % Copyright 2004 Ian M. Mitchell (mitchell@cs.ubc.ca).
-% This software is used, copied and distributed under the licensing 
-%   agreement contained in the file LICENSE in the top directory of 
+% This software is used, copied and distributed under the licensing
+%   agreement contained in the file LICENSE in the top directory of
 %   the distribution.
 %
 % Ian Mitchell 2/13/04
@@ -80,11 +80,11 @@ function [ diss, stepBound ] = ...
     derivMinL = min(derivL{i}(:));
     derivMinR = min(derivR{i}(:));
     derivMin{i} = min(derivMinL, derivMinR);
-    
+
     derivMaxL = max(derivL{i}(:));
     derivMaxR = max(derivR{i}(:));
     derivMax{i} = max(derivMaxL, derivMaxR);
-    
+
     % Get derivative differences at each node.
     derivDiff{i} = derivR{i} - derivL{i};
   end
@@ -92,7 +92,7 @@ function [ diss, stepBound ] = ...
   % We need copies of the costate range.
   derivMinCopy = derivMin;
   derivMaxCopy = derivMax;
-  
+
   %---------------------------------------------------------------------------
   % Now calculate the dissipation.  Since alpha is the effective speed of
   %   the flow, it provides the CFL timestep bound too.
@@ -100,21 +100,21 @@ function [ diss, stepBound ] = ...
   stepBoundInv = 0;
   for i = 1 : grid.dim
 
-    % For each dimension, LLF restricts the range of that dimension's 
-    %   costate at each node to the range between left and right 
+    % For each dimension, LLF restricts the range of that dimension's
+    %   costate at each node to the range between left and right
     %   approximations at that node.
     derivMin{i} = min(derivL{i}, derivR{i});
     derivMax{i} = max(derivL{i}, derivR{i});
-    
+
     alpha = feval(schemeData.partialFunc, t, data, derivMin, derivMax, ...
                   schemeData, i);
 
     % Restore full range of costate.
     derivMin{i} = derivMinCopy{i};
     derivMax{i} = derivMaxCopy{i};
-    
+
     diss = diss + (0.5 * derivDiff{i} .* alpha);
     stepBoundInv = stepBoundInv + max(alpha(:)) / grid.dx(i);
   end
-  
+
   stepBound = 1 / stepBoundInv;
