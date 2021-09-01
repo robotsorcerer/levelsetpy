@@ -1,5 +1,5 @@
-from grids import sepGrid
-from grids import splitGrid_sameDim
+from .sep_grid import sepGrid
+from .split_same_dim import splitGrid_sameDim
 
 def splitGrid(g, dims, bounds, padding=None):
     """

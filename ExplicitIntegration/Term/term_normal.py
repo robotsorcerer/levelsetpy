@@ -149,10 +149,8 @@ def termNormal(t, y, schemeData):
         # Determine the upwind direction.
         #   Either both sides agree in sign (take direction in which they agree),
         #   or characteristics are converging (take larger magnitude direction).
-        flowL = ((prodL >= 0) and (prodR >= 0)) or
-                    ((prodL >= 0) and (prodR <= 0) and (magL >= magR))
-        flowR = ((prodL <= 0) and (prodR <= 0)) or
-                    ((prodL >= 0) and (prodR <= 0) and (magL < magR))
+        flowL = ((prodL >= 0) and (prodR >= 0)) or ((prodL >= 0) and (prodR <= 0) and (magL >= magR))
+        flowR = ((prodL <= 0) and (prodR <= 0)) or ((prodL >= 0) and (prodR <= 0) and (magL < magR))
 
         # For diverging characteristics, take gradient = 0
         #   (so we don't actually need to calculate this term).

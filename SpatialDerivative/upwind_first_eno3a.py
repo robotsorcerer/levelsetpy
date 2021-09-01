@@ -85,48 +85,48 @@ def upwindFirstENO3a(grid, data, dim, generateAll):
         indices1 = cell(grid.dim, 1)
         for i in range(grid.dim):
             indices1[i] = quickarray(0, sizeData(i)+1)
-      indices2 = indices1
+        indices2 = indices1
 
-      #---------------------------------------------------------------------------
-      # Need to figure out which approximation has the least oscillation.
-      #   Note that L and R in this section refer to neighboring divided
-      #   difference entries, not to left and right approximations.
+        #---------------------------------------------------------------------------
+        # Need to figure out which approximation has the least oscillation.
+        #   Note that L and R in this section refer to neighboring divided
+        #   difference entries, not to left and right approximations.
 
-      # Pick out minimum modulus neighboring D2 term.
-      D2abs = np.abs(DD.D2)
-      indices1[dim] = quickarray(0,size(D2abs, dim))
-      indices2[dim] = indices1[dim] + 1
-      smallerL = (D2abs[indices1[:]] < D2abs[indices2[:]])
-      smallerR = np.logical_not(smallerL)
+        # Pick out minimum modulus neighboring D2 term.
+        D2abs = np.abs(DD.D2)
+        indices1[dim] = quickarray(0,size(D2abs, dim))
+        indices2[dim] = indices1[dim] + 1
+        smallerL = (D2abs[indices1[:]] < D2abs[indices2[:]])
+        smallerR = np.logical_not(smallerL)
 
-      #---------------------------------------------------------------------------
-      # Figure out smallest modulus D3 terms,
-      #   given choice of smallest modulus D2 terms above.
-      D3abs = np.abs(DD.D3)
-      indices1[dim] = quickarray(0,size(D3abs, dim))
-      indices2[dim] = indices1[dim] + 1
-      smallerTemp = (D3abs[indices1[:]] < D3abs[indices2[:]])
+        #---------------------------------------------------------------------------
+        # Figure out smallest modulus D3 terms,
+        #   given choice of smallest modulus D2 terms above.
+        D3abs = np.abs(DD.D3)
+        indices1[dim] = quickarray(0,size(D3abs, dim))
+        indices2[dim] = indices1[dim] + 1
+        smallerTemp = (D3abs[indices1[:]] < D3abs[indices2[:]])
 
-      indices1[dim] = quickarray(0,size(smallerTemp, dim))
-      indices2[dim] = indices1[dim] + 1
-      smallerLL = np.logical_and(smallerTemp[indices1[:]], smallerL)
-      smallerRL = np.logical_and(smallerTemp[indices2[:]], smallerR)
-      smallerTemp = np.logical_not(smallerTemp)
-      smallerLR = np.logical_and(smallerTemp[indices1[:]], smallerL)
-      smallerRR = np.logical_and(smallerTemp[indices2[:]], smallerR)
+        indices1[dim] = quickarray(0,size(smallerTemp, dim))
+        indices2[dim] = indices1[dim] + 1
+        smallerLL = np.logical_and(smallerTemp[indices1[:]], smallerL)
+        smallerRL = np.logical_and(smallerTemp[indices2[:]], smallerR)
+        smallerTemp = np.logical_not(smallerTemp)
+        smallerLR = np.logical_and(smallerTemp[indices1[:]], smallerL)
+        smallerRR = np.logical_and(smallerTemp[indices2[:]], smallerR)
 
-      smallerM = smallerRL or smallerLR
+        smallerM = smallerRL or smallerLR
 
-      #---------------------------------------------------------------------------
-      # Pick out the best third order approximation
-      indices1[dim] = quickarray(0,size(smallerLL, dim))
-      derivL = (dL[0] * smallerLL(indices1[:])
-                + dL[1] * smallerM(indices1[:])
-                + dL[2] * smallerRR(indices1[:]))
+        #---------------------------------------------------------------------------
+        # Pick out the best third order approximation
+        indices1[dim] = quickarray(0,size(smallerLL, dim))
+        derivL = (dL[0] * smallerLL(indices1[:])
+            + dL[1] * smallerM(indices1[:])
+            + dL[2] * smallerRR(indices1[:]))
 
-      indices1[dim] = quickarray(1,size(smallerLL, dim))
-      derivR = (dR[0] * smallerLL(indices1[:])
+        indices1[dim] = quickarray(1,size(smallerLL, dim))
+        derivR = (dR[0] * smallerLL(indices1[:])
                 + dR[1] * smallerM(indices1[:])
                 + dR[2] * smallerRR(indices1[:]))
-                
-     return derivL, derivR
+
+    return derivL, derivR

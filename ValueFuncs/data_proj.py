@@ -1,7 +1,7 @@
 import numpy as np
 from utils import *
-from valFuncs import *
-from grids import processGrid
+from ValueFuncs import *
+from Grids import processGrid
 import logging
 
 logger = logging.getLogger(__name__)

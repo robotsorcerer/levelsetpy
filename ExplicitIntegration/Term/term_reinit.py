@@ -154,7 +154,7 @@ def termReinit(t, y, schemeData):
         apply_subcell_fix = 1
         subcell_fix_order = 1
 
-    if apply_subcell_fix
+    if apply_subcell_fix:
         # The sign function is only used far from the interface, so we do
         # not need to smooth it.
         S = np.sign(thisSchemeData.initial)
@@ -175,7 +175,7 @@ def termReinit(t, y, schemeData):
     deriv = cell(grid.dim, 1)
 
     for i in range(grid.dim):
-        derivL, derivR thisSchemeData.derivFunc(grid, data, i)
+        derivL, derivR = thisSchemeData.derivFunc(grid, data, i)
 
         # For Gudunov's method, check characteristic directions
         #   according to left and right derivative approximations.
@@ -202,7 +202,7 @@ def termReinit(t, y, schemeData):
             flowL[conv] = flowL[conv] or (s[conv] < 0)
             flowR[conv] = flowR[conv] or (s[conv] >= 0)
 
-        deriv{[i] = derivL * flowR + derivR * flowL
+        deriv[i] = derivL * flowR + derivR * flowL
 
     # Compute magnitude of gradient.
     mag = zeros(size(grid.xs[0]))
@@ -227,78 +227,78 @@ def termReinit(t, y, schemeData):
 
     if apply_subcell_fix:
 
-    if subcell_fix_order==1:
-        # Most of the effort below -- specifically computation of the distance to
-        # the interface D -- depends only on thisSchemeData.initial, so
-        # recomputation could be avoided if there were some easy way to
-        # memoize the results between timesteps.  It could be done by
-        # modifying schemeData, but that has a rather high overhead and could
-        # lead to bugs if the user fiddles with schemeData.  So for now, we
-        # recompute at each timestep.
+        if subcell_fix_order==1:
+            # Most of the effort below -- specifically computation of the distance to
+            # the interface D -- depends only on thisSchemeData.initial, so
+            # recomputation could be avoided if there were some easy way to
+            # memoize the results between timesteps.  It could be done by
+            # modifying schemeData, but that has a rather high overhead and could
+            # lead to bugs if the user fiddles with schemeData.  So for now, we
+            # recompute at each timestep.
 
-        # Set up some index cell vectors.  No ghost cells will be used, since
-        # nodes near the edge of the computational domain should not be
-        # near the interface.  Where necessary, we will modify the stencil
-        # near the edge of the domain.
-        indexL = cell(grid.dim, 1)
-        for d in range(grid.dim):
-            indexL[d] = quickarray(0, grid.N[d])
-        indexR = indexL
+            # Set up some index cell vectors.  No ghost cells will be used, since
+            # nodes near the edge of the computational domain should not be
+            # near the interface.  Where necessary, we will modify the stencil
+            # near the edge of the domain.
+            indexL = cell(grid.dim, 1)
+            for d in range(grid.dim):
+                indexL[d] = quickarray(0, grid.N[d])
+            indexR = indexL
 
-        # Compute denominator in (13) or (16) or (23).  Note that we
-        # have moved the delta x term into this denominator to treat
-        # the case when delta x is not the same in each dimension.
-        denom = zeros(size(data))
-        for d in range(grid.dim):
-            dx_inv = 1 / grid.dx[d]
+            # Compute denominator in (13) or (16) or (23).  Note that we
+            # have moved the delta x term into this denominator to treat
+            # the case when delta x is not the same in each dimension.
+            denom = zeros(size(data))
+            for d in range(grid.dim):
+                dx_inv = 1 / grid.dx[d]
 
-            # Long difference used in (13) and (23).  For the nodes near the
-            # edge of the computational domain, we will just use short differences.
-            indexL[d] = [0] + quickarray(0, grid.N[d] - 1)
-            indexR[d] = [1]+ quickarray(1, grid.N[d])
-            diff2 = (0.5 * dx_inv@(thisSchemeData.initial[indexR[:]] - thisSchemeData.initial[indexL[:]])) ** 2
+                # Long difference used in (13) and (23).  For the nodes near the
+                # edge of the computational domain, we will just use short differences.
+                indexL[d] = [0] + quickarray(0, grid.N[d] - 1)
+                indexR[d] = [1]+ quickarray(1, grid.N[d])
+                diff2 = (0.5 * dx_inv@(thisSchemeData.initial[indexR[:]] - thisSchemeData.initial[indexL[:]])) ** 2
 
-            if robust_subcell:
-                # Need the short differences.
-                indexL[d] = quickarray(0,grid.N[d] - 1)
-                indexR[d] = quickarray(1,grid.N[d])
-                short_diff2 = (dx_inv@(thisSchemeData.initial[indexR[:]] - thisSchemeData.initial[indexL[:]])) ** 2
+                if robust_subcell:
+                    # Need the short differences.
+                    indexL[d] = quickarray(0,grid.N[d] - 1)
+                    indexR[d] = quickarray(1,grid.N[d])
+                    short_diff2 = (dx_inv@(thisSchemeData.initial[indexR[:]] - thisSchemeData.initial[indexL[:]])) ** 2
 
-                # All the various terms of (17).
-                diff2[indexL[:]] = np.max(diff2[indexL[:]], short_diff2)
-                diff2[indexR[:]] = np.max(diff2[indexR[:]], short_diff2)
-                diff2 = np.max(diff2, robust_small_epsilon ** 2)
+                    # All the various terms of (17).
+                    diff2[indexL[:]] = np.max(diff2[indexL[:]], short_diff2)
+                    diff2[indexR[:]] = np.max(diff2[indexR[:]], short_diff2)
+                    diff2 = np.max(diff2, robust_small_epsilon ** 2)
 
-            # Include this dimension's contribution to the distance.
-            denom += diff2
+                # Include this dimension's contribution to the distance.
+                denom += diff2
 
-            # Reset the index vectors.
-            indexL[d] = quickarray(0, grid.N[d])
-            indexR[d] = quickarray(0, grid.N[d])
+                # Reset the index vectors.
+                indexL[d] = quickarray(0, grid.N[d])
+                indexR[d] = quickarray(0, grid.N[d])
 
-        denom = np.sqrt(denom)
+            denom = np.sqrt(denom)
 
-        # Complete (13) or (16) or (23).  Note that delta x was already included
-        # in the denominator calculation above, so it does not appear.
-        D = thisSchemeData.initial / denom
+            # Complete (13) or (16) or (23).  Note that delta x was already included
+            # in the denominator calculation above, so it does not appear.
+            D = thisSchemeData.initial / denom
 
-        # We do need to know which nodes are near the interface.
-        near = isNearInterface(thisSchemeData.initial)
+            # We do need to know which nodes are near the interface.
+            near = isNearInterface(thisSchemeData.initial)
 
-        # Adjust the update.  The delta x that appears in (15) or (22)
-        # comes from the smoothing in (14), so we choose the maximum
-        # delta x in this case (guarantees sufficient smoothing no
-        # matter what the direction of the interface).  For grids with
-        # different delta x, this choice may require more
-        # reinitialization steps to achieve desired results.
-        delta = (delta * (not near)+(S * np.abs(data) - D) / np.max(grid.dx) * near)
+            # Adjust the update.  The delta x that appears in (15) or (22)
+            # comes from the smoothing in (14), so we choose the maximum
+            # delta x in this case (guarantees sufficient smoothing no
+            # matter what the direction of the interface).  For grids with
+            # different delta x, this choice may require more
+            # reinitialization steps to achieve desired results.
+            delta = (delta * (not near)+(S * np.abs(data) - D) / np.max(grid.dx) * near)
 
-        # We will not adjust the CFL step bound.  By Russo & Smereka, the
-        # adjusted update has a bound of 1, and the regular scheme above should
-        # already have that same upper bound.
+            # We will not adjust the CFL step bound.  By Russo & Smereka, the
+            # adjusted update has a bound of 1, and the regular scheme above should
+            # already have that same upper bound.
 
-    else:
-        error(f'Reinit subcell fix order of accuracy {subcell_fix_order} not supported')
+        else:
+            error(f'Reinit subcell fix order of accuracy {subcell_fix_order} not supported')
 
     stepBound = 1 / stepBoundInv
 

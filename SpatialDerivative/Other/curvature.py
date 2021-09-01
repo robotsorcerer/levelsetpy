@@ -46,7 +46,7 @@ def curvatureSecond(grid, data):
     for i in range(grid.dim):
         curvature += second[i,i] * (gradMag2 - first[i]**2)
         for j in range(i - 1):
-            curvature -=(2 * first[i] * first[j] * second{i,j})
+            curvature -=(2 * first[i] * first[j] * second[i,j])
 
     # Be careful not to stir the wrath of "Divide by Zero".
     #  Note that gradMag == 0 implies curvature == 0 already, since all the

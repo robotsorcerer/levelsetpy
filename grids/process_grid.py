@@ -203,7 +203,7 @@ def processGrid(gridIn, data=None, sparse_flag=False):
             logger.fatal('vs field is not a cell vector');
     else:
         gridOut.vs = cell(gridOut.dim, 1)
-        # print(f'gridOut.N {gridOut.N}')
+        print(f'gridOut.N {gridOut.N}, gridOut.min: {gridOut.min}, gridOut.max: {gridOut.max}')
         for i in range(gridOut.dim):
             gridOut.vs[i] = expand(np.linspace(gridOut.min[i,0], gridOut.max[i,0], num=gridOut.N[i,0]), 1)
             # print(f'gridOut.vs[i] {gridOut.vs[i].shape}, gridOut.min: {gridOut.min[i,0]}, gridOut.max: {gridOut.max[i,0]}, gridOut.N[{i}]: {gridOut.N[i,0]}')

@@ -137,7 +137,7 @@ def odeCFLset(**kwargs):
                 error('PostTimestep parameter must be a function handle or '
                     'a cell vector of function handles.');
 
-         elif name.lower()==  'singlestep':
+        elif name.lower()==  'singlestep':
             if(isinstance(value, 'str') and (value=='on') or (value=='off')):
                 options.singleStep = value;
             else:

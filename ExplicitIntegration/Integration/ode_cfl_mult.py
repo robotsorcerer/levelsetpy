@@ -1,7 +1,7 @@
 from utils import *
 
 
-def = odeCFLmultipleSteps(intFunc, schemeFunc, tspan, y0, options, schemeData):
+def odeCFLmultipleSteps(intFunc, schemeFunc, tspan, y0, options, schemeData):
     """
     % odeCFLmultipleSteps: Handle the length(tspan) > 2 case for odeCFLn.
     %
@@ -59,29 +59,28 @@ def = odeCFLmultipleSteps(intFunc, schemeFunc, tspan, y0, options, schemeData):
     # If we were asked for the solution at multiple timesteps,
     #   call back for each pair of timesteps.
     if(numT > 2):
-      t = tspan.reshape(numT, 1)
+        t = tspan.reshape(numT, 1)
 
         if(iscell(y)):
-          numY = len(y);
-          y = cell(numY, 1);
-          for i in range(numY):
-            y[i] = zeros(numT, len(y0[i]));
-            y[i][0,:] = y0[i].T;
+            numY = len(y);
+            y = cell(numY, 1);
+            for i in range(numY):
+                y[i] = zeros(numT, len(y0[i]));
+                y[i][0,:] = y0[i].T;
         else:
-          y = zeros(numT, length(y0));
-          y[0,:] = y0.T;
+            y = zeros(numT, length(y0));
+            y[0,:] = y0.T;
 
         yout = y;
         for n in range(1, numT+1):
-          t(n), yout, schemeData = intFunc(schemeFunc, np.hstack((t[n-1], t[n])), yout, schemeData, options)
+            t[n], yout, schemeData = intFunc(schemeFunc, np.hstack((t[n-1], t[n])), yout, schemeData, options)
 
-          if(iscell(y)):
-            for i in range(numY):
-              y[i](n,:) = yout[i].T
-          else:
-            y[n,:] = yout.T
-      #---------------------------------------------------------------------------
-      else:
+            if(iscell(y)):
+                for i in range(numY):
+                    y[i][n,:] = yout[i].T
+            else:
+                y[n,:] = yout.T
+    else:
         # This routine is only for finding the solution at multiple timesteps.
         error('tspan must contain at least three entries');
 

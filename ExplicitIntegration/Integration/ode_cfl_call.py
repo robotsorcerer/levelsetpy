@@ -49,9 +49,9 @@ def odeCFLcallPostTimestep(t, yIn, schemeDataIn, options):
 
     # Make the necessary calls.
     if callable(options.postTimestep):
-        yOut schemeDataOut = options.postTimestep(t, yOut, schemeDataOut)
+        yOut, schemeDataOut = options.postTimestep(t, yOut, schemeDataOut)
     elif(isinstance(options.postTimestep, list)):
         for i in range(len(options.postTimestep)):
-           yOut schemeDataOut = options.postTimestep[i](t, yOut, schemeDataOut)
+           yOut, schemeDataOut = options.postTimestep[i](t, yOut, schemeDataOut)
 
     return yOut, schemeDataOut

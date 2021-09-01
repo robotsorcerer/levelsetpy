@@ -1,5 +1,5 @@
+from BoundaryCondition import addGhostAllDims
 from utils import *
-from BoundaryConditions import addGhostAllDims
 
 def hessianSecond(grid, data):
     """

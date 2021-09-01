@@ -1,12 +1,15 @@
+import sys, os
+sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )
 import numpy as np
 from math import pi
 from utils import expand, zeros, Bundle, ones
-from grids import createGrid
-from valFuncs import proj, HJIPDE_solve, eval_u
-from visualization import visSetIm
+from Grids import createGrid
+from ValueFuncs import proj, HJIPDE_solve, eval_u
+from Visualization import visSetIm
 from InitialConditions import shapeCylinder
 from DynamicalSystems import *
 import matplotlib.pyplot as plt
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -98,6 +101,7 @@ def main():
     schemeData = Bundle(dict(grid = g, dynSys = dCar, accuracy = 'high',
                             uMode = uMode))
     #do dStep4 here
+    print(schemeData)
 
     ## additive random noise
     #do Step8 here
@@ -186,3 +190,7 @@ def main():
         else:
             logger.fatal(f'Initial state is not in the BRS/BRT! It have a value of {value}')
         return g2D, data2D
+
+
+if __name__ == '__main__':
+    main()

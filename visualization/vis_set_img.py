@@ -1,5 +1,5 @@
 from utils import *
-from grids import *
+from Grids import *
 
 def visSetIm(data, g=None, color='r', level=0, extraArgs=None):
     """
@@ -64,12 +64,12 @@ def visSetIm(data, g=None, color='r', level=0, extraArgs=None):
           h = visSetIm_single(g, data[i,...], color, level, extraArgs)
         else:
           if i == 1:
-            h = cell(numSets, 1):
+            h = cell(numSets, 1)
 
           h[i] = visSetIm_single(g, data[i,...], color, level, extraArgs)
 
 ## Visualize a single set
-def visSetIm_single(g, data, color, level, extraArgs)
+def visSetIm_single(g, data, color, level, extraArgs):
 
     sliceDim = g.dim # Slice last dimension by default
     applyLight = True # Add cam light by default
@@ -77,16 +77,16 @@ def visSetIm_single(g, data, color, level, extraArgs)
     LineWidth = 1
 
     if isfield(extraArgs, 'sliceDim'):
-      sliceDim = extraArgs.sliceDim
+        sliceDim = extraArgs.sliceDim
 
     if isfield(extraArgs, 'applyLight'):
-      applyLight = extraArgs.applyLight
+        applyLight = extraArgs.applyLight
 
     if isfield(extraArgs, 'LineStyle'):
-      LineStyle = extraArgs.LineStyle
+        LineStyle = extraArgs.LineStyle
 
     if isfield(extraArgs, 'LineWidth'):
-      LineWidth = extraArgs.LineWidth
+        LineWidth = extraArgs.LineWidth
 
     if g.dim==1:
         extraArgs.ax.plot(g.xs[0], data, linestyle='-', color=color)
@@ -150,4 +150,4 @@ def visSetIm_single(g, data, color, level, extraArgs)
     #   # Visualize 3D slices
     #   h{i} = visSetIm3D(g3D, data3D, color, level, applyLight)
 
-  return h
+    return h

@@ -1,5 +1,5 @@
 from utils import *
-from .ENO3bhelper import upwindFirstENO3bHelper
+from .ENO3bHelper import upwindFirstENO3bHelper
 from .check_eq_approx import checkEquivalentApprox
 
 def  upwindFirstENO3b(grid, data, dim, generateAll=0):
@@ -97,7 +97,7 @@ def choose(d, s):
     choose2over3 = (s[1] < s[2]);
 
     deriv = ((choose1over2 and choose1over3) * d[0] \
-             + (not choose1over2 and choose2over3) * d[1] \
-             + (not choose1over3 and not choose2over3) * d[2]);
+         + (not choose1over2 and choose2over3) * d[1] \
+         + (not choose1over3 and not choose2over3) * d[2]);
 
-     return deriv
+    return deriv

@@ -56,4 +56,4 @@ def cellMatrixMultiply(A, B):
         for j in range(sizeArray[1]):
             C[i,j] = scalar * array[i,j]
 
-  return C
+    return C

@@ -60,21 +60,21 @@ def termSum(t, y, schemeData):
 
    Lekan Molu, 08/21/21
   """
-  if(iscell(schemeData)):
-      thisSchemeData = schemeData[0]
-  else:
-      thisSchemeData = schemeData
+    if iscell(schemeData):
+        thisSchemeData = schemeData[0]
+    else:
+        thisSchemeData = schemeData
 
-  assert isfield(thisSchemeData, 'innerFunc'), "innerFunc not in schemeData"
+    assert isfield(thisSchemeData, 'innerFunc'), "innerFunc not in schemeData"
 
-  #Check that innerFunc and innerData are the same size cell vectors.
-  if(not iscell(thisSchemeData.innerFunc) or not iscell(thisSchemeData.innerData)):
-      error('schemeData.innerFunc and schemeData.innerData must be cell vectors')
+    #Check that innerFunc and innerData are the same size cell vectors.
+    if(not iscell(thisSchemeData.innerFunc) or not iscell(thisSchemeData.innerData)):
+        error('schemeData.innerFunc and schemeData.innerData must be cell vectors')
 
-  numSchemes = len(thisSchemeData.innerFunc.flatten())
+    numSchemes = len(thisSchemeData.innerFunc.flatten())
 
-  if(numSchemes != len(thisSchemeData.innerData.flatten())):
-      error('schemeData.innerFunc and schemeData.innerData must be the same len')
+    if(numSchemes != len(thisSchemeData.innerData.flatten())):
+        error('schemeData.innerFunc and schemeData.innerData must be the same len')
 
     #Calculate sum of updates (inverse sum of stepBounds).
     ydot = 0
@@ -104,4 +104,4 @@ def termSum(t, y, schemeData):
     else:
         stepBound = 1 / stepBoundInv
 
-return ydot, stepBound, schemeData
+    return ydot, stepBound, schemeData

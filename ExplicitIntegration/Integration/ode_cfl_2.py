@@ -1,7 +1,7 @@
 import time
 from utils import *
 from .ode_cfl_set import odeCFLset
-from .ode_cfl_multisteps import odeCFLmultipleSteps
+from .ode_cfl_mult import odeCFLmultipleSteps
 from .ode_cfl_call import odeCFLcallPostTimestep
 
 def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
@@ -141,7 +141,7 @@ def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
             #   For vector level sets, use the most restrictive stepBound.
             #   We'll use this fixed timestep for both substeps..
             deltaT = min(min(options.factorCFL@stepBound),  \
-                           min(tspan[1] - t options.maxStep))
+                           min(tspan[1] - t, options.maxStep))
 
             # Take the first substep.
             t1 = t + deltaT
@@ -158,14 +158,14 @@ def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
             # Approximate the derivative.
             #   We will also check the CFL condition for gross violation.
             for i in range(numY):
-                ydot[i], stepBound[i], schemeData = schemeFuncCell[i](t1, y1, schemeData))
+                ydot[i], stepBound[i], schemeData = schemeFuncCell[i](t1, y1, schemeData)
 
                 # If this is a vector level set, rotate the lists of vector arguments.
                 if(iscell(y1)):
                     y1 = y1[ 1:, 0 ]
 
                 if(iscell(schemeData)):
-                    schemeData = schemeData([ 1:, 0 ])
+                    schemeData = schemeData[ 1:, 0 ]
 
             # Check CFL bound on timestep:
             #   If the timestep chosen on the first substep violates
@@ -174,7 +174,7 @@ def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
             # Occasional failure should not cause too many problems.
             if(deltaT > min(safetyFactorCFL * stepBound)):
                 violation = deltaT / stepBound
-                warn(f'Second substep violated CFL effective number {violation}'')
+                warn(f'Second substep violated CFL effective number {violation}')
 
             # Take the second substep.
             t2 = t1 + deltaT

@@ -1,5 +1,5 @@
 from utils import *
-from .ode_cfl_set import odeCFLSet
+from .ode_cfl_set import odeCFLset
 
 def odeCFLget(options=None, name=None):
     """
@@ -87,17 +87,17 @@ def odeCFLget(options=None, name=None):
     # Remember that the case labels are lower case.
     if name.lower() =='factorcfl':
         value = options.factorCFL
-    elif if name.lower() =='maxstep':
+    elif name.lower() =='maxstep':
         value = options.maxStep
-    elif if name.lower() =='posttimestep'
+    elif name.lower() =='posttimestep':
         value = options.postTimestep
-    elif if name.lower() =='singlestep'
+    elif name.lower() =='singlestep':
         value = options.singleStep
-    elif if name.lower() =='stats'
+    elif name.lower() =='stats':
         value = options.stats
-    elif if name.lower() =='terminalevent'
+    elif name.lower() =='terminalevent':
         value = options.terminalEvent
     else:
         error('Unknown odeCFL option %s', name)
 
-     return value
+    return value

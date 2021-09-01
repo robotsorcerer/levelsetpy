@@ -138,7 +138,7 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
             #   For vector level sets, use the most restrictive stepBound.
             #   We'll use this fixed timestep for both substeps..
             deltaT = min(min(options.factorCFL@stepBound),  \
-                           min(tspan[1] - t options.maxStep))
+                           min(tspan[1] - t, options.maxStep))
 
             # Take the first substep.
             t1 = t + deltaT
@@ -155,14 +155,14 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
             # Approximate the derivative.
             #   We will also check the CFL condition for gross violation.
             for i in range(numY):
-                ydot[i], stepBound[i], schemeData = schemeFuncCell[i](t1, y1, schemeData))
+                ydot[i], stepBound[i], schemeData = schemeFuncCell[i](t1, y1, schemeData)
 
                 # If this is a vector level set, rotate the lists of vector arguments.
                 if(iscell(y1)):
                     y1 = y1[ 1:, 0 ]
 
                 if(iscell(schemeData)):
-                    schemeData = schemeData([ 1:, 0 ])
+                    schemeData = schemeData[ 1:, 0 ]
 
             # Check CFL bound on timestep:
             #   If the timestep chosen on the first substep violates
@@ -171,7 +171,7 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
             # Occasional failure should not cause too many problems.
             if(deltaT > min(safetyFactorCFL * stepBound)):
                 violation = deltaT / stepBound
-                warn(f'Second substep violated CFL effective number {violation}'')
+                warn(f'Second substep violated CFL effective number {violation}')
 
             # Take the second substep.
             t2 = t1 + deltaT
@@ -183,27 +183,27 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
                 y2 = y1 + deltaT * ydot[0]
 
             # Combine t_n and t_{n+2} to get approximation at t_{n+1/2}
-            tHalf = 0.25 * (3 * t + t2);
+            tHalf = 0.25 * (3 * t + t2)
             if(iscell(y2)):
-                yHalf = cell(numY, 1);
+                yHalf = cell(numY, 1)
                 for i in range(numY):
-                    yHalf[i] = 0.25 * (3 * y[i] + y2[i]);
+                    yHalf[i] = 0.25 * (3 * y[i] + y2[i])
             else:
-                yHalf = 0.25 * (3 * y + y2);
+                yHalf = 0.25 * (3 * y + y2)
 
             #Third substep: Forward Euler from t_{n+1/2} to t_{n+3/2}.
 
             # Approximate the derivative.
             #   We will also check the CFL condition for gross violation.
             for i in range(numY):
-                ydot[i], stepBound(i), schemeData = schemeFuncCell[i](tHalf, yHalf, schemeData);
+                ydot[i], stepBound[i], schemeData = schemeFuncCell[i](tHalf, yHalf, schemeData)
 
             # If this is a vector level set, rotate the lists of vector arguments.
             if(iscell(yHalf)):
-                yHalf = yHalf[1:,0];
+                yHalf = yHalf[1:,0]
 
             if(iscell(schemeData)):
-                schemeData = schemeData([ 2:end, 1 ]);
+                schemeData = schemeData[ 1:, 0 ]
 
             # Check CFL bound on timestep:
             #   If the timestep chosen on the first substep violates
@@ -211,17 +211,17 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
             #   For vector level sets, use the most restrictive stepBound.
             # Occasional failure should not cause too many problems.
             if(deltaT > min(safetyFactorCFL * stepBound)):
-                violation = deltaT / stepBound;
-                warn(f'Third substep violated CFL; effective number {violation}');
+                violation = deltaT / stepBound
+                warn(f'Third substep violated CFL effective number {violation}')
 
             # Take the third substep.
-            tThreeHalf = tHalf + deltaT;
-            if(iscell(yHalf))
-                yThreeHalf = cell(numY, 1);
+            tThreeHalf = tHalf + deltaT
+            if(iscell(yHalf)):
+                yThreeHalf = cell(numY, 1)
                 for i in range(numY):
-                    yThreeHalf[i] = yHalf[i] + deltaT * ydot[i];
+                    yThreeHalf[i] = yHalf[i] + deltaT * ydot[i]
             else:
-                yThreeHalf = yHalf + deltaT * ydot[0];
+                yThreeHalf = yHalf + deltaT * ydot[0]
 
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             # If there is a terminal event function registered, we need
@@ -230,14 +230,14 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
                 yOld , tOld =y,  t
 
             # Combine t_n and t_{n+3/2} to get third order approximation of t_{n+1}.
-            t = (1/3) * (t + 2 * tThreeHalf);
+            t = (1/3) * (t + 2 * tThreeHalf)
             if(iscell(yThreeHalf)):
                 for i in range(numY):
-                    y[i] = (1/3) * (y[i] + 2 * yThreeHalf[i]);
+                    y[i] = (1/3) * (y[i] + 2 * yThreeHalf[i])
             else:
-                y = (1/3) * (y + 2 * yThreeHalf);
+                y = (1/3) * (y + 2 * yThreeHalf)
 
-            steps += 1;
+            steps += 1
 
             # If there is one or more post-timestep routines, call them.
             if options.postTimestep:

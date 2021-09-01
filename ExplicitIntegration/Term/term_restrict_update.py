@@ -75,7 +75,7 @@ def termRestrictUpdate(t, y, schemeData):
         innerData = schemeData.innerData
 
     #Get the unrestricted update.
-    unRestricted, stepBound, innerData ] = thisSchemeData.innerFunc(t, y, innerData)
+    unRestricted, stepBound, innerData = thisSchemeData.innerFunc(t, y, innerData)
 
     #Store any modifications of the inner data structure.
     if(iscell(schemeData)):

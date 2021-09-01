@@ -1,7 +1,7 @@
 import numpy as np
 from utils import expand, ones
-from grids import createGrid
-from valFuncs import proj
+from .create_grid import createGrid
+from ValueFuncs import proj
 
 
 def sepGrid(g, dims):

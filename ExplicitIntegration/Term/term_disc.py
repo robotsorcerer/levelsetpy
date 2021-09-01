@@ -6,14 +6,14 @@ def termDiscount(t, y, schemeData):
 
       [ ydot, stepBound, schemeData ] = termDiscount(t, y, schemeData)
 
-      Computes a discounting term \lambda(x) \phi(x)
+      Computes a discounting term \lambder(x) \phi(x)
         which depends directly on the value of the level set function
         (no derivative is involved).
 
       This term is often used for time discounting in optimal control and
         differential games, or as a "killing process" in SDEs.
 
-      Note that \lambda(x) >= 0 is required, otherwise the resulting
+      Note that \lambder(x) >= 0 is required, otherwise the resulting
         HJ PDE will not be "proper" and the viscosity solution theory
         will not apply (for example, the solution could become discontinuous).
 
@@ -36,16 +36,16 @@ def termDiscount(t, y, schemeData):
         term approximation.  For this function it contains the field(s)
 
         .grid	 Grid structure (see processGrid.m for details).
-        .lambda      A description of the discount factor (see below).
+        .lambder      A description of the discount factor (see below).
 
       It may contain additional fields at the user's discretion.
 
-      schemeData.lambda can provide the discount factor in one of two ways:
+      schemeData.lambder can provide the discount factor in one of two ways:
         1) For time invariant discount, a scalar or an array the same
            size as data.
         2) For general discount, a function handle to a function with prototype
-           lambda = scalarGridFunc(t, data, schemeData), where the output
-           lambda is the scalar/array from (1) and the input arguments are
+           lambder = scalarGridFunc(t, data, schemeData), where the output
+           lambder is the scalar/array from (1) and the input arguments are
            the same as those of this function (except that data = y has been
            reshaped to its original size).  In this case, it may be useful to
            include additional fields in schemeData.
@@ -53,7 +53,7 @@ def termDiscount(t, y, schemeData):
       For evolving vector level sets, y may be a cell vector.  If y is a cell
         vector, schemeData may be a cell vector of equal length.  In this case
         all the elements of y (and schemeData if necessary) are ignored except
-        the first.  As a consequence, if schemeData.lambda is a function handle
+        the first.  As a consequence, if schemeData.lambder is a function handle
         the call to scalarGridFunc will be performed with a regular data array
         and a single schemeData structure (as if no vector level set was present).
 
@@ -73,7 +73,7 @@ def termDiscount(t, y, schemeData):
         thisSchemeData = schemeData
 
     assert isfield(thisSchemeData, 'grid'), 'grid not in scheeData'
-    assert isfield(thisSchemeData, 'lambda'), 'lambda not in scheeData'
+    assert isfield(thisSchemeData, 'lambder'), 'lambder not in scheeData'
 
     grid = thisSchemeData.grid
 
@@ -84,13 +84,13 @@ def termDiscount(t, y, schemeData):
         data = y.reshape(grid.shape)
 
     # Get discount factor.
-    if(type(thisSchemeData.lambda)==float):
-        lambder = thisSchemeData.lambda
-    elif(callable(thisSchemeData.lambda)):
+    if isfloat(thisSchemeData.lambder):
+        lambder = thisSchemeData.lambder
+    elif(callable(thisSchemeData.lambder)):
         data = y.reshape(thisSchemeData.grid.shape)
-        lambder = thisSchemeData.lambda(t, data, thisSchemeData)
+        lambder = thisSchemeData.lambder(t, data, thisSchemeData)
     else:
-        error('schemeData.lambda must be a scalar, array or function handle')
+        error('schemeData.lambder must be a scalar, array or function handle')
 
     #---------------------------------------------------------------------------
     # Compute the update (including negation for RHS of ODE).

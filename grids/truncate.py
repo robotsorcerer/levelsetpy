@@ -1,4 +1,5 @@
 from utils import *
+from .process_grid import processGrid
 
 def truncateGrid(gOld, dataOld=None, xmin=None, xmax=None, process=True):
     """
@@ -56,13 +57,13 @@ def truncateGrid(gOld, dataOld=None, xmin=None, xmax=None, process=True):
             dataNew = dataOld[np.logical_and(gOld.vs[0]>xmin[0], gOld.vs[0]<xmax[0]), \
                               np.logical_and(gOld.vs[1]>xmin[1], gOld.vs[1]<xmax[1])]
 
-    elif gOld.dim==3
+    elif gOld.dim==3:
         if dataOld:
             dataNew = dataOld[np.logical_and(gOld.vs[0]>xmin[0], gOld.vs[0]<xmax[0]), \
                               np.logical_and(gOld.vs[1]>xmin[1], gOld.vs[1]<xmax[1]), \
                               np.logical_and(gOld.vs[2]>xmin[2], gOld.vs[2]<xmax[2])]
 
-    elif gOld.dim==4
+    elif gOld.dim==4:
         if dataOld:
             dataNew = dataOld[np.logical_and(gOld.vs[0]>xmin[0], gOld.vs[0]<xmax[0]), \
                               np.logical_and(gOld.vs[1]>xmin[1], gOld.vs[1]<xmax[1]), \

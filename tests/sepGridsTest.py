@@ -1,6 +1,6 @@
 import numpy as np
 from utils import expand, ones
-from grids import createGrid, sepGrid
+from Grids import createGrid, sepGrid
 from valFuncs import proj
 
 

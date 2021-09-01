@@ -59,7 +59,7 @@ def upwindFirstFirst(grid, data, dim, generateAll=0):
     indices2[dim] = indices1[dim] - 1
 
     #This array includes one extra entry in dimension of interest.
-    deriv = dxInv@(gdata(indices1{:}) - gdata(indices2{:}))
+    deriv = dxInv@(gdata(indices1[:]) - gdata(indices2[:]))
 
     #Take leftmost grid.N(dim) entries for left approximation.
     indices1[dim] = quickarray(0, size(deriv, dim) - 1)

@@ -1,6 +1,6 @@
 import numpy as np
 from utils import size, ind2sub
-from grids import createGrid
+import .createGrid
 
 def splitGrid_sameDim(g, bounds, padding):
     """

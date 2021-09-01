@@ -1,4 +1,4 @@
-from Other import *
+from SpatialDerivative.Other import *
 from .check_eq_approx import checkEquivalentApprox
 from .ENO3aHelper import upwindFirstENO3aHelper
 from .ENO3bHelper import upwindFirstENO3bHelper
@@ -7,6 +7,6 @@ from .upwind_first_eno2 import upwindFirstENO2
 from .upwind_first_eno3 import upwindFirstENO3
 from .upwind_first_eno3a import upwindFirstENO3a
 from .upwind_first_eno3b import upwindFirstENO3b
-from .upwind_first_eno5 import upwindFirstENO5
-from .upwind_first_eno5a import upwindFirstENO5a
+from .upwind_first_weno5 import upwindFirstWENO5
+from .upwind_first_weno5a import upwindFirstWENO5a
 from .upwind_first_weno5b import upwindFirstWENO5b

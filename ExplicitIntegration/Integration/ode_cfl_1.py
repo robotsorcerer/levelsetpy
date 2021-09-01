@@ -103,7 +103,7 @@ def odeCFL1(schemeFunc, tspan, y0, options=None, schemeData=None):
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         t = tspan[0]
         steps = 0; startTime = cputime(); stepBound = zeros(numY, 1)
-        ydot = cell(numY, 1);, y = y0
+        ydot = cell(numY, 1); y = y0
         while(tspan[1] - t >= small * np.abs(tspan[1])):
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             # First substep: Forward Euler from t_n to t_{n+1}.

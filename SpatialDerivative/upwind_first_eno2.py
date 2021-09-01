@@ -94,11 +94,11 @@ def upwindFirstENO2(grid, data, dim, generateAll=0):
 
     # Take leftmost grid.N(dim) entries for left approximation.
     indices1[dim] = quickarray(0, size(D1, dim) - 1)
-    dL = D1[indices1.flaten())]
+    dL = D1[indices1.flaten()]
 
     # Take rightmost grid.N(dim) entries for right approximation.
     indices1[dim] = quickarray(1, size(D1, dim))
-    dR = D1[indices1.flaten())]
+    dR = D1[indices1.flaten()]
 
     #---------------------------------------------------------------------------
     # Each copy gets modified by one of the second order terms.

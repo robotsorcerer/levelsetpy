@@ -137,11 +137,11 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=0):
         if strcmp(epsilonCalculationMethod, 'constant'):
             epsilonL = 1e-6
             epsilonR = epsilonL
-        elif strcmp(epsilonCalculationMethod, 'maxOverGrid':
+        elif strcmp(epsilonCalculationMethod, 'maxOverGrid'):
             D1squared = D1**2
             epsilonL = 1e-6 * max(D1squared) + 1e-99
             epsilonR = epsilonL
-        elif strcmp(epsilonCalculationMethod, 'maxOverNeighbors':
+        elif strcmp(epsilonCalculationMethod, 'maxOverNeighbors'):
             # Implements (3.38) in O&F for computing epsilon.
             D1squared = D1**2
             epsilon = D1squared[indices[0].flatten()]

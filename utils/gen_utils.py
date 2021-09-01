@@ -12,7 +12,7 @@ class Bundle(object):
     def __dtype__(self):
         return Bundle
 
-def quickarray(start=0, end, step=1):
+def quickarray(start, end, step=1):
     return list(range(start, end, step))
 
 

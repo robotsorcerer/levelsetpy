@@ -1,7 +1,7 @@
 import logging
 import numpy as np
 from utils import *
-from grids import processGrid
+from .process_grid import processGrid
 from BoundaryCondition import addGhostExtrapolate, addGhostPeriodic
 
 logger = logging.getLogger(__name__)
