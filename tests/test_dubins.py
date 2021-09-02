@@ -1,4 +1,4 @@
-from utils import Bundle, cell, zeros, np
+from Utilities import Bundle, cell, zeros, np
 from DynamicalSystems import DubinsCar, dubins_default_params
 
 def test_dubins_dyn_sys(params):

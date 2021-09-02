@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from os.path import join
-from utils import error
+from Utilities import error
 
 class Visualizer():
 

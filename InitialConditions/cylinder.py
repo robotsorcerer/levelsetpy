@@ -1,4 +1,4 @@
-from utils import zeros, ones, numel, logger, np
+from Utilities import zeros, ones, numel, logger, np
 
 def shapeCylinder(grid, ignoreDims=[], center=None, radius=1):
     """
@@ -48,17 +48,17 @@ def shapeCylinder(grid, ignoreDims=[], center=None, radius=1):
      Default parameter values.
     """
 
-    if not center:
+    if not np.any(center) or not center:
         center = zeros(grid.dim, 1);
     elif(numel(center) == 1):
         center = center * ones(grid.dim, 1);
 
     #---------------------------------------------------------------------------
     # Signed distance function calculation.
-    data = zeros(grid.shape[0]);
-    for i in range(len(grid.dim)):
-        if(i != ignoreDims[i]):
-            data += (grid.xs[i] - center[i]*center[i])
+    data = np.zeros((grid.shape));
+    for i in range(grid.dim):
+        if(i != ignoreDims):
+            data += (grid.xs[i] - center[i]**2)
     data = np.sqrt(data) - radius;
 
     #---------------------------------------------------------------------------

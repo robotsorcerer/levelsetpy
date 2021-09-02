@@ -1,4 +1,4 @@
-from utils import *
+from Utilities import *
 from .check_eq_approx import checkEquivalentApprox
 
 def upwindFirstENO2(grid, data, dim, generateAll=0):

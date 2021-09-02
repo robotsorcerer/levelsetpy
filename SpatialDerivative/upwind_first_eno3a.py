@@ -1,4 +1,4 @@
-from utils import *
+from Utilities import *
 from .check_eq_approx import checkEquivalentApprox
 from .ENO3aHelper import upwindFirstENO3aHelper
 

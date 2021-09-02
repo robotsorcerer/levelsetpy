@@ -1,4 +1,4 @@
-from utils import *
+from Utilities import *
 
 def termLaxFriedrichs(t, y, schemeData):
     """

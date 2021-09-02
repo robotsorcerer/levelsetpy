@@ -1,4 +1,4 @@
-from utils import *
+from Utilities import *
 
 def computeGradients(g, data, dim=None, derivFunc=None):
     """

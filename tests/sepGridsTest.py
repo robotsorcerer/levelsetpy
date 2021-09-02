@@ -1,7 +1,7 @@
 import numpy as np
-from utils import expand, ones
+from Utilities import expand, ones
 from Grids import createGrid, sepGrid
-from valFuncs import proj
+from ValueFuncs import proj
 
 
 def sepGridTest(num_points=45, low_mem=True, process=False):

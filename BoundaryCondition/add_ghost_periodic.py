@@ -2,7 +2,7 @@
 import logging
 logger = logging.getLogger(__name__)
 
-from utils import *
+from Utilities import *
 
 def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
     """

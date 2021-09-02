@@ -1,5 +1,5 @@
 import copy
-from utils import *
+from Utilities import *
 import numpy as np
 from datetime import datetime
 from Hamiltonians import genericHam, genericPartial
@@ -234,14 +234,14 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         warn('we now use lowMemory instead of low_memory');
 
 
-    if extraArgs.flip_output:
-        extraArgs.flipOutput = copy.deepcopy(extraArgs.flip_output)
+    if isfield(extraArgs, 'flip_output'):
+        extraArgs.flipOutput = extraArgs.flip_output
         del extraArgs.flip_output;
         logger.warning('we now use flipOutput instead of flip_output');
 
 
-    if extraArgs.stopSet:
-        extraArgs.stopSetInclude = copy.deepcopy(extraArgs.stopSet)
+    if isfield(extraArgs, 'stopSet'):
+        extraArgs.stopSetInclude = extraArgs.stopSet
         del extraArgs.stopSet;
         logger.warning('we now use stopSetInclude instead of stopSet');
 
@@ -463,7 +463,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
         # Number of dimensions to be plotted and to be projected
         pDims = np.count_nonzero(plotDims);
-        if np.char.isnumeric(projpt):
+        if isnumeric(projpt):
             projDims = len(projpt);
         else:
             projDims = gDim - pDims;
@@ -499,7 +499,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             # and to project at a particular slice through other dimensions.
             if isinstance(projpt, list):
                 idx = np.where(plotDims==0)#[0]
-                plotDimsTemp = ones(size(plotDims));
+                plotDimsTemp = np.ones(len(plotDims));
                 gPlot = g;
                 dataPlot = data0;
                 if isfield(extraArgs, 'obstacleFunction'):
@@ -530,6 +530,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
         # Initialize the figure for visualization
+        winsize = (16,9)
         fig = plt.figure(figsize=winsize);
         fig.tight_layout()
         ax = fig.add_subplot(1, 1, 1)
@@ -543,16 +544,16 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         # Set defaults
         eAT_visSetIm = Bundle(dict(sliceDim = gPlot.dim,
                                     applyLight = False))
-        if isfield(extraArgs.visualize, 'lineWidth'):
-            eAT_visSetIm.LineWidth = extraArgs.visualize.lineWidth;
-            eAO_visSetIm.LineWidth = extraArgs.visualize.lineWidth;
-        else:
-            eAO_visSetIm.LineWidth = 2;
+        # if isfield(extraArgs.visualize, 'lineWidth'):
+        #     eAT_visSetIm.LineWidth = extraArgs.visualize.lineWidth;
+        #     eAO_visSetIm.LineWidth = extraArgs.visualize.lineWidth;
+        # else:
+        #     eAO_visSetIm.LineWidth = 2;
 
 
         # If we're stopping once we hit an initial condition requirement, plot
         # said requirement
-        if extraArgs.stopInit:
+        if isfield(extraArgs, 'stopInit'):
             projectedInit = extraArgs.stopInit(plotDims.astype(bool))
             if np.nonzero(plotDims) == 2:
                 ax.plot(projectedInit[0], projectedInit[1], 'b*')

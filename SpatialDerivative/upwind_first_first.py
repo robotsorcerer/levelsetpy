@@ -1,4 +1,4 @@
-from utils import *
+from Utilities import *
 
 def upwindFirstFirst(grid, data, dim, generateAll=0):
     """

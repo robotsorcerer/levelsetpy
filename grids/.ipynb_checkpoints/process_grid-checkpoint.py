@@ -1,5 +1,5 @@
 import numpy as np
-from utils import *
+from Utilities import *
 from BoundaryCondition import addGhostPeriodic
 
 def processGrid(gridIn, data=None):

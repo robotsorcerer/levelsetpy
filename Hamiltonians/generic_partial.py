@@ -1,4 +1,4 @@
-from utils import *
+from Utilities import *
 
 def genericPartial(t, data, derivMin, derivMax, schemeData, dim):
     g = schemeData.grid

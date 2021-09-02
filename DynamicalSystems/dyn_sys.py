@@ -1,6 +1,6 @@
 """ This file defines the base dynamical systems class. """
 import abc
-from utils import cell
+from Utilities import cell
 
 class DynSys(object):
     "Dynamical Systems Superclass."

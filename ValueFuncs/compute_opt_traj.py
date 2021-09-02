@@ -1,4 +1,4 @@
-from utils import *
+from Utilities import *
 from .data_proj import proj
 from .compute_gradients import computeGradients
 from matplotlib import pyplot as plt

@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-from utils import *
+from Utilities import *
 from .process_grid import processGrid
 from BoundaryCondition import addGhostExtrapolate, addGhostPeriodic
 

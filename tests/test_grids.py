@@ -1,9 +1,9 @@
 from math import pi
-from utils import *
-from grids import *
+from Utilities import *
+from Grids import *
 from BoundaryCondition import *
 from Visualization import Visualizer
-from valFuncs import proj
+from ValueFuncs import proj
 
 
 def test_create():

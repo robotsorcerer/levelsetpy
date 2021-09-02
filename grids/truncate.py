@@ -1,4 +1,4 @@
-from utils import *
+from Utilities import *
 from .process_grid import processGrid
 
 def truncateGrid(gOld, dataOld=None, xmin=None, xmax=None, process=True):
