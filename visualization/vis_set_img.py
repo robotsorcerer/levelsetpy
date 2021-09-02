@@ -22,10 +22,11 @@ def visSetIm(data, g=None, color='r', level=0, extraArgs=None):
      Mo Chen, 2016-05-12
     """
     ## Default parameters and input check
-    if isempty(g):
+    if g is None:
       N = np.asarray(size(data)).T
       g = createGrid(np.ones(numDims(data), 1), N, N)
 
+    # print('g: ', g)
     if g.dim != numDims(data) and g.dim+1 != numDims(data):
       error('Grid dimension is inconsistent with data dimension!')
 
@@ -92,16 +93,16 @@ def visSetIm_single(g, data, color, level, extraArgs):
         extraArgs.ax.plot(g.xs[0], data, linestyle='-', color=color)
         extraArgs.ax.plot(g.xs[0], np.zeros(size(g.xs[0])), linestyle=':', color='k')
 
-    # elif g.dim==2:
-    #     if isscalar(level):
-    #       [~, h] = contour(g.xs{1}, g.xs{2}, data, [level level], 'color', color)
-    #     elseif isempty(level):
-    #       [~, h] = contour(g.xs{1}, g.xs{2}, data)
-    #     else
-    #       [~, h] = contour(g.xs{1}, g.xs{2}, data, level, 'color', color)
-    #
-    #     h.LineStyle = LineStyle
-    #     h.LineWidth = LineWidth
+    elif g.dim==2:
+        if level:
+          [~, h] = ax.contour(g.xs[0], g.xs[1], data, [level, level], 'color', color)
+        elseif isempty(level):
+          [~, h] = ax.contour(g.xs[0], g.xs[1], data)
+        else
+          [~, h] = ax.contour(g.xs[0], g.xs[1], data, level, 'color', color)
+
+        h.LineStyle = LineStyle
+        h.LineWidth = LineWidth
     # elif g.dim==3:
     #     h = visSetIm3D(g, data, color, level, applyLight)
     #

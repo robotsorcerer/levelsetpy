@@ -7,6 +7,7 @@ from ExplicitIntegration import *
 from SpatialDerivative import upwindFirstENO2
 import matplotlib
 # matplotlib.use('Agg')
+from Visualization import *
 import matplotlib.pyplot as plt
 
 def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
@@ -571,9 +572,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                 extraArgs.visualize.plotColorVS0 = 'g';
 
 
-            extraOuts.hVS0 = visSetIm(\
-                gPlot, dataPlot, extraArgs.visualize.plotColorVS0,\
-                sliceLevel, eAT_visSetIm);
+            extraOuts.hVS0 = visSetIm(dataPlot, gPlot, extraArgs.visualize.plotColorVS0, sliceLevel, eAT_visSetIm);
 
             if isfield(extraArgs.visualize,'plotAlphaVS0'):
                 extraOuts.hVS0.FaceAlpha = extraArgs.visualize.plotAlphaVS0;
@@ -615,7 +614,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                 extraArgs.visualize.plotColorTS = 'g';
 
 
-            extraOuts.hTS = visSetIm(gPlot, targPlot, \
+            extraOuts.hTS = visSetIm(targPlot, gPlot, \
                 extraArgs.visualize.plotColorTS, sliceLevel, eAT_visSetIm);
 
             if isfield(extraArgs.visualize,'plotAlphaTS'):
@@ -680,7 +679,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
             # Visualize function
-            [extraOuts.hOF]= visFuncIm(gPlot,-obsPlot,\
+            extraOuts.hOF= visFuncIm(gPlot,-obsPlot,\
                 extraArgs.visualize.plotColorOF,\
                 extraArgs.visualize.plotAlphaOF);
 
