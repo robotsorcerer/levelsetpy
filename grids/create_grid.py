@@ -33,7 +33,7 @@ def  createGrid(grid_min, grid_max, N, pdDims=None, process=True, low_mem=False)
 
     # Input checks
     if isscalar(N):
-        N = N*ones(grid_min.shape)
+        N = N*np.ones(grid_min.shape).astype(np.int64)
 
     if not isvector(grid_min) or not isvector(grid_max) or not isvector(N):
         logger.fatal('grid_min, grid_max, N must all be vectors!')
@@ -61,7 +61,7 @@ def  createGrid(grid_min, grid_max, N, pdDims=None, process=True, low_mem=False)
             g.bdry[i] = addGhostExtrapolate
 
     if low_mem:
-      g.dx = np.divide(grid_max - grid_min, N-1)
+      g.dx = np.divide(grid_max - grid_min, N)
       g.vs = cell(g.dim, 1);
       for i in range(g.dim):
           g.vs[i] = expand(np.arange(grid_min[i,0],  grid_max[i,0],  g.dx[i,0]), 1)

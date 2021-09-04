@@ -28,7 +28,7 @@ class Visualizer():
         if self._fontdict is None:
             self._fontdict = {'fontsize':12, 'fontweight':'bold'}
 
-    def visGrid(self, gs, dim, colors=None, save_dir=None, title=None):
+    def visGrid(self, gs, dim, colors=None, save_dir=None, title=None, dims=None):
         # see helper OC/visualization/visGrid.m
         if not colors:
             colors = ['blue', 'red', 'yellow', 'orange', 'green', 'black']
@@ -37,12 +37,16 @@ class Visualizer():
             g = gs
             ax = self._fig.add_subplot(1, 1, 1)
             ax.plot(np.zeros((g.N, 1)), g.vs[0], color=colors[0], linestyle='.')
-            ax.plot(np.hstack([g.min, g,max]), np.hstack([min(g.vs[0]), max(g.vs[0])]), \
+            ax.plot(np.hstack([g.min, g.max]), np.hstack([min(g.vs[0]), max(g.vs[0])]), \
                     linestyle='-', color=colors[0])
             ax.xaxis.set_tick_params(labelsize=self._labelsize)
             ax.yaxis.set_tick_params(labelsize=self._labelsize)
             if title:
                 ax.set_title(title, fontdict=self._fontdict)
+
+            if dims:
+                x, y = dims[i]
+                ax.annotate(f'dim={dims[i]}', xy=(x+0.25, y-0.5), size=17)
 
             self._fig.tight_layout()
             # if save_dir:
@@ -65,12 +69,15 @@ class Visualizer():
                 ax.set_xlabel('x', fontdict=self._fontdict)
                 ax.set_ylabel('y', fontdict=self._fontdict)
 
+                if dims:
+                    x, y = dims[i]
+                    ax.annotate(f'dim={dims[i]}', xy=(x+0.25, y-0.5), size=17)
+
             if not title:
                 title = f'Gridsplitter along {len(gs)} dims'
-                
-            plt.title(title)
-            plt.show()
 
+            plt.title(title, fontdict=self._fontdict)
+            plt.show()
         elif dim==3:
             ax = self._fig.add_subplot(1, 2, 1, projection='3d')
 
@@ -92,8 +99,33 @@ class Visualizer():
             ax = self._fig.add_subplot(1, 2, 2, projection='3d')
             surf = ax.plot_surface(g.xs[0], g.xs[1], g.xs[2],rstride=1, cstride=1, cmap=cm.coolwarm,
                                    linewidth=0, antialiased=False)
+
+            plt.title(title, fontdict=self._fontdict)
             self._fig.colorbar(surf, shrink=0.5, aspect=10)
 
+            plt.show()
+        elif dim>3: # this is for a projected grid to 2d
+            ax = self._fig.add_subplot(1, 1, 1)
+            i=0
+            for g in gs:
+                ax.plot(g.xs[0], g.xs[1], '.', color=colors[i])
+                ax.plot(np.hstack([g.min[0], g.min[0]]), np.hstack([g.min[1], g.max[1]]), linestyle='-', color=colors[i])
+                ax.plot(np.hstack([g.max[0], g.max[0]]), np.hstack([g.min[1], g.max[1]]), linestyle='-', color=colors[i])
+                ax.plot(np.hstack([g.min[0], g.max[0]]), np.hstack([g.min[1], g.min[1]]), linestyle='-', color=colors[i])
+                ax.plot(np.hstack([g.min[0], g.max[0]]), np.hstack([g.max[1], g.max[1]]), linestyle='-', color=colors[i])
+
+                ax.xaxis.set_tick_params(labelsize=self._labelsize)
+                ax.yaxis.set_tick_params(labelsize=self._labelsize)
+
+                ax.set_xlabel('x', fontdict=self._fontdict)
+                ax.set_ylabel('y', fontdict=self._fontdict)
+                if dims:
+                    x, y = dims[i]
+                    ax.annotate(f'dim={dims[i]}', xy=(x+0.25, y-0.5), size=17)
+                i+=1
+
+            self._fig.tight_layout()
+            plt.title(title, fontdict=self._fontdict)
             plt.show()
         else:
             error('Only grids of up to 3 dimensions can be visualized!')

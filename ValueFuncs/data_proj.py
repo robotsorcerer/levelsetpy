@@ -58,31 +58,27 @@ def proj(g, data, dimsToRemove, xs=None, NOut=None, process=True):
         logger.fatal('Inconsistent input data dimensions!')
 
     # Project data
-    # print('NOut ', NOut.shape)
-    if dataDims == g.dim:
-        gOut, dataOut = projSingle(g, data, dimsToRemove, xs, NOut, process)
+    gOut, dataOut = projSingle(g, data, dimsToRemove, xs, NOut, process)
 
-    else: # dataDims == g.dim + 1
-        gOut, _ = projSingle(g, np.empty((0, 0)), dimsToRemove, xs, NOut, process)
+    # Project data
+    if isinstance(data, list):
+        numTimeSteps = len(data)
+    else:
+        numTimeSteps = data.shape[dataDims-1]
+        # colonsIn = [[':'] for i in range(g.dim)]
 
-        # Project data
+    dataO = [] #np.zeros(NOut.T.shape + (numTimeSteps, ))
+    # colonsOut =   [[':'] for i in range(g.dim)] #repmat({':'}, 1, gOut.dim)
+
+    for i in range(numTimeSteps):
         if isinstance(data, list):
-            numTimeSteps = len(data)
+            _, dataOut = projSingle(g, data[i], dimsToRemove, xs, NOut, process)
         else:
-            numTimeSteps = data.shape[dataDims-1]
-            colonsIn = [[':'] for i in range(g.dim)] #repmat({':'}, 1, g.dim)
+            _, dataOut = projSingle(g, data[i, ...], dimsToRemove, xs, NOut, process)
 
-        # print(f'Nout: {NOut.T.shape}, {dataDims}')
-        dataOut = np.zeros(NOut.T.shape + (numTimeSteps, ))
-        colonsOut =  [[':'] for i in range(g.dim)] #repmat({':'}, 1, gOut.dim)
+        dataO.append(dataOut)
 
-        for i in range(numTimeSteps):
-            if isinstance(data, list):
-                _, dataOut[colonsOut[:],i] = projSingle(g, data[i], dimsToRemove, xs, NOut, process)
-            else:
-                _, dataOut[colonsOut[:],i] = projSingle(g, data[colonsIn[:],i], dimsToRemove, xs, NOut, process)
-
-    return gOut, dataOut
+    return gOut, dataO
 
 
 
@@ -133,7 +129,7 @@ def projSingle(g, data, dims, xs, NOut, process):
         gOut.bdry = expand(g.bdry[np.logical_not(dims)], 1) #.squeeze()#.tolist()
 
         if numel(NOut) == 1:
-            gOut.N = NOut@ones(gOut.dim, 1)
+            gOut.N = NOut@ones(gOut.dim, 1).astype(np.int64)
         else:
             gOut.N = NOut
 

@@ -184,11 +184,11 @@ def processGrid(gridIn, data=None, sparse_flag=False):
             logger.fatal('dx field is not column vector of length dim or a scalar');
     elif isfield(gridOut, 'N'):
         # Only N field is present, so infer dx.
-        gridOut.dx = np.divide((gridOut.max - gridOut.min),  (gridOut.N - 1))
+        gridOut.dx = np.divide((gridOut.max - gridOut.min),  (gridOut.N))
     else:
         logger.warn('Neither fields dx nor dN is present, so use default N and infer dx')
         gridOut.N = defaultN * ones(gridOut.dim, 1).astype(np.int64);
-        gridOut.dx = np.divide((gridOut.max - gridOut.min), (gridOut.N - 1))
+        gridOut.dx = np.divide((gridOut.max - gridOut.min), (gridOut.N))
 
     #----------------------------------------------------------------------------
     if isfield(gridOut, 'vs'):

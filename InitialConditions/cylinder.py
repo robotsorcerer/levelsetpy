@@ -58,7 +58,7 @@ def shapeCylinder(grid, ignoreDims=[], center=None, radius=1):
     data = np.zeros((grid.shape));
     for i in range(grid.dim):
         if(i != ignoreDims):
-            data += (grid.xs[i] - center[i]**2)
+            data += (grid.xs[i] - center[i])**2
     data = np.sqrt(data) - radius;
 
     #---------------------------------------------------------------------------

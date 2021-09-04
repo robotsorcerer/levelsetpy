@@ -95,11 +95,11 @@ def visSetIm_single(g, data, color, level, extraArgs):
 
     elif g.dim==2:
         if level:
-          [~, h] = ax.contour(g.xs[0], g.xs[1], data, [level, level], 'color', color)
-        elseif isempty(level):
-          [~, h] = ax.contour(g.xs[0], g.xs[1], data)
-        else
-          [~, h] = ax.contour(g.xs[0], g.xs[1], data, level, 'color', color)
+          _, h = extraArgs.ax.contour(g.xs[0], g.xs[1], data, [level, level], 'color', color)
+        elif level is None:
+          _, h = extraArgs.ax.contour(g.xs[0], g.xs[1], data)
+        else:
+          _, h = extraArgs.ax.contour(g.xs[0], g.xs[1], data, level, 'color', color)
 
         h.LineStyle = LineStyle
         h.LineWidth = LineWidth
