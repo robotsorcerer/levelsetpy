@@ -9,7 +9,7 @@ def splitGrid(g, dims, bounds, padding=None):
 
      Inputs:
          g - original grid
-         dims   - cell vector of output grid dimensions
+         dims - cell vector of output grid dimensions
                   eg. dims = {[1; 3], [2; 4]} would produce two 2D sets of grids.
                       The first set has dimensions corresponding to the 1st and
                       3rd dimensions in the original grid

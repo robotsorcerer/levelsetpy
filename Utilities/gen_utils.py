@@ -4,6 +4,11 @@ import time
 
 logger = logging.getLogger(__name__)
 
+# DEFAULT TYPES
+ZEROS_TYPE = np.int64
+ONES_TYPE = np.int64
+
+
 class Bundle(object):
     def __init__(self, dicko):
         for var, val in dicko.items():
@@ -86,15 +91,19 @@ def numDims(A):
 def expand(x, ax):
     return np.expand_dims(x, ax)
 
-def ones(x, cols):
-    return np.ones((x, cols))
-
-def zeros(rows, cols=None):
+def ones(rows, cols=None, dtype=ONES_TYPE):
     if cols:
         shape = (rows, cols)
     else:
         shape = (rows, rows)
-    return np.zeros(shape)
+    return np.ones(shape, dtype=dtype)
+
+def zeros(rows, cols=None, dtype=ZEROS_TYPE):
+    if cols:
+        shape = (rows, cols)
+    else:
+        shape = (rows, rows)
+    return np.zeros(shape, dtype=dtype)
 
 def ndims(x):
     return len(size(x))

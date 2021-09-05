@@ -4,16 +4,24 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from os.path import join
 from Utilities import error
+from .color_utils import cmaps
 
 class Visualizer():
 
     def __init__(self, fig=None, ax=None, winsize=None,
-                labelsize=18, linewidth=6, fontdict=None):
+                labelsize=18, linewidth=6, fontdict=None,
+                block=False):
         """
             Ad-hoc visualizer for grids, grid partitions
             and HJI solutions
 
-            Mimics Ian Mitchell's Visualization function
+            fig: pyplot figure. If not passed, it's created
+            ax: subfig of fig on which to plot figure
+            winsize: size of pyplot window (default is (16,9))
+            labelsize: size of plot x/y labels
+            linewidth: width of 2D lines
+            fontdict: fontweight and size for visualization
+            block: whether to block screen after plot or not
         """
         if winsize is None:
             self.winsize =(16, 9)
@@ -21,6 +29,7 @@ class Visualizer():
         if (fig and ax) is None:
             self._fig = plt.figure(figsize=winsize)
             self._fig.tight_layout()
+        self.block=block
 
         self._labelsize = labelsize
         self._fontdict  = fontdict
@@ -51,7 +60,6 @@ class Visualizer():
             self._fig.tight_layout()
             # if save_dir:
             #     self.fig.savefig(join(save_dir, datetime.strftime(datetime.now() + '%H-%')+'.png'))
-            plt.show()
         elif dim==2:
             ax = self._fig.add_subplot(1, 1, 1)
 
@@ -77,7 +85,6 @@ class Visualizer():
                 title = f'Gridsplitter along {len(gs)} dims'
 
             plt.title(title, fontdict=self._fontdict)
-            plt.show()
         elif dim==3:
             ax = self._fig.add_subplot(1, 2, 1, projection='3d')
 
@@ -103,7 +110,6 @@ class Visualizer():
             plt.title(title, fontdict=self._fontdict)
             self._fig.colorbar(surf, shrink=0.5, aspect=10)
 
-            plt.show()
         elif dim>3: # this is for a projected grid to 2d
             ax = self._fig.add_subplot(1, 1, 1)
             i=0
@@ -126,10 +132,10 @@ class Visualizer():
 
             self._fig.tight_layout()
             plt.title(title, fontdict=self._fontdict)
-            plt.show()
         else:
             error('Only grids of up to 3 dimensions can be visualized!')
 
+        plt.show(block=self.block)
 
     def visFuncIm(self, g, dataPlot,color):
         ax = self._fig.add_subplot(1, 1, 1)
@@ -141,3 +147,5 @@ class Visualizer():
                                    linewidth=0, antialiased=False, facecolors=color)
         else:
             error('Can not plot in more than 3D!')
+
+        plt.show(block=self.block)

@@ -1,6 +1,6 @@
-import numpy as np
-from Utilities import size, ind2sub
-import .createGrid
+from Utilities import *
+from Grids import createGrid, getOGPBounds
+import copy
 
 def splitGrid_sameDim(g, bounds, padding):
     """
@@ -27,30 +27,34 @@ def splitGrid_sameDim(g, bounds, padding):
     assert isinstance(bounds, list), 'bounds must be a list or list of lists'
     ## Create a grid for the bounds
     if g.dim > 1:
-        bounds_grid = np.meshgrid(*bounds, sparse=False);
+        bounds_grid = np.meshgrid(*bounds, sparse=False, indexing='ij');
     else:
-        bounds_grid = np.meshgrid(bounds)[0]
+        # indexing and sparse flags have no effect in 1D case
+        bounds_grid = np.meshgrid(bounds, indexing='ij')[0]
 
     ## Create grids based on the bound grid
-    bds_grd = bounds_grid[0]
-    bds_grd_shp = np.array(bds_grd.shape)
+    temp = size(bounds_grid[0])
+    temparr = np.array((temp))
+    gs = np.zeros(temparr-(temparr>1).astype(np.int64))
 
-    gs = bds_grd_shp-(bds_grd_shp>1)
-    gs = np.empty(gs)
-
+    ii = cell(g.dim, 1)
+    gss = []
     for i in range(numel(gs)):
-        ii = np.unravel_index(size(gs), i, order='F')
-        # iip = ii;
-        # for j in range(g.dim):
-        #     iip[j] = iip[j] + 1;
-        grid_min = bounds_grid[0]
-        grid_max = bounds_grid[0]
-        for j in range(1, g.dim):
-           grid_min = np.concatenate(grid_min, bounds_grid[j][ii.flatten()], 0)
-           grid_max = np.concatenate(grid_max, bounds_grid[j][iip.flatten()], 0)
-
+        ii = np.asarray(np.unravel_index(i, size(gs), order='F'))
+        iip = copy.copy(ii)
+        for j in range(g.dim):
+            iip[j] += 1
+        grid_min = []
+        grid_max = []
+        # turn'em to indices (tuples) to aid dynamic
+        # indexing (see: https://numpy.org/doc/stable/user/basics.indexing.html)
+        ii, iip = tuple(ii), tuple(iip)
+        for j in range(g.dim):
+            grid_min.append(bounds_grid[j][ii])
+            grid_max.append(bounds_grid[j][iip])
+        grid_min, grid_max = np.vstack((grid_min)), np.vstack((grid_max))
+        #print(f'grid_min: {grid_min.shape}, grid_max: {grid_max.shape}')
         grid_min, grid_max, N = getOGPBounds(g, grid_min, grid_max, padding);
+        gss.append(createGrid(grid_min, grid_max, N, process=True))
 
-        gs[ii.flatten()] = createGrid(grid_min, grid_max, N);
-
-    return gs
+    return gss
