@@ -8,11 +8,6 @@ import time
 import os, sys
 import numpy as np
 from os.path import abspath, join
-# sys.path.append(abspath(join('..')))
-# sys.path.append(abspath(join('..', 'grids')))
-# sys.path.append(abspath(join('..', 'utils')))
-# sys.path.append(abspath(join('..', 'Visualization')))
-# sys.path.append(abspath(join('..')))
 sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )
 
 from Grids import *
@@ -23,14 +18,14 @@ from Visualization import *
 from ValueFuncs import proj
 from math import pi
 from InitialConditions import shapeCylinder
-# get_ipython().run_line_magic('matplotlib', 'inline')
 
 
 # ### A Basic 2-D Grid and a signed distance function cylinder
 
 # In[2]:
-delay = 3
+delay = 1
 block=False
+fontdict = {'fontsize':12, 'fontweight':'bold'}
 
 from math import pi
 gridMin = np.array([[0,0]])
@@ -39,10 +34,11 @@ N = 20 *np.ones((2,1)).astype(np.int64)
 g = createGrid(gridMin, gridMax, N, low_mem=False, process=True)
 
 
-viz = Visualizer(winsize=(8, 5), block=block)
+savedict = dict(save=True, savename='2d_grid.jpg', savepath=join("..", "jpeg_dumps"))
+viz = Visualizer(winsize=(8, 5), block=block, savedict=savedict)
 viz.visGrid([g], g.dim, title='Simple 2D Grid')
-plt.pause(delay)
-plt.close()
+# plt.pause(delay)
+# plt.close()
 
 # ### A 3-D Grid and a signed distance function cylinder
 
@@ -58,10 +54,11 @@ g = createGrid(grid_min, grid_max, N, pdDims);
 
 data0 = shapeCylinder(g, 3, zeros(len(N), 1), radius=1)
 
-viz = Visualizer(winsize=(16, 9), block=block)
+savedict["savename"] = '3d_grid.jpg'
+viz = Visualizer(winsize=(16, 9), block=block, savedict=savedict)
 viz.visGrid(g, g.dim, title='Simple 3D Grid')
-plt.pause(delay)
-plt.close()
+# plt.pause(delay)
+# plt.close()
 
 # ### A 4-D Grid
 #
@@ -83,11 +80,12 @@ dims = [[0, 2], [1, 3]]
 gs, ds = sepGrid(g, dims);
 
 # Visualize
-viz = Visualizer(winsize=(8, 6), block=block)
-viz.visGrid(gs, dim= len(gs), dims=dims, title=f'A {len(gs)}-cell Grid Example')
+savedict["savename"] = f'{g.dim}D_grid_{len(gs)}_cell.jpg'
+viz = Visualizer(winsize=(8, 6), block=block, savedict=savedict)
+viz.visGrid(gs, dim= len(gs), dims=dims, title=f'A {len(gs)}-cell/{g.dim}D-Grid Example')
 
-plt.pause(delay)
-plt.close()
+# plt.pause(delay)
+# plt.close()
 
 # ### A 4-D Grid Split into 4 subgrids;
 #
@@ -108,10 +106,11 @@ dims = [[0, 2], [1, 2],  [1, 3], [0, 1]]
 
 gs, dat = sepGrid(g, dims);
 
-viz = Visualizer(winsize=(8, 5), block=block)
-viz.visGrid(gs, len(gs), title=f'A {len(gs)}-cell Grid Example', dims=dims)
-plt.pause(delay)
-plt.close()
+savedict["savename"] = f'{g.dim}D_grid_{len(gs)}_cell.jpg'
+viz = Visualizer(winsize=(8, 5), block=block, savedict=savedict)
+viz.visGrid(gs, len(dims), title=f'A {len(dims)}-cell Grid Example', dims=dims)
+# plt.pause(delay)
+# plt.close()
 
 # ### An Eight-Grid Cell
 #
@@ -133,11 +132,11 @@ g = createGrid(gridIn, gridOut, N, process=True);
 
 dims = [[0, 2], [1, 2],  [1, 3], [0, 1]]
 gs, data = sepGrid(g, dims);
-len(gs)
-viz = Visualizer(winsize=(8, 5), block=block)
+savedict["savename"] = f'{g.dim}D_grid_{len(gs)}_cell.jpg'
+viz = Visualizer(winsize=(8, 5), block=block, savedict=savedict)
 viz.visGrid(gs, len(gs), title=f'A {len(N)}-sub-grid Example', dims=dims)
-plt.pause(delay)
-plt.close()
+# plt.pause(delay)
+# plt.close()
 
 # ### Making cell partitions in grids
 
@@ -151,10 +150,11 @@ bounds = [[0, 0.5, 1], [0, 0.25, 0.75, 1]]
 padding = np.array([[0, 0]]).T;
 gs = splitGrid_sameDim(g, bounds, padding);
 
-viz = Visualizer(winsize=(8, 5), block=block)
+savedict["savename"] = f'{g.dim}D_grid_{len(gs)}_cell.jpg'
+viz = Visualizer(winsize=(8, 5), block=block, savedict=savedict)
 viz.visGrid(gs, gs[0].dim, title=f'A {len(gs)}-cell Grid Example')
-plt.pause(delay)
-plt.close()
+# plt.pause(delay)
+# plt.close()
 
 # ### A 3D grid with subcells
 
@@ -168,20 +168,17 @@ padding = zeros(3,1)
 g = createGrid(gmin, gmax, N);
 gs = splitGrid_sameDim(g, bounds, padding);
 
-
 # In[9]:
-
-
-viz = Visualizer(winsize=(16, 9), block=block)
-
-
-ax = plt.axes(projection='3d')
+savedict["savename"] = f'{g.dim}D_grid_{len(gs)}_cell.jpg'
+fig = plt.figure(figsize=(16, 9))
+ax = fig.add_subplot(111,projection='3d')
 for i in range(len(gs)):
     g = gs[i]
     #viz.visGrid(gs[i], gs[i].dim, title=f'A {len(gs)}-cell {len(gs)}-Grid Example')
     ax.plot3D(g.xs[0].flatten(), g.xs[1].flatten(), g.xs[2].flatten())
 ax.set_title(f'A {len(gs)}-cell within a {gs[0].dim}-Grid Example')
+fig.savefig(join(savedict["savepath"],savedict["savename"]), bbox_inches='tight',facecolor='None')
 
 plt.show()
-plt.pause(delay)
+# plt.pause(delay)
 plt.close()

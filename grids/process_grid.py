@@ -238,27 +238,23 @@ def processGrid(gridIn, data=None, sparse_flag=False):
         else:
             logger.fatal('xs field is not a cell vector');
     else:
-        gridOut.xs = cell(gridOut.dim, 1)
+        # gridOut.xs = cell(gridOut.dim, 1)
         # see https://www.scivision.dev/matlab-python-meshgrid-ndgrid/
-        if(gridOut.dim ==3):
-            gridOut.xs = np.meshgrid(gridOut.vs[0], gridOut.vs[1], gridOut.vs[2], indexing='ij', sparse=sparse_flag);
-        elif(gridOut.dim ==2):
-            gridOut.xs = np.meshgrid(gridOut.vs[0], gridOut.vs[1], indexing='ij', sparse=sparse_flag);
-        elif(gridOut.dim ==1):
-            gridOut.xs[0] = gridOut.vs[0]
-        elif (gridOut.dim>3):
-            gridOut.xs = np.meshgrid(*gridOut.vs, indexing='ij', sparse=sparse_flag);
-
-        # print(f'gridOut.xs: {len(gridOut.xs)}, {gridOut.xs[0].shape}')
+        # if(gridOut.dim ==3):
+        #     gridOut.xs = np.meshgrid(gridOut.vs[0], gridOut.vs[1], gridOut.vs[2], indexing='ij', sparse=sparse_flag);
+        # elif(gridOut.dim ==2):
+        #     gridOut.xs = np.meshgrid(gridOut.vs[0], gridOut.vs[1], indexing='ij', sparse=sparse_flag);
+        # elif(gridOut.dim ==1):
+        #     gridOut.xs[0] = gridOut.vs[0]
+        # elif (gridOut.dim>3):
+        gridOut.xs = np.meshgrid(*gridOut.vs, indexing='ij', sparse=sparse_flag)
 
     #----------------------------------------------------------------------------
     if isfield(gridOut, 'bdry'):
         if(iscell(gridOut.bdry)):
             if(not isColumnLength(gridOut.bdry, gridOut.dim)):
-                # print(gridOut.bdry)
                 logger.fatal(f'bdry field is not column cell vector of length dim: {gridOut.dim}');
             else:
-                # logger.warn('Did not check if entries are function handles')
                 pass
         else:
             if(isscalar(gridOut.bdry)):
@@ -268,9 +264,7 @@ def processGrid(gridIn, data=None, sparse_flag=False):
             else:
                 logger.fatal('bdry field is not a cell vector or a scalar');
     else:
-        # gridOut.bdry = cell(gridOut.dim, 1);
         gridOut.bdry = np.zeros((gridOut.dim, 1)).fill(defaultBdry)
-        # gridOut.bdry[:] = defaultBdry
 
     #----------------------------------------------------------------------------
     if(isfield(gridOut,'bdryData')):

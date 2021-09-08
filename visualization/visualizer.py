@@ -1,16 +1,17 @@
-
+import copy, os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from os.path import join
 from Utilities import error
 from .color_utils import cmaps
+from mpl_toolkits.mplot3d import Axes3D
 
 class Visualizer():
 
     def __init__(self, fig=None, ax=None, winsize=None,
                 labelsize=18, linewidth=6, fontdict=None,
-                block=False):
+                block=False, savedict=None):
         """
             Ad-hoc visualizer for grids, grid partitions
             and HJI solutions
@@ -34,6 +35,11 @@ class Visualizer():
         self._labelsize = labelsize
         self._fontdict  = fontdict
         self._projtype = 'rectilinear'
+        self.savedict = savedict
+
+        if self.savedict["save"] and not os.path.exists(self.savedict["savepath"]):
+            os.makedirs(self.savedict["savepath"])
+
         if self._fontdict is None:
             self._fontdict = {'fontsize':12, 'fontweight':'bold'}
 
@@ -63,6 +69,7 @@ class Visualizer():
         elif dim==2:
             ax = self._fig.add_subplot(1, 1, 1)
 
+            title=f'A {len(gs)}-cell/{gs[0].dim}D-Grid'
             for i in range(len(gs)):
                 g = gs[i]
                 ax.plot(g.xs[0], g.xs[1], '.', color=colors[i])
@@ -88,6 +95,7 @@ class Visualizer():
         elif dim==3:
             ax = self._fig.add_subplot(1, 2, 1, projection='3d')
 
+            # title=f'A {len(gs)}-cell/{gs[0].dim}D-Grid'
             g = gs
             g.xs[0] = g.xs[0].reshape(np.prod(g.xs[0].shape), 1)
             g.xs[1] = g.xs[1].reshape(np.prod(g.xs[1].shape), 1)
@@ -129,11 +137,15 @@ class Visualizer():
                     x, y = dims[i]
                     ax.annotate(f'dim={dims[i]}', xy=(x+0.25, y-0.5), size=17)
                 i+=1
-
+            title=f'A {len(gs)}-cell/{g.dim}D-Grid'
             self._fig.tight_layout()
             plt.title(title, fontdict=self._fontdict)
         else:
             error('Only grids of up to 3 dimensions can be visualized!')
+
+        if self.savedict["save"]:
+            plt.savefig(join(self.savedict["savepath"],self.savedict["savename"]),
+                        bbox_inches='tight', facecolor='None')
 
         plt.show(block=self.block)
 

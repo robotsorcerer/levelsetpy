@@ -1,24 +1,24 @@
 from Utilities import zeros, ones, numel, logger, np
 
-def shapeCylinder(grid, ignoreDims=[], center=None, radius=1):
+def shapeCylinder(grid, axis_align=[], center=None, radius=1):
     """
      shapeCylinder: implicit surface function for a cylinder.
 
-       data = shapeCylinder(grid, ignoreDims, center, radius)
+       data = shapeCylinder(grid, axis_align, center, radius)
 
      Creates an implicit surface function (actually signed distance) for a
        coordinate axis aligned cylinder whose axis runs parallel to the
-       coordinate dimensions specified in ignoreDims.
+       coordinate dimensions specified in axis_align.
 
      Can be used to create:
-       Intervals, circles and spheres (if ignoreDims is empty).
-       Slabs (if ignoreDims contains all dimensions except one).
+       Intervals, circles and spheres (if axis_align is empty).
+       Slabs (if axis_align contains all dimensions except one).
 
      Input Parameters:
 
        grid: Grid structure (see processGrid.m for details).
 
-       ignoreDims: Vector specifying indices of coordinate axes with which the
+       axis_align: Vector specifying indices of coordinate axes with which the
        cylinder is aligned.  Defaults to the empty vector (eg: the cylinder is
        actually a sphere).
 
@@ -48,16 +48,16 @@ def shapeCylinder(grid, ignoreDims=[], center=None, radius=1):
      Default parameter values.
     """
 
-    if not np.any(center) or not center:
+    if not np.any(center):
         center = zeros(grid.dim, 1);
     elif(numel(center) == 1):
-        center = center * ones(grid.dim, 1);
+        center = center * ones(grid.dim, 1, dtype=np.float64);
 
     #---------------------------------------------------------------------------
     # Signed distance function calculation.
     data = np.zeros((grid.shape));
     for i in range(grid.dim):
-        if(i != ignoreDims):
+        if(i != axis_align):
             data += (grid.xs[i] - center[i])**2
     data = np.sqrt(data) - radius;
 

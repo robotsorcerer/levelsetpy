@@ -1,10 +1,11 @@
-from Utilities import *
-from Grids import createGrid, getOGPBounds
 import copy
+from Utilities import *
+from Grids import getOGPBounds, createGrid
 
-def splitGrid_sameDim(g, bounds, padding=None):
+
+def cells_from_grid(g, bounds, padding=None):
     """
-     gs = splitGrid_sameDim(g, bounds, padding)
+     gs = cells_from_grid(g, bounds, padding)
          Splits the grid into smaller grids, each with specified bounds.
          Optionally, padding can be specified so that the grids overlap
 
@@ -21,9 +22,8 @@ def splitGrid_sameDim(g, bounds, padding=None):
      Output:
          gs - subgrids
 
-    Status: Under development. Use Sep Grids for now
+     Author: Lekan Molu, September 04, 2021
      """
-
     if padding is None:
         padding = np.zeros((g.dim, 1))
 
@@ -42,6 +42,7 @@ def splitGrid_sameDim(g, bounds, padding=None):
 
     ii = cell(g.dim, 1)
     gss = []
+    gdict = {}
     for i in range(numel(gs)):
         ii = np.asarray(np.unravel_index(i, size(gs), order='F'))
         iip = copy.copy(ii)
@@ -58,6 +59,10 @@ def splitGrid_sameDim(g, bounds, padding=None):
         grid_min, grid_max = np.vstack((grid_min)), np.vstack((grid_max))
         #print(f'grid_min: {grid_min.shape}, grid_max: {grid_max.shape}')
         grid_min, grid_max, N = getOGPBounds(g, grid_min, grid_max, padding);
-        gss.append(createGrid(grid_min, grid_max, N, process=True))
 
-    return gss
+        celi = createGrid(grid_min, grid_max, N, process=True)
+        gss.append(celi)
+        gdict[ii]=celi
+
+    result=dict(cellshape = gs.shape, cells=gss, cells_dict=gdict)
+    return result

@@ -57,12 +57,10 @@ def main():
 
     ## Grid
     grid_min = expand(np.array((-5, -5, -pi)), ax = 1) # Lower corner of computation domain
-    grid_max = expand(np.array((5, 5, -pi)), ax = 1)   # Upper corner of computation domain
+    grid_max = expand(np.array((5, 5, pi)), ax = 1)   # Upper corner of computation domain
     N = 41*ones(3, 1).astype(int) #expand(np.array((41, 41,  41)), ax = 1)        # Number of grid points per dimension
     pdDims = 3               # 3rd dimension is periodic
     g = createGrid(grid_min, grid_max, N, pdDims)
-    # Use "g = createGrid(grid_min, grid_max, N)" if there are no periodic
-    # state space dimensions
 
     ## target set
     R = 1
