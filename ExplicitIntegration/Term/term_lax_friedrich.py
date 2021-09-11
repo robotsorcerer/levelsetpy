@@ -1,3 +1,4 @@
+import copy
 from Utilities import *
 
 def termLaxFriedrichs(t, y, schemeData):
@@ -109,7 +110,7 @@ def termLaxFriedrichs(t, y, schemeData):
     if(iscell(schemeData)):
         thisSchemeData = schemeData[0]
     else:
-        thisSchemeData = schemeData
+        thisSchemeData = copy.copy(schemeData)
 
     assert isfield(thisSchemeData, 'grid'),  'grid not in struct thisschemeData'
     assert isfield(thisSchemeData, 'derivFunc'),  'derivFunc not in struct thisschemeData'
@@ -123,7 +124,6 @@ def termLaxFriedrichs(t, y, schemeData):
     # if(iscell(y[0])):
     #     data = y[0].reshape(grid.shape)
     # else:
-    print(y.shape)
     data = y.squeeze().reshape(grid.shape)
 
     #---------------------------------------------------------------------------
@@ -136,7 +136,12 @@ def termLaxFriedrichs(t, y, schemeData):
         derivL[i], derivR[i] = thisSchemeData.derivFunc(grid, data, i)
         derivC[i] = 0.5 * (derivL[i] + derivR[i])
 
-    ham, thisSchemeData = thisSchemeData.hamFunc(t, data, derivC, thisSchemeData)
+    # Analytic Hamiltonian with centered difference derivatives.
+    result = thisSchemeData.hamFunc(t, data, derivC, thisSchemeData)
+    if isinstance(result, tuple):
+        ham, thisSchemeData = result
+    else:
+        ham = result
     # Need to store the modified schemeData structure.
     if(iscell(schemeData)):
         schemeData[0] = thisSchemeData

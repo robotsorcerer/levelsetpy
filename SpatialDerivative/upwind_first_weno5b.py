@@ -2,7 +2,7 @@ from Utilities import *
 from .ENO3bHelper import upwindFirstENO3bHelper
 from .upwind_first_weno5a import weightWENO
 
-def upwindFirstWENO5b(grid, data, dim, generateAll=0):
+def upwindFirstWENO5b(grid, data, dim, generateAll=False):
     """
      upwindFirstWENO5b: fifth order upwind approx of first deriv by direct calc.
 

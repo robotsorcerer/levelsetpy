@@ -79,12 +79,12 @@ def artificialDissipationGLF(t, data, derivL, derivR, schemeData):
     derivDiff = cell(grid.dim, 1)
     for i in range(grid.dim):
         # Get derivative bounds over entire grid (scalars).
-        derivMinL = min(derivL[i])
-        derivMinR = min(derivR[i])
+        derivMinL = np.min(derivL[i])
+        derivMinR = np.min(derivR[i])
         derivMin[i] = min(derivMinL, derivMinR)
 
-        derivMaxL = max(derivL[i])
-        derivMaxR = max(derivR[i])
+        derivMaxL = np.max(derivL[i])
+        derivMaxR = np.max(derivR[i])
         derivMax[i] = max(derivMaxL, derivMaxR)
 
         # Get derivative differences at each node.

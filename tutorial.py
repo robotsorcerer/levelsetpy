@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 
 
 import logging
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+# logging.basicConfig(level=, )
 logger = logging.getLogger(__name__)
 
 def main():
@@ -87,12 +89,13 @@ def main():
     ## Pack problem parameters
 
     #do dStep3 here
-    new_params = dict(x=zeros(1, 3), wRange=[-wMax, wMax], speed=speed, \
-                      xhist=zeros(1, 3), uhist=zeros(1,3))
-    dubins_default_params.update(new_params)
+    # new_params = dict(x=zeros(1, 3), wRange=[-wMax, wMax], speed=speed, \
+    #                   xhist=zeros(1, 3), uhist=zeros(1,3))
+    # dubins_default_params.update(new_params)
 
     # Define dynamic system
-    dCar = DubinsCar(dubins_default_params)
+    # dCar = DubinsCar(dubins_default_params)
+    dCar = DubinsCarBasic(np.zeros((3,1)), wMax, speed)
 
     # Put grid and dynamic systems into schemeData
     schemeData = Bundle(dict(grid = g, dynSys = dCar, accuracy = 'high',

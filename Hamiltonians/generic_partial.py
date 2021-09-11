@@ -4,7 +4,7 @@ def genericPartial(t, data, derivMin, derivMax, schemeData, dim):
     g = schemeData.grid
     dynSys = schemeData.dynSys
 
-    if callable(dynSys, 'partialFunc'):
+    if isfield(dynSys, 'partialFunc'):
         alpha = dynSys.partialFunc(t, data, derivMin, derivMax, schemeData, dim)
         return alpha
 
@@ -22,10 +22,10 @@ def genericPartial(t, data, derivMin, derivMax, schemeData, dim):
 
     else:
         # Optimal control assuming maximum deriv
-        uU = dynSys.get_opt_u(t, g.xs, derivMax, schemeData.uMode)
+        uU = dynSys.get_opt_u(t, derivMax, schemeData.uMode, g.xs)
 
         # Optimal control assuming minimum deriv
-        uL = dynSys.get_opt_u(t, g.xs, derivMin, schemeData.uMode)
+        uL = dynSys.get_opt_u(t, derivMin, schemeData.uMode, g.xs)
 
     ## Compute disturbance
     if isfield(schemeData, 'dIn'):
@@ -33,17 +33,18 @@ def genericPartial(t, data, derivMin, derivMax, schemeData, dim):
         dL = schemeData.dIn
 
     else:
-        dU = dynSys.get_opt_v(t, g.xs, derivMax, schemeData.dMode)
-        dL = dynSys.get_opt_v(t, g.xs, derivMin, schemeData.dMode)
+        dU = dynSys.get_opt_v(t, derivMax, schemeData.dMode, g.xs)
+        dL = dynSys.get_opt_v(t, derivMin, schemeData.dMode, g.xs)
 
     ## Compute alpha
-    dxUU = dynSys.update_dynamics(schemeData.grid.xs, uU, dU, t=t)
-    dxUL = dynSys.update_dynamics(schemeData.grid.xs, uU, dL, t=t)
-    dxLL = dynSys.update_dynamics(schemeData.grid.xs, uL, dL, t=t)
-    dxLU = dynSys.update_dynamics(schemeData.grid.xs, uL, dU, t=t)
+    dxUU = dynSys.dynamics(t, schemeData.grid.xs, uU, dU)
+    dxUL = dynSys.dynamics(t, schemeData.grid.xs, uU, dL)
+    dxLL = dynSys.dynamics(t, schemeData.grid.xs, uL, dL)
+    dxLU = dynSys.dynamics(t, schemeData.grid.xs, uL, dU)
 
-    alpha = omax(np.abs(dxUU[dim]), np.abs(dxUL[dim]))
-    alpha = omax(alpha, np.abs(dxLL[dim]))
-    alpha = omax(alpha, np.abs(dxLU[dim]))
+    # print(f'dxUU : {dxUU[-1]}, dim {dim}, dxUL: {dxUL[-1]}')
+    alpha = np.maximum(np.abs(dxUU[dim]), np.abs(dxUL[dim]))
+    alpha = np.maximum(alpha, np.abs(dxLL[dim]))
+    alpha = np.maximum(alpha, np.abs(dxLU[dim]))
 
     return alpha

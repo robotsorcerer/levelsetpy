@@ -111,7 +111,7 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
             numY = 1
 
             # We need a cell vector form of schemeFunc.
-            schemeFuncCell = schemeFunc
+            schemeFuncCell = [schemeFunc]
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         t = tspan[0]
         steps = 0
@@ -129,8 +129,8 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
                 ydot[i], stepBound[i], schemeData = schemeFuncCell[i](t, y, schemeData)
 
                 # If this is a vector level set, rotate the lists of vector arguments.
-                if(iscell(y)):
-                    y = y[ 1:, 0 ]
+                # if(iscell(y)):
+                #     y = y[ 1:, 0 ]
 
                 if(iscell(schemeData)):
                     schemeData = schemeData[1:, 0]

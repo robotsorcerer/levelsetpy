@@ -1,7 +1,8 @@
+import copy
 from Utilities import *
 from .ENO3aHelper import upwindFirstENO3aHelper
 
-def upwindFirstWENO5a(grid, data, dim, generateAll=0):
+def upwindFirstWENO5a(grid, data, dim, generateAll=False):
     """
      upwindFirstWENO5a: fifth order upwind approx of first deriv by divided diffs.
 
@@ -61,12 +62,12 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=0):
     #---------------------------------------------------------------------------
     if(generateAll):
         # We only need the three ENO approximations
-        derivL, derivR = upwindFirstENO3aHelper(grid, data, dim, 0)
+        derivL, derivR = upwindFirstENO3aHelper(grid, data, dim, False)
     else:
 
         # We need the three ENO approximations
         #   plus the (unstripped) divided differences to pick the least oscillatory.
-        dL, dR, DD = upwindFirstENO3aHelper(grid, data, dim, 0, 0)
+        dL, dR, DD = upwindFirstENO3aHelper(grid, data, dim, False, False)
 
         # The smoothness estimates may have some relation to the higher order
         #   divided differences, but it isn't obvious from just reading O&F.
@@ -76,47 +77,47 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=0):
         #---------------------------------------------------------------------------
         # Create cell array with array indices.
         sizeData = size(data)
-        indices1 = cell(grid.dim, 1)
+        indices1 = []
         for i in range(grid.dim):
-            indices1[i] = list(range(sizeData[i]+1))
-        indices2 = indices1
+            indices1.append(index_array(1, sizeData[i]))
+        indices2 = copy.copy(indices1)
 
         terms = 5
-        indices = indices1
+        indices = copy.copy(indices1)
 
         # Element i of the indices cell vector contains an index cell vector
         #   that pulls out the v_i terms for the left approximation from the
         #   first divided difference table.
         for i in range(terms):
-            indices[i][dim] = list(range(i, size(D1, dim) + i - 4))
+            indices[i][dim] = index_array(i+1, size(D1, dim) + i - 5)
         #---------------------------------------------------------------------------
         # Smoothness estimates of stencils.
         smooth = cell(3,1)
-        smooth[0] = ((13/12) * (D1[indices[0].flatten()] \
-                              - 2 * D1[indices[1].flatten()] \
-                              + D1[indices[2].flatten()]) **2 \
-                   + (1/4) * (D1[indices[0].flatten()] \
-                              - 4 * D1[indices[1].flatten()] \
-                              + 3 * D1[indices[2].flatten()]) **2)
-        smooth[1] = ((13/12) * (D1[indices[1].flatten()] \
-                              - 2 * D1[indices[2].flatten()] \
-                              + D1[indices[3].flatten()]) **2 \
-                   + (1/4) * (D1[indices[1].flatten()] \
-                              - D1[indices[3].flatten()]) **2)
-        smooth[2] = ((13/12) * (D1[indices[2].flatten()] \
-                              - 2 * D1[indices[3].flatten()] \
-                              + D1[indices[4].flatten()]) **2 \
-                   + (1/4) * (3 * D1[indices[2].flatten()] \
-                              - 4 * D1[indices[3].flatten()] \
-                              + D1[indices[4].flatten()]) ** 2)
+        smooth[0] = ((13/12) * (D1[np.ix_(indices[0])] \
+                              - 2 * D1[np.ix_(indices[1])] \
+                              + D1[np.ix_(indices[2])]) **2 \
+                   + (1/4) * (D1[np.ix_(indices[0])] \
+                              - 4 * D1[np.ix_(indices[1])] \
+                              + 3 * D1[np.ix_(indices[2])]) **2)
+        smooth[1] = ((13/12) * (D1[np.ix_(indices[1])] \
+                              - 2 * D1[np.ix_(indices[2])] \
+                              + D1[np.ix_(indices[3])]) **2 \
+                   + (1/4) * (D1[np.ix_(indices[1])] \
+                              - D1[np.ix_(indices[3])]) **2)
+        smooth[2] = ((13/12) * (D1[np.ix_(indices[2])] \
+                              - 2 * D1[np.ix_(indices[3])] \
+                              + D1[np.ix_(indices[4])]) **2 \
+                   + (1/4) * (3 * D1[np.ix_(indices[2])] \
+                              - 4 * D1[np.ix_(indices[3])] \
+                              + D1[np.ix_(indices[4])]) ** 2)
 
         # Left smoothness estimates just use the left looking portion of
         #   these estimates.  The ENO approximations are in the same order
         #   as in O&F, so we can use the same alpha weights as (3.35) - (3.37).
         smoothL = cell(size(smooth))
-        indices1[dim] = list(range(size(data, dim)+1))
+        indices1[dim] = index_array(1, size(data, dim))
         for i in range(len(smooth)):
-            smoothL[i] = smooth[i][indices1.flatten()]
+            smoothL[i] = smooth[i][np.ix_(*indices1)]
 
         weightL = [ 0.1, 0.6, 0.3 ]
 
@@ -127,9 +128,9 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=0):
         #   are in the opposite order as O&F, so we need to reorder the alpha
         #   weights from (3.35) - (3.37).
         smoothR = cell(size(smooth))
-        indices2[dim] = list(range(1,size(data, dim) + 2))
+        indices2[dim] = index_array(2,size(data, dim) + 1)
         for i in range(len(smooth)):
-            smoothR[i] = smooth[i](indices2.flatten())
+            smoothR[i] = smooth[i][np.ix_(*indices2)]
 
         weightR = [ 0.3, 0.6, 0.1 ]
 
@@ -139,17 +140,17 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=0):
             epsilonR = epsilonL
         elif strcmp(epsilonCalculationMethod, 'maxOverGrid'):
             D1squared = D1**2
-            epsilonL = 1e-6 * max(D1squared) + 1e-99
+            epsilonL = 1e-6 * np.max(D1squared.flatten()) + 1e-99
             epsilonR = epsilonL
         elif strcmp(epsilonCalculationMethod, 'maxOverNeighbors'):
             # Implements (3.38) in O&F for computing epsilon.
             D1squared = D1**2
-            epsilon = D1squared[indices[0].flatten()]
-            for i in range(len(indices)):
-                epsilon = max(epsilon, D1squared(indices[i].flatten()))
+            epsilon = D1squared[np.ix_(*indices[0])]
+            for i in range(1, len(indices)):
+                epsilon = np.max(epsilon, D1squared[np.ix_(*indices[i])])
             epsilon = 1e-6 * epsilon + 1e-99
-            epsilonL = epsilon[indices1.flatten()]
-            epsilonR = epsilon[indices2.flatten()]
+            epsilonL = epsilon[np.ix_(*indices1)]
+            epsilonR = epsilon[np.ix_(*indices2)]
         else:
             error(f'Unknown epsilonCalculationMethod  {epsilonCalculationMethod}')
 

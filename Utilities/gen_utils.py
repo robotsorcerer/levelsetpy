@@ -31,6 +31,15 @@ def mat_like_array(start, end, step=1):
     """
     return list(range(start-1, end, step))
 
+def index_array(start=1, end=None, step=1):
+    """
+        Generate a matlab-like array start:end
+        Subtract 1 from start to account for 0-indexing
+        in python.
+    """
+    assert end is not None, "end in index array must be an integer"
+    return np.arange(start-1, end, step, dtype=np.intp)
+
 def quickarray(start, end, step=1):
     return list(range(start, end, step))
 

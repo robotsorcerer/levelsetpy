@@ -1,3 +1,4 @@
+import copy
 from Utilities import *
 from .check_eq_approx import checkEquivalentApprox
 
@@ -46,7 +47,7 @@ def upwindFirstENO2(grid, data, dim, generateAll=0):
     if((dim < 0) or (dim > grid.dim)):
         error('Illegal dim parameter')
 
-    dxInv = np.divide(1, grid.dx[dim])
+    dxInv = 1 / grid.dx[dim]
 
     # How big is the stencil?
     stencil = 2
@@ -63,28 +64,28 @@ def upwindFirstENO2(grid, data, dim, generateAll=0):
     #---------------------------------------------------------------------------
     # Create cell array with array indices.
     sizeData = size(gdata)
-    indices1 = [cell(grid.dim, 1)]
+    indices1 = []
     for i in range(grid.dim):
-      indices1[i] = quickarray(0, sizeData[i])
-    indices2 = indices1
+      indices1[i].append(np.arange(sizeData[i], dtype=np.intp))
+    indices2 = copy.copy(indices1)
 
     #---------------------------------------------------------------------------
     # First divided differences (first entry corresponds to D^1_{-1/2}).
-    indices1[dim] = quickarray(1,size(gdata, dim))
+    indices1[dim] = np.arange(1,size(gdata, dim), dtype=np.intp)
     indices2[dim] = indices1[dim] - 1
-    D1 = dxInv@(gdata[indices1.flatten()] - gdata[indices2.flatten()])
+    D1 = dxInv*(gdata[np.ix_(*indices1)] - gdata[np.ix_(*indices2)])
 
     # Second divided differences (first entry corresponds to D^2_0).
-    indices1[dim] = quickarray(1, size(D1, dim))
+    indices1[dim] = np.arange(1, size(D1, dim), dtype=np.intp)
     indices2[dim] = indices1[dim] - 1
-    D2 = 0.5 * dxInv@(D1[indices1.flatten()] - D1[indices2.flatten()])
+    D2 = 0.5 * dxInv*(D1[np.ix_(*indices1)] - D1[np.ix_(*indices2)])
 
     #---------------------------------------------------------------------------
     # First divided difference array has an extra entry at top and bottom
     #   (from stencil width 2), so strip them off.
     # Now first entry corresponds to D^1_{1/2}.
-    indices1[dim] = quickarray(1, size(D1, dim) - 1)
-    D1 = D1[indices1.flatten()]
+    indices1[dim] = np.arange(1, size(D1, dim)-1, dtype=np.intp)
+    D1 = D1[np.ix_(*indices1)]
 
     #---------------------------------------------------------------------------
     # First order approx is just the first order divided differences.
@@ -93,25 +94,25 @@ def upwindFirstENO2(grid, data, dim, generateAll=0):
     # dR = cell(2,1)
 
     # Take leftmost grid.N(dim) entries for left approximation.
-    indices1[dim] = quickarray(0, size(D1, dim) - 1)
-    dL = D1[indices1.flaten()]
+    indices1[dim] = np.arange(0, size(D1, dim) - 1, dtype=np.intp)
+    dL = [D1[np.ix_(*indices1)] for i in range(2)]
 
     # Take rightmost grid.N(dim) entries for right approximation.
-    indices1[dim] = quickarray(1, size(D1, dim))
-    dR = D1[indices1.flaten()]
+    indices1[dim] = np.arange(1, size(D1, dim), dtype=np.intp)
+    dR = [D1[np.ix_(*indices1)] for i in range(2)]
 
     #---------------------------------------------------------------------------
     # Each copy gets modified by one of the second order terms.
     #   Second order terms are sorted left to right.
-    indices1[dim] = quickarray(0, size(D2, dim) - 2)
-    indices2[dim] = quickarray(1, size(D2, dim) - 1)
-    dL[0] = dL[0] + grid.dx[dim] * D2[indices1.flaten()]
-    dL[1] = dL[1] + grid.dx[dim] * D2[indices2.flaten()]
+    indices1[dim] = np.arange(0, size(D2, dim) - 2, dtype=np.intp)
+    indices2[dim] = np.arange(1, size(D2, dim) - 1, dtype=np.intp)
+    dL[0] += grid.dx[dim] * D2[np.ix_(*indices1)]
+    dL[1] += grid.dx[dim] * D2[np.ix_(*indices2)]
 
     indices1[dim] += 1
     indices2[dim] += 1
-    dR[0] -= grid.dx[dim]@D2[indices1.flaten()]
-    dR[1] -= grid.dx[dim]@D2[indices2.flaten()]
+    dR[0] -= grid.dx[dim] * D2[np.ix_(*indices1)]
+    dR[1] -= grid.dx[dim] * D2[np.ix_(*indices2)]
 
     #---------------------------------------------------------------------------
     if(generateAll):
@@ -132,17 +133,17 @@ def upwindFirstENO2(grid, data, dim, generateAll=0):
 
         # Pick out minimum modulus neighboring D2 term.
         D2abs = np.abs(D2)
-        indices1[dim] = quickarray(0, size(D2, dim) - 1)
+        indices1[dim] = np.arange(0, size(D2, dim) - 1, dtype=np.intp)
         indices2[dim] = indices1[dim] + 1
-        smallerL = (D2abs[indices1.flaten()] < D2abs[indices2.flaten()])
+        smallerL = (D2abs[np.ix_(*indices1)] < D2abs[np.ix_(*indices2)])
         smallerR = np.logical_not(smallerL)
 
         #---------------------------------------------------------------------------
         # Pick out second order approximation that used the minimum modulus D2 term.
-        indices1[dim] = quickarray(0, size(smallerL, dim) - 1)
-        derivL = dL[0] * smallerL[indices1.flaten()] + dL[1] * smallerR[indices1.flaten()]
+        indices1[dim] = np.arange(0, size(smallerL, dim) - 1, dtype=np.intp)
+        derivL = dL[0] * smallerL[np.ix_(*indices1)] + dL[1] * smallerR[np.ix_(*indices1)]
 
-        indices1[dim] = quickarray(1,size(smallerL, dim))
-        derivR = dR[0] * smallerL[indices1.flaten()] + dR[1] * smallerR[indices1.flaten()]
+        indices1[dim] = np.arange(1,size(smallerL, dim), dtype=np.intp)
+        derivR = dR[0] * smallerL[np.ix_(*indices1)] + dR[1] * smallerR[np.ix_(*indices1)]
 
     return derivL, derivR

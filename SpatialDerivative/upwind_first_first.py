@@ -1,6 +1,7 @@
+import copy
 from Utilities import *
 
-def upwindFirstFirst(grid, data, dim, generateAll=0):
+def upwindFirstFirst(grid, data, dim, generateAll=False):
     """
      upwindFirstFirst: first order upwind approx of first derivative.
 
@@ -39,7 +40,7 @@ def upwindFirstFirst(grid, data, dim, generateAll=0):
     if((dim < 0) or (dim > grid.dim)):
         error('Illegal dim parameter')
 
-    dxInv = np.divide(1, grid.dx[dim])
+    dxInv = 1/grid.dx[dim]
 
     # How big is the stencil?
     stencil = 1
@@ -49,24 +50,24 @@ def upwindFirstFirst(grid, data, dim, generateAll=0):
 
     # Create cell array with array indices.
     sizeData = size(gdata)
-    indices1 = cell(grid.dim, 1)
+    indices1 = []
     for i in range(grid.dim):
-        indices1[i] = quickarray(0, sizeData[i])
-    indices2 = indices1
+        indices1[i] = index_array(1, sizeData[i])
+    indices2 = copy.copy(indices1)
 
     #Where does the actual data lie in the dimension of interest?
-    indices1[dim] = quickarray(1,size(gdata, dim))
+    indices1[dim] = index_array(1, size(gdata, dim))
     indices2[dim] = indices1[dim] - 1
 
     #This array includes one extra entry in dimension of interest.
-    deriv = dxInv@(gdata(indices1[:]) - gdata(indices2[:]))
+    deriv = dxInv*(gdata[np.ix_(indices1)] - gdata[np.ix_(indices2)])
 
     #Take leftmost grid.N(dim) entries for left approximation.
-    indices1[dim] = quickarray(0, size(deriv, dim) - 1)
-    derivL = deriv(indices1.flatten())
+    indices1[dim] = index_array(1, size(deriv, dim) - 1)
+    derivL = deriv[np.ix_(indices1)]
 
     #Take rightmost grid.N(dim) entries for right approximation.
-    indices1[dim] = quickarray(1, size(deriv, dim))
-    derivR = deriv[indices1.flatten()]
+    indices1[dim] = index_array(2, size(deriv, dim))
+    derivR = deriv[np.ix_(indices1)]
 
     return  derivL, derivR

@@ -1,6 +1,6 @@
 from .upwind_first_weno5a import upwindFirstWENO5a
 
-def upwindFirstWENO5(grid, data, dim, generateAll =0):
+def upwindFirstWENO5(grid, data, dim, generateAll =False):
     """
      upwindFirstWENO5: fifth order upwind approx of first derivative.
 

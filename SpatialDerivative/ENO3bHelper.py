@@ -1,3 +1,4 @@
+import copy
 from Utilities import *
 
 def upwindFirstENO3bHelper(grid, gdata, dim, direction):
@@ -51,9 +52,9 @@ def upwindFirstENO3bHelper(grid, gdata, dim, direction):
 
     # Create cell array with array indices.
     sizeData = size(gdata)
-    indices = cell(grid.dim, 1)
+    indices = []
     for i in range(grid.dim):
-      indices[i] = quickarray(0, sizeData[i])
+      indices[i] = np.arange(sizeData[i], dtype=np.intp)
 
     # Compute the appropriate approximations.
     if direction ==-1:
@@ -61,7 +62,7 @@ def upwindFirstENO3bHelper(grid, gdata, dim, direction):
     if direction == +1:
         varargout = derivativeRight(gdata, dxInv, dim, indices, stencil)
     else:
-      error(f'Invalid direction parameter {direction}')
+        error(f'Invalid direction parameter {direction}')
 
     return varargout
 
@@ -70,19 +71,19 @@ def derivativeLeft(data, dxInv, dim, indices1, stencil):
     #
     # Helper function to compute a left directional derivative.
 
-    indices2 = indices1
+    indices2 = copy.copy(indices1)
 
     # Where does the actual data lie?
-    indexDer = quickarray(stencil, (size(data, dim) - stencil))
+    indexDer = np.arange(stencil, (size(data, dim) - stencil), dtype=np.intp)
 
     # The five v terms.
     terms = 5
-    v = cell(terms, 1)
+    v = []
     for i in range(terms):
         offset = i - 3
         indices1[dim] = indexDer + offset
         indices2[dim] = indexDer + offset - 1
-        v[i] = (data[indices1[:]] - data[indices2[:]]) * dxInv
+        v.append(data[np.ix_(*indices1)] - data[np.ix_(*indices2)]) * dxInv
 
     return derivativeWENO(v)
 
@@ -91,35 +92,41 @@ def derivativeRight(data, dxInv, dim, indices1, stencil):
     #
     # helper function to compute a right directional derivative
 
-    indices2 = indices1
+    indices2 = copy.copy(indices1)
 
     # where does the actual data lie?
-    indexDer = quickarray(stencil, (size(data, dim) - stencil))
+    indexDer = np.arange(stencil, (size(data, dim) - stencil))
 
     # the five v terms
     terms = 5
-    v = cell(terms, 1)
+    v = []
 
     for i in range(terms):
         offset = 3 - i
         indices1[dim] = indexDer + offset + 1
         indices2[dim] = indexDer + offset
-        v[i] = (data[indices1[:]] - data[indices2[:]]) * dxInv
+        v[i] = (data[np.ix_(*indices1)] - data[np.ix_(*indices2)]) * dxInv
 
     return derivativeWENO(v)
 
 def derivativeWENO(v, use_comp=False):
-    # Helper function to compute the WENO approximation to a derivative
-    #   given the five v terms.
-    #
-    # Procedure and internal parameters from Osher & Fedkiw text, pp. 33 - 37.
+    """
+        Helper function to compute the WENO approximation to a derivative
+          given the five v terms.
 
+        Procedure and internal parameters from Osher & Fedkiw text, pp. 33 - 37.
+
+    Params:
+        use_comp: If true, use complicated caled version.
+        If you know that your implicit surface function is always well
+          scaled, you could use the simpler version.
+    """
     #---------------------------------------------------------------------------
     # First item to return is the ENO approximations.
     phi1 = (1/3) * v[0] - (7/6) * v[1] + (11/6) * v[2]
     phi2 = (-1/6) * v[1] + (5/6) * v[2] + (1/3) * v[3]
     phi3 = (1/3) * v[2] + (5/6) * v[3] - (1/6) * v[4]
-    result0 = [phi1, phi2, phi3]
+    eno_approx = [phi1, phi2, phi3]
 
     # Second item to return is the smoothness estimates.
     S1 = ((13/12) * (v[0] - 2 * v[1] + v[2])**2 \
@@ -127,7 +134,7 @@ def derivativeWENO(v, use_comp=False):
     S2 = ((13/12) * (v[1] - 2 * v[2] + v[3])**2 + (1/4) * (v[1] - v[3])**2)
     S3 = ((13/12) * (v[2] - 2 * v[3] + v[4])**2 \
         + (1/4) * (3 * v[2] - 4 * v[3] + v[4])** 2)
-    result1 = [ S1, S2, S3 ]
+    smooth_est = [ S1, S2, S3 ]
 
     # Third item to return is epsilon.
 
@@ -136,14 +143,14 @@ def derivativeWENO(v, use_comp=False):
     #   scaled, you could use the simpler version.
     if(use_comp):
         epsilon = v[0]**2
-        for i in range(len(v)):
-            epsilon = omax(epsilon, v[i]**2)
-        epsilon *= (1e-6 + 1e-99)
+        for i in range(1, len(v)):
+            epsilon = np.max(epsilon, v[i]**2)
+        epsilon = epsilon*1e-6 + 1e-99
     else:
         epsilon = 1e-6
-    result3 = epsilon
+    eps = epsilon
 
-    result = Bundle(dict(result0=result0, result1=result1, result2=result2))
+    result = Bundle(dict(eno_approx=eno_approx, smooth_est=smooth_est, eps=eps))
 
 
     return result

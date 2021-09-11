@@ -22,12 +22,12 @@ def genericHam(t, data, deriv, schemeData):
     if isfield(schemeData, 'uIn'):
         u = schemeData.uIn
     else:
-        u = dynSys.get_opt_u(t, schemeData.grid.xs, deriv, schemeData.uMode)
+        u = dynSys.get_opt_u(t, deriv, uMode=schemeData.uMode, y=schemeData.grid.xs)
 
     if isfield(schemeData, 'dIn'):
         d = schemeData.dIn
     else:
-        d = dynSys.get_opt_v(t, schemeData.grid.xs, deriv, schemeData.dMode)
+        d = dynSys.get_opt_v(t, deriv, dMode=schemeData.dMode, y=schemeData.grid.xs)
 
     hamValue = 0
     ## MIE
@@ -36,11 +36,11 @@ def genericHam(t, data, deriv, schemeData):
             TIderiv = -1
         elif strcmp(schemeData.side, 'upper'):
             TIderiv = 1
-    else:
-        error('Side of an MIE function must be upper or lower!')
+        else:
+            error('Side of an MIE function must be upper or lower!')
 
     ## Plug optimal control into dynamics to compute Hamiltonian
-    dx = dynSys.update_dynamics(schemeData.grid.xs, u, d, t=t)
+    dx = dynSys.dynamics(t, schemeData.grid.xs, u, d)
     for i in range(dynSys.nx):
         hamValue += deriv[i]*dx[i]
 
