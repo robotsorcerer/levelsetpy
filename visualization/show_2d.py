@@ -1,49 +1,63 @@
-from .settings import *
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm
+from os.path import  join
 
-def show2D(g, data, winsize=(16,9)):
+
+def show2D(g, mesh, title='', winsize=(16,9), ec='k', disp=False,
+            fc='c', ax=None, savedict=None,  level=0):
     """
      show2D: display a 2D implicit surface function.
 
-       show2D(g, data)
+       show2D(g, mesh)
 
      2D implicit surface functions can be displayed either by contour plot
        or by surface plot.  This routine does both.
 
      parameters:
        g   	Grid structure (see processGrid.m for details).
-       data        Array containing the implicit surface function.
+       mesh        Array containing the implicit surface function.
 
+       This function would substitute nicely for Sylvia's visFuncIm is g.dim<2
 
-    ---------------------------------------------------------------------------
-     Set up two figures in which to place the results.
-       Use the same figures every time.
+       Lekan Molu, September 07, 2021
    """
-    f1 = fig = plt.figure(figsize=winsize)
-    f2 = copy.copy(f1)
-    # Contour plot of implicitly defined set.
-    ax = f1.add_subplot(1, 1, 1)
-    ax.contour3D(g.xs[0], g.xs[1], data, [ 0, 0 ], 'b-');
-    ax.grid('on');
-    ax.xaxis.set_tick_params(labelsize=labelsize)
-    ax.yaxis.set_tick_params(labelsize=labelsize)
-    # axis equal;
-    # axis(g.axis);
-    ax.set_xlabel('x', fontdict=fontdict)
-    ax.set_ylabel('y', fontdict=fontdict)
+    if not savedict: savedict = {"save": False, "savepath": join("..", "jpeg_dumps")}
 
-    # Surface plot of implicit surface function.
-    ax2 = f2.add_subplot(1, 1, 1)
+    if not ax: # if no gfigure given, gene figure
+        fig = plt.figure(figsize=winsize)
+        ax = fig.add_subplot(131, projection='3d')
 
-    ax2.plot_surface(g.xs[0], g.xs[1], data);
-    ax.grid('on');
-    ax.xaxis.set_tick_params(labelsize=labelsize)
-    ax.yaxis.set_tick_params(labelsize=labelsize)
-    # axis equal;
-    ax.grid('on');
-    # axis(g.axis);
-    ax.set_xlabel('x', fontdict=fontdict)
-    ax.set_ylabel('y', fontdict=fontdict)
-    ax.set_ylabel('\phi(x,y)', fontdict=fontdict)
+    fontdict = {'fontsize':12, 'fontweight':'bold'}
+
+    if g.dim<2:
+        ax.plot(g.xs[0],  np.squeeze(mesh), linewidth=2, color=fc)
+        if disp: plt.show()
+        return
+
+    ax.plot_surface(g.xs[0], g.xs[1], mesh, rstride=1, cstride=1,
+                    cmap='viridis', edgecolor=ec, facecolor=fc)
+    ax.set_xlabel('X', fontdict=fontdict)
+    ax.set_ylabel('Y', fontdict=fontdict)
+    ax.set_zlabel('Z', fontdict=fontdict)
+    ax.set_title(f'{title} Mesh Surface')
+
+
+    ax = fig.add_subplot(132,projection='3d')
+    ax.contourf(g.xs[0], g.xs[1], mesh, colors=fc)
+    ax.set_xlabel('X', fontdict=fontdict)
+    ax.set_ylabel('Y', fontdict=fontdict)
+    ax.set_zlabel('Z', fontdict=fontdict)
+    ax.set_title(f'Contours')
+
+    ax = fig.add_subplot(133)
+    ax.contour(g.xs[0], g.xs[1], mesh, levels=1, colors=fc)
+    ax.set_xlabel('X', fontdict=fontdict)
+    ax.set_ylabel('Y', fontdict=fontdict)
+    ax.grid('on')
+    ax.set_title(f'2D level set')
+
+    if savedict["save"]:
+        fig.savefig(join(savedict["savepath"],savedict["savename"]),
+                    bbox_inches='tight',facecolor='None')
+    if disp:
+        plt.show()

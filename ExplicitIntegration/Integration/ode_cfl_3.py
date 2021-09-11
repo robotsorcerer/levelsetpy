@@ -1,6 +1,7 @@
-from Utilities import *
+import sys
 from .ode_cfl_set import odeCFLset
 from .ode_cfl_call import odeCFLcallPostTimestep
+from Utilities import *
 
 def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
     """
@@ -13,7 +14,7 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
        (RK) scheme.  Details can be found in O&F chapter 3.
 
      parameters:
-       schemeFunc	 Function handle to a CFL constrained ODE system
+       schemeFunc	 Function handle to a CFL constrained ODE system e.g. termLaxFriedrich
                       (typically an approximation to an HJ term, see below).
        tspan        Range of time over which to integrate (see below).
        y0           Initial condition vector
@@ -72,7 +73,7 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
     """
     #---------------------------------------------------------------------------
     # How close (relative) do we need to be to the final time?
-    small = 100 * eps
+    small = 100 * sys.float_info.epsilon
 
     #---------------------------------------------------------------------------
     # Make sure we have the default options settings
@@ -104,7 +105,7 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
             if(iscell(schemeFunc)):
                 schemeFuncCell = schemeFunc
             else:
-                schemeFuncCell[:numY] = schemeFunc
+                schemeFuncCell = [schemeFunc for i in range(numY)]
         else:
             # Set numY, but be careful: ((numY == 1) & iscell(y0)) is possible.
             numY = 1

@@ -1,23 +1,37 @@
+import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from Visualization.mesh_implicit import implicit_mesh
 
-def show3D(title='Zero Level Set', g3=None, fig=None, ax=None, winsize=(16, 9),
+import os, sys
+from os.path import abspath, dirname, exists, join
+sys.path.append(dirname(dirname(abspath(__file__))))
+
+def show3D(g=None, mesh=None, winsize=(16, 9), title='Zero Level Set', ax=None, disp=1,
             labelsize=18, linewidth=6, fontdict={'fontsize':12, 'fontweight':'bold'},
-            block=False, savedict=None, mesh=None):
+            savedict=None, ec='k', fc='r', gen_mesh=True, level=0.):
 
     """
         Visualize the 3D levelset of an implicit function
 
         Lekan Molu, September 07, 2021
     """
-    fig = plt.figure(figsize=winsize)
+    if not savedict: savedict = {"save": False}
 
-    ax = fig.add_subplot(111, projection='3d')
+    if gen_mesh:
+        spacing = tuple(g.dx.flatten().tolist())
+        mesh = implicit_mesh(mesh, level=level, spacing=spacing,  edge_color='k', face_color='r')
 
-    if g3:
-        ax.plot3D(g3.xs[0].flatten(), g3.xs[1].flatten(), g3.xs[2].flatten(), color='cyan')
+    if not ax: # if no gfigure given, gene figure
+        fig = plt.figure(figsize=winsize)
+        ax = fig.add_subplot(111, projection='3d')
+
+    if np.any(g):
+        ax.plot3D(g.xs[0].flatten(), g.xs[1].flatten(), g.xs[2].flatten(), color='cyan')
     if isinstance(mesh, list):
         for m in mesh:
+            m = implicit_mesh(m, level=level, spacing=spacing,  edge_color='k', face_color='r')
             ax.add_collection3d(m)
     else:
         ax.add_collection(mesh)
@@ -30,5 +44,5 @@ def show3D(title='Zero Level Set', g3=None, fig=None, ax=None, winsize=(16, 9),
     if savedict["save"]:
         fig.savefig(join(savedict["savepath"],savedict["savename"]),
                     bbox_inches='tight',facecolor='None')
-
-    plt.show()
+    if disp:
+        plt.show()

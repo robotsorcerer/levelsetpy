@@ -1,5 +1,9 @@
 from Utilities import *
 from Grids import *
+from .show_2d import show2D
+from .show_3d import show3D
+from ValueFuncs import proj
+import matplotlib.pyplot as plt
 
 def visSetIm(data, g=None, color='r', level=0, extraArgs=None):
     """
@@ -12,8 +16,6 @@ def visSetIm(data, g=None, color='r', level=0, extraArgs=None):
              level      - level set to display (defaults to 0)
              sliceDim   - for 4D sets, choose the dimension of the slices (defaults
                           to last dimension)
-             applyLight - Whether to apply camlight (defaults to True)
-
      Output: h - figure handle
 
      Adapted from Ian Mitchell's visualizeLevelSet function from the level set
@@ -23,29 +25,26 @@ def visSetIm(data, g=None, color='r', level=0, extraArgs=None):
     """
     ## Default parameters and input check
     if g is None:
-      N = np.asarray(size(data)).T
-      g = createGrid(np.ones(numDims(data), 1), N, N)
+        N = np.asarray(size(data)).T
+        g = createGrid(np.ones(numDims(data), 1), N, N)
 
-    # print('g: ', g)
     if g.dim != numDims(data) and g.dim+1 != numDims(data):
-      error('Grid dimension is inconsistent with data dimension!')
+        error('Grid dimension is inconsistent with data dimension!')
 
     if not extraArgs:
-      extraArgs = Bundle({})
+        extraArgs = Bundle({})
 
     deleteLastPlot = True
     if isfield(extraArgs, 'deleteLastPlot'):
-      deleteLastPlot = extraArgs.deleteLastPlot
+        deleteLastPlot = extraArgs.deleteLastPlot
 
     save_png = False
     if isfield(extraArgs, 'fig_filename'):
-      save_png = True
-      fig_filename = extraArgs.fig_filename
-    ##
+        save_png = True
+        fig_filename = extraArgs.fig_filename
     if g.dim == numDims(data):
-      # Visualize a single set
-      h = visSetIm_single(g, data, color, level, extraArgs)
-
+        # Visualize a single set
+        visSetIm_single(g, data, color, level, extraArgs)
     else:
       dataSize = size(data)
       numSets = dataSize[-1]
@@ -56,18 +55,12 @@ def visSetIm(data, g=None, color='r', level=0, extraArgs=None):
       extraArgs.ax = ax
 
       for i in range(numSets):
-        if i > 1:
-          extraArgs.applyLight = False
-
         if deleteLastPlot:
-          if i > 1:
-            del h
-          h = visSetIm_single(g, data[i,...], color, level, extraArgs)
+            if i>1:  plt.clf()
+            visSetIm_single(g, data[i,...], color, level, extraArgs)
         else:
-          if i == 1:
-            h = cell(numSets, 1)
-
-          h[i] = visSetIm_single(g, data[i,...], color, level, extraArgs)
+            if i == 1:
+                visSetIm_single(g, data[i,...], color, level, extraArgs)
 
 ## Visualize a single set
 def visSetIm_single(g, data, color, level, extraArgs):
@@ -94,61 +87,32 @@ def visSetIm_single(g, data, color, level, extraArgs):
         extraArgs.ax.plot(g.xs[0], np.zeros(size(g.xs[0])), linestyle=':', color='k')
 
     elif g.dim==2:
-        if level:
-          _, h = extraArgs.ax.contour(g.xs[0], g.xs[1], data, [level, level], 'color', color)
-        elif level is None:
-          _, h = extraArgs.ax.contour(g.xs[0], g.xs[1], data)
-        else:
-          _, h = extraArgs.ax.contour(g.xs[0], g.xs[1], data, level, 'color', color)
+        show2D(g, data, fc='g', savedict = {"save": False})
 
-        h.LineStyle = LineStyle
-        h.LineWidth = LineWidth
-    # elif g.dim==3:
-    #     h = visSetIm3D(g, data, color, level, applyLight)
-    #
-    # elif g.dim==4:
-    #     h = visSetIm4D(g, data, color, level, sliceDim, applyLight)
-    #
-    # ## 3D Visualization
-    # function h = visSetIm3D(g, data, color, level, applyLight)
-    # # h = visSetIm3D(g, data, color, level, applyLight)
-    # # Visualizes a 3D reachable set
-    #
-    #
-    # [ mesh_xs, mesh_data ] = gridnd2mesh(g, data)
-    #
-    # h = patch(isosurface(mesh_xs{:}, mesh_data, level))
-    # isonormals(mesh_xs{:}, mesh_data, h)
-    # h.FaceColor = color
-    # h.EdgeColor = 'none'
-    #
-    # if applyLight:
-    #   lighting phong
-    #   camlight left
-    #   camlight right
-    #
-    # view(3)
-    #
-    # ## 4D Visualization
-    # function h = visSetIm4D(g, data, color, level, sliceDim, applyLight)
-    # # h = visSetIm4D(g, data, color, level, sliceDim, applyLight)
-    # # Visualizes a 4D reachable set
-    # #
-    # # Takes 6 slices in the dimension sliceDim and shows the 3D projections
-    #
-    # N = 6
-    # spC = 3
-    # spR = 2
-    # h = cell(N,1)
-    # for i = 1:N
-    #   subplot(spR, spC, i)
-    #   xs = g.min(sliceDim) + i/(N+1) * (g.max(sliceDim) - g.min(sliceDim))
-    #
-    #   dim = zeros(1, 4)
-    #   dim(sliceDim) = 1
-    #   [g3D, data3D] = proj(g, data, dim, xs)
-    #
-    #   # Visualize 3D slices
-    #   h{i} = visSetIm3D(g3D, data3D, color, level, applyLight)
+    elif g.dim==3:
+        show3D(g, data, fc='g', savedict = {"save": False})
+    elif g.dim==4:
+        visSetIm4D(g, data, color, level, sliceDim, applyLight)
 
-    return h
+## 3D Visualization
+def visSetIm3D( ax, g, data, color, level):
+    show3D(g, data, fc=color, level=level)
+
+## 4D Visualization
+def visSetIm4D(g, data, color, level, sliceDim):
+    # Takes 6 slices in the dimension sliceDim and shows the 3D projections
+    N = 6
+    spC = 3
+    spR = 2
+    fig = plt.figure(figsize=(16, 9))
+    for i in range(N):
+        ax = fig.add_subplot(spR, spC, i, projection='3d')
+        xs = g.min[sliceDim] + i/(N+1) * (g.max[sliceDim] - g.min[sliceDim])
+
+        dim = np.zeros(([4,1]))
+        dim[sliceDim, 0] = 1
+        g3D, data3D = proj(g, data, dim, xs)
+
+        # Visualize 3D slices
+        show3D(g3D, data3D, color, ax=ax, level=level, disp=False)
+    plt.show()

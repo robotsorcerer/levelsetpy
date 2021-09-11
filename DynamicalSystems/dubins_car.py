@@ -4,20 +4,17 @@ from Utilities import *
 from DynamicalSystems import DynSys
 
 class DubinsCar(DynSys):
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs):
         # super().__init__(kwargs)
         self.__doc__ = """
-               obj = DubinsCar(x, wMax, speed, dMax, dims)
+               obj = DubinsCar(x, wMax, speed, dMax)
                    Dubins Car class
 
                 kwargs = {
                             wRange=[-wMax, wMax], speed=5, \
                             dRange=zeros(3,2), dims=np.arange(3), \
                             end=None, nu = 1, nd = 3, x = None, nx=3, \
-                            u = None, xhist=None, uhist=None, pdim=None, \
-                            vdim, hdim, hpxpy=None, hpxpyhist=None, \
-                            hvxvy=None, hvxvyhist, hpv = cell(2,1), \
-                            hpvhist = cell(2,1), data = None
+                            u = None
                     }
 
                Dynamics:
@@ -75,8 +72,14 @@ class DubinsCar(DynSys):
              Lekan Molu, 2021-08-08
         """
         x = to_column_mat(x)
+        self.x = x
 
-        if T==0:
+        x0 = kwargs['x0'] if 'x0' in kwargs else None
+        if not x0:
+            x0 = self.x
+
+
+        if self.T==0:
             x1 = x0;
             return x1
 
@@ -88,7 +91,7 @@ class DubinsCar(DynSys):
         #obj.hdim = find(dims == 3);   # Heading dimensions
         self.nx = len(self.dims);
 
-        if numel(x) != self.nx:
+        if numel(self.x) != self.nx:
             error(f'Initial state dim, x_0: {numel(x)} != obj.nx: {self.nx}!');
 
         self.nu = 1;
@@ -97,9 +100,6 @@ class DubinsCar(DynSys):
         self.x = x;
         self.xhist = self.x;
 
-        x0 = kwargs['x0'] if 'x0' in kwargs else None
-        if not x0:
-            x0 = self.x
 
         if not np.any(u):
             logger.warn(f'Controls u is empty')

@@ -54,7 +54,7 @@ def upwindFirstENO2(grid, data, dim, generateAll=0):
     # Check that approximations that should be equivalent are equivalent
     #   (for debugging purposes, only used if generateAll == 1).
     checkEquivalentApproximations = 1
-    small = 100 * eps             # a small number for "equivalence"
+    small = 100 * sys.float_info.epsilon             # a small number for "equivalence"
 
     # Add ghost cells.
     # gdata = feval(grid.bdry[dim], data, dim, stencil, grid.bdryData[dim])

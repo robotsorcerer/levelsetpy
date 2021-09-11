@@ -1,8 +1,9 @@
 from Utilities import *
+import sys, copy
 from .check_eq_approx import checkEquivalentApprox
 from .ENO3aHelper import upwindFirstENO3aHelper
 
-def upwindFirstENO3a(grid, data, dim, generateAll):
+def upwindFirstENO3a(grid, data, dim, generateAll=0):
     """
      upwindFirstENO3a: third order upwind approx of first deriv by divided diffs.
 
@@ -51,7 +52,7 @@ def upwindFirstENO3a(grid, data, dim, generateAll):
     # Check that approximations that should be equivalent are equivalent
     #   (for debugging purposes, only used if generateAll == 1).
     checkEquivalentApproximations = 1
-    small = 100 * eps             # a small number for "equivalence"
+    small = 100 * sys.float_info.epsilon             # a small number for "equivalence"
 
     if(generateAll):
         # We only need the three ENO approximations
@@ -82,10 +83,10 @@ def upwindFirstENO3a(grid, data, dim, generateAll):
         #---------------------------------------------------------------------------
         # Create cell array with array indices.
         sizeData = size(data)
-        indices1 = cell(grid.dim, 1)
+        indices1 = []
         for i in range(grid.dim):
-            indices1[i] = quickarray(0, sizeData(i)+1)
-        indices2 = indices1
+            indices1.append(mat_like_array(1, sizeData[i]))
+        indices2 = copy.copy(indices1)
 
         #---------------------------------------------------------------------------
         # Need to figure out which approximation has the least oscillation.
@@ -94,39 +95,40 @@ def upwindFirstENO3a(grid, data, dim, generateAll):
 
         # Pick out minimum modulus neighboring D2 term.
         D2abs = np.abs(DD.D2)
-        indices1[dim] = quickarray(0,size(D2abs, dim))
-        indices2[dim] = indices1[dim] + 1
-        smallerL = (D2abs[indices1[:]] < D2abs[indices2[:]])
+        indices1[dim] = mat_like_array(1,size(D2abs, dim)-1)
+        indices2[dim] = [x+1 for x in indices1[dim]]
+        # print(f'indices1[dim]: {len(indices1[dim])} indices2[dim]: {len(indices2[dim])}')
+        # print(D2abs.shape)
+        # print(f'D2abs[indices1[dim]]: {D2abs[indices1[dim]].shape}, {D2abs[indices2[dim]].shape}')
+        smallerL = (D2abs[indices1[dim]] < D2abs[indices2[dim]])
         smallerR = np.logical_not(smallerL)
 
         #---------------------------------------------------------------------------
         # Figure out smallest modulus D3 terms,
         #   given choice of smallest modulus D2 terms above.
         D3abs = np.abs(DD.D3)
-        indices1[dim] = quickarray(0,size(D3abs, dim))
-        indices2[dim] = indices1[dim] + 1
-        smallerTemp = (D3abs[indices1[:]] < D3abs[indices2[:]])
+        indices1[dim] = mat_like_array(1,size(D3abs, dim)-1)
+        indices2[dim] = [x+1 for x in indices1[dim]] #indices1[dim] + 1
+        smallerTemp = (D3abs[indices1[dim]] < D3abs[indices2[dim]]) #(D3abs[indices1[:]] < D3abs[indices2[:]])
 
-        indices1[dim] = quickarray(0,size(smallerTemp, dim))
-        indices2[dim] = indices1[dim] + 1
-        smallerLL = np.logical_and(smallerTemp[indices1[:]], smallerL)
-        smallerRL = np.logical_and(smallerTemp[indices2[:]], smallerR)
+        indices1[dim] = mat_like_array(1,size(smallerTemp, dim)-1)
+        indices2[dim] = [x+1 for x in indices1[dim]]
+        smallerLL = np.logical_and(smallerTemp[indices1[dim]], smallerL)
+        smallerRL = np.logical_and(smallerTemp[indices2[dim]], smallerR)
         smallerTemp = np.logical_not(smallerTemp)
-        smallerLR = np.logical_and(smallerTemp[indices1[:]], smallerL)
-        smallerRR = np.logical_and(smallerTemp[indices2[:]], smallerR)
+        smallerLR = np.logical_and(smallerTemp[indices1[dim]], smallerL)
+        smallerRR = np.logical_and(smallerTemp[indices2[dim]], smallerR)
 
-        smallerM = smallerRL or smallerLR
+        smallerM = np.logical_or(smallerRL, smallerLR)
 
         #---------------------------------------------------------------------------
         # Pick out the best third order approximation
-        indices1[dim] = quickarray(0,size(smallerLL, dim))
-        derivL = (dL[0] * smallerLL(indices1[:])
-            + dL[1] * smallerM(indices1[:])
-            + dL[2] * smallerRR(indices1[:]))
+        indices1[dim] = mat_like_array(1,size(smallerLL, dim)-1)
+        derivL = (dL[0] * smallerLL[indices1[dim]] + dL[1] * smallerM[indices1[dim]] + dL[2] * smallerRR[indices1[dim]])
 
-        indices1[dim] = quickarray(1,size(smallerLL, dim))
-        derivR = (dR[0] * smallerLL(indices1[:])
-                + dR[1] * smallerM(indices1[:])
-                + dR[2] * smallerRR(indices1[:]))
+        indices1[dim] = mat_like_array(2,size(smallerLL, dim))
+        derivR = (dR[0] * smallerLL[indices1[dim]]
+                + dR[1] * smallerM[indices1[dim]]
+                + dR[2] * smallerRR[indices1[dim]])
 
     return derivL, derivR

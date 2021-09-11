@@ -1,13 +1,14 @@
 import numpy as np
 import logging
 import time
+import sys
 
 logger = logging.getLogger(__name__)
 
 # DEFAULT TYPES
 ZEROS_TYPE = np.int64
 ONES_TYPE = np.int64
-
+eps = sys.float_info.epsilon
 
 class Bundle(object):
     def __init__(self, dicko):
@@ -16,6 +17,19 @@ class Bundle(object):
 
     def __dtype__(self):
         return Bundle
+
+    def __len__(self):
+        return len(self.__dict__.keys())
+
+    def keys():
+        return list(self.__dict__.keys())
+
+def mat_like_array(start, end, step=1):
+    """
+        Generate a matlab-like array start:end
+        Subtract 1 from start to account for 0-indexing
+    """
+    return list(range(start-1, end, step))
 
 def quickarray(start, end, step=1):
     return list(range(start, end, step))
@@ -59,6 +73,14 @@ def error(arg):
     assert isinstance(arg, str), 'logger.fatal argument must be a string'
     logger.fatal(arg)
 
+def info(arg):
+    assert isinstance(arg, str), 'logger.info argument must be a string'
+    logger.info(arg)
+
+def warn(arg):
+    assert isinstance(arg, str), 'logger.warn argument must be a string'
+    logger.warn(arg)
+
 def length(A):
     if isinstance(A, list):
         A = np.asarray(A)
@@ -67,7 +89,7 @@ def length(A):
 def size(A, dim=None):
     if isinstance(A, list):
         A = np.asarray(A)
-    if dim:
+    if dim is not None:
         return A.shape[dim]
     return A.shape
 
@@ -92,17 +114,20 @@ def expand(x, ax):
     return np.expand_dims(x, ax)
 
 def ones(rows, cols=None, dtype=ONES_TYPE):
-    if cols:
+    if cols is not None:
         shape = (rows, cols)
     else:
         shape = (rows, rows)
     return np.ones(shape, dtype=dtype)
 
 def zeros(rows, cols=None, dtype=ZEROS_TYPE):
-    if cols:
+    if cols is not None:
         shape = (rows, cols)
     else:
-        shape = (rows, rows)
+        if isinstance(rows, tuple):
+            shape = rows
+        else:
+            shape = (rows, rows)
     return np.zeros(shape, dtype=dtype)
 
 def ndims(x):

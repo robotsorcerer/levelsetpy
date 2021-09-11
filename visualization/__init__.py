@@ -5,3 +5,4 @@ from .viz_func_img import visFuncIm
 from .color_utils import cmaps, all_cmaps
 from .mesh_implicit import implicit_mesh
 from .show_3d import show3D
+from .show_2d import show2D

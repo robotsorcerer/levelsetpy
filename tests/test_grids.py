@@ -17,7 +17,7 @@ from BoundaryCondition import *
 from Visualization import *
 from ValueFuncs import proj
 from math import pi
-from InitialConditions import shapeCylinder
+from InitialConditions import *
 
 
 # ### A Basic 2-D Grid and a signed distance function cylinder
@@ -182,3 +182,15 @@ fig.savefig(join(savedict["savepath"],savedict["savename"]), bbox_inches='tight'
 plt.show()
 # plt.pause(delay)
 plt.close()
+
+
+# Truncated grid
+
+# truncte test
+N = 101; gmin = -2*np.ones((2, 1), dtype=np.float64); gmax = 2*np.ones((2, 1), dtype=np.float64)
+g = createGrid(gmin, gmax, N, process=True)
+data = shapeRectangleByCorners(g, [-1, -1], [1, 1])
+savedict = {"save": True, 'savepath': join("..", "jpeg_dumps"), 'savename': '2d_rect_by_corners.jpg'}
+show2D(g, data, savedict=savedict, ec=None, disp=0, title="Original Grid")
+gNew, dataNew = truncateGrid(g, data, [0.5, 0.5], [1.5, 1.5]);
+show2D(gNew, dataNew, savedict=savedict, level=0, ec=None, disp=1, title='Truncated Grid')

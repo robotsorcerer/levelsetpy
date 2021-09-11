@@ -1,7 +1,7 @@
 from Utilities import zeros, ones, numel, logger, np
 from .rect_corners import shapeRectangleByCorners
 
-def shapeRectangleByCenter(grid, center, widths):
+def shapeRectangleByCenter(grid, center=None, widths=None):
     """
      shapeRectangleByCenter: implicit surface function for a (hyper)rectangle.
 

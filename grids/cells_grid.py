@@ -1,6 +1,7 @@
 import copy
 from Utilities import *
 from Grids import getOGPBounds, createGrid
+from .cell_neighs import neighbors
 
 
 def cells_from_grid(g, bounds, padding=None):
@@ -42,7 +43,7 @@ def cells_from_grid(g, bounds, padding=None):
 
     ii = cell(g.dim, 1)
     gss = []
-    gdict = {}
+    partition = {}
     for i in range(numel(gs)):
         ii = np.asarray(np.unravel_index(i, size(gs), order='F'))
         iip = copy.copy(ii)
@@ -60,9 +61,13 @@ def cells_from_grid(g, bounds, padding=None):
         #print(f'grid_min: {grid_min.shape}, grid_max: {grid_max.shape}')
         grid_min, grid_max, N = getOGPBounds(g, grid_min, grid_max, padding);
 
+        # create cell within grid
         celi = createGrid(grid_min, grid_max, N, process=True)
+        celi.neighs = neighbors(ii, gs.shape) # neighbors of this cell
+        celi.idx = ii # index of this cell within the grid subgrd
+        celi.gshape = gs.shape # shape of containing grid
         gss.append(celi)
-        gdict[ii]=celi
+        # partition[ii]=celi
 
-    result=dict(cellshape = gs.shape, cells=gss, cells_dict=gdict)
-    return result
+    # result=dict(cellshape = gs.shape, cells=gss, partition=partition)
+    return gss

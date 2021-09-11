@@ -73,7 +73,7 @@ def odeCFL1(schemeFunc, tspan, y0, options=None, schemeData=None):
      Modified to allow vector level sets.  Ian Mitchell, 11/23/04.
      Modified to add terminalEvent option, Ian Mitchell, 1/30/05.
 
-     Lekan 08/21/2021
+     Lekan Molu, 08/21/2021
     """
     small = 100 * eps
     #---------------------------------------------------------------------------

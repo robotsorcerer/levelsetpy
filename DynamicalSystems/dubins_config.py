@@ -10,6 +10,7 @@ dubins_default_params = dict(
                             nd = 3,
                             x = None,
                             nx=3,
+                            T = 0,
                             u = None,
                             xhist=None,
                             uhist=None,

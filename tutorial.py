@@ -2,7 +2,7 @@ import sys, os
 sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )
 import numpy as np
 from math import pi
-from Utilities import expand, zeros, Bundle, ones
+from Utilities import expand, zeros, Bundle, ones, error
 from Grids import createGrid
 from ValueFuncs import proj, HJIPDE_solve, eval_u
 from Visualization import visSetIm
@@ -63,9 +63,8 @@ def main():
     g = createGrid(grid_min, grid_max, N, pdDims)
 
     ## target set
-    R = 1
-    # data0 = shapeCylinder(grid,ignoreDims,center,radius)
-    data0 = shapeCylinder(g, 3, zeros(len(N), 1), R)
+    data0 = shapeCylinder(g, 2, zeros(len(N), 1, np.float64), radius=1)
+    # show3D(g=g, mesh=data0, savedict={"save":False})
     # also try shapeRectangleByCorners, shapeSphere, etc.
 
     ## time vector
@@ -93,13 +92,12 @@ def main():
     dubins_default_params.update(new_params)
 
     # Define dynamic system
-    dCar = DubinsCar(**dubins_default_params)
+    dCar = DubinsCar(dubins_default_params)
 
     # Put grid and dynamic systems into schemeData
     schemeData = Bundle(dict(grid = g, dynSys = dCar, accuracy = 'high',
                             uMode = uMode))
     #do dStep4 here
-    print(schemeData)
 
     ## additive random noise
     #do Step8 here
@@ -128,9 +126,7 @@ def main():
                             )),
                             ))
 
-    #[data, tau, extraOuts] = ...
-    # HJIPDE_solve(data0, tau, schemeData, minWith, extraArgs)
-    [data, tau2, _] = HJIPDE_solve(data0, tau, schemeData, 'None', HJIextraArgs)
+    data, tau2, _ = HJIPDE_solve(data0, tau, schemeData, 'None', HJIextraArgs)
 
     ## Compute optimal trajectory from some initial state
     if compTraj:
@@ -141,7 +137,6 @@ def main():
         #check if this initial state is in the BRS/BRT
         #value = eval_u(g, data, x)
         value = eval_u(g,data[:,:,:,-1],xinit)
-
         if value <= 0: #if initial state is in BRS/BRT
             # find optimal trajectory
 
@@ -186,7 +181,7 @@ def main():
             # ax2.set_title('2D projection of the trajectory & target set')
             # hold off
         else:
-            logger.fatal(f'Initial state is not in the BRS/BRT! It have a value of {value}')
+            error(f'Initial state is not in the BRS/BRT! It have a value of {value}')
         return g2D, data2D
 
 

@@ -120,10 +120,11 @@ def termLaxFriedrichs(t, y, schemeData):
     grid = thisSchemeData.grid
 
     #---------------------------------------------------------------------------
-    if(iscell(y)):
-        data = y[0].reshape(grid.shape)
-    else:
-        data = y.reshape(grid.shape)
+    # if(iscell(y[0])):
+    #     data = y[0].reshape(grid.shape)
+    # else:
+    print(y.shape)
+    data = y.squeeze().reshape(grid.shape)
 
     #---------------------------------------------------------------------------
     # Get upwinded and centered derivative approximations.

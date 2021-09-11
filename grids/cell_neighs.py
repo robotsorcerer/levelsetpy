@@ -1,3 +1,5 @@
+from Utilities import error
+
 def hit_edge3d(out, x, y, z):
     """
         Returns True if we hit the edge of a 3D grid
@@ -15,6 +17,14 @@ def hit_edge2d(out, r, c):
         Author: Lekan Molu, September 05, 2021
     """
     return ((r<0) or (c<0) or (r>=out[0]) or (c>=out[1]))
+
+def neighbors(idx, out_shape):
+    if len(idx)==2:
+        return neighs2d(idx, out_shape)
+    elif len(idx) == 3:
+        return neighs3d(idx, out_shape)
+    else:
+        error("Neighbors of only 2d and 3d grids are currently accounted for")
 
 def neighs2d(idx, out_shape):
     '''

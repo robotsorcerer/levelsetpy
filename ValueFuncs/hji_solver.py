@@ -1,10 +1,10 @@
 import copy
-from Utilities import *
 import numpy as np
 from datetime import datetime
-from Hamiltonians import genericHam, genericPartial
+from Hamiltonians import *
 from ExplicitIntegration import *
-from SpatialDerivative import upwindFirstENO2
+from SpatialDerivative import *
+from Utilities import *
 import matplotlib
 # matplotlib.use('Agg')
 from Visualization import *
@@ -12,10 +12,12 @@ import matplotlib.pyplot as plt
 
 def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     """
-     [data, tau, extraOuts] = \
+     data, tau, extraOuts = \
        HJIPDE_solve(data0, tau, schemeData, minWith, extraargs)
          Solves HJIPDE with initial conditions data0, at times tau, and with
          parameters schemeData and extraArgs
+
+        Note: Real action starts on line 693
 
      ----- How to use this function -----
 
@@ -216,7 +218,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
     if not extraArgs: extraArgs = Bundle(dict())
 
-    extraOuts = [];
+    extraOuts = Bundle(dict())
     quiet = False;
     lowMemory = False;
     keepLast = False;
@@ -228,11 +230,10 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     # clns = [[':'] for i in range(gDim)]
 
     ## Backwards compatible
-
     if isfield(extraArgs, 'low_memory'):
-        extraArgs.lowMemory = copy.deepcopy(extraArgs.low_memory)
-        del extraArgs.low_memory;
-        warn('we now use lowMemory instead of low_memory');
+            extraArgs.lowMemory = copy.deepcopy(extraArgs.low_memory)
+            del extraArgs.low_memory;
+            warn('we now use lowMemory instead of low_memory');
 
 
     if isfield(extraArgs, 'flip_output'):
@@ -245,7 +246,6 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         extraArgs.stopSetInclude = extraArgs.stopSet
         del extraArgs.stopSet;
         logger.warning('we now use stopSetInclude instead of stopSet');
-
 
     if isfield(extraArgs, 'visualize'):
         if not isinstance (extraArgs.visualize, Bundle) and \
@@ -317,15 +317,9 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             #     'extraArgs.obstacleFunction'])
             del extraArgs.obstacles;
 
-
-
-
-    ## Extract the information from extraargs
-    # Quiet mode
     if isfield(extraArgs, 'quiet') and extraArgs.quiet:
         print('HJIPDE_solve running in quiet mode')
         quiet = True;
-
 
     # Low memory mode
     if isfield(extraArgs, 'lowMemory') and extraArgs.lowMemory:
@@ -336,17 +330,12 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         if (extraArgs.flipOutput) and (extraArgs.flipOutput):
             flipOutput = True;
 
-
-
-
     # Only keep latest data (saves memory)
     if isfield(extraArgs, 'flipOutput') and extraArgs.keepLast:
         keepLast = True;
 
-
     #---Extract the information about obstacles--------------------------------
     obsMode = 'none';
-
 
     if isfield(extraArgs, 'obstacleFunction'):
         obstacles = extraArgs.obstacleFunction;
@@ -366,8 +355,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         # note that obstacles are negated.  That's because if you define the
         # obstacles using something like ShapeSphere, it sets it up as a
         # target. To make it an obstacle we just negate that.
-        data0 = max(data0, -obstacle_i);
-
+        data0 = np.maximum(data0, -obstacle_i);
 
     #---Extract the information about targets----------------------------------
     targMode = 'none';
@@ -384,8 +372,6 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             target_i = targets[0, ...];
         else:
             error('Inconsistent target dimensions!')
-
-
 
     #---Stopping Conditions----------------------------------------------------
 
@@ -422,9 +408,6 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         timeCount = 0;
         needLight = True;
 
-
-
-
         #---Projection Parameters----------------------------------------------
 
         # Extract the information about plotData
@@ -435,7 +418,6 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             # It will be an array of 1s and 0s with 1s means that dimension should
             # be plotted.
             plotDims = extraArgs.visualize.plotData.plotDims;
-
             # Points to project other dimensions at. There should be an entry point
             # corresponding to each 0 in plotDims.
             projpt = extraArgs.visualize.plotData.projpt;
@@ -545,11 +527,11 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         # Set defaults
         eAT_visSetIm = Bundle(dict(sliceDim = gPlot.dim,
                                     applyLight = False))
-        # if isfield(extraArgs.visualize, 'lineWidth'):
-        #     eAT_visSetIm.LineWidth = extraArgs.visualize.lineWidth;
-        #     eAO_visSetIm.LineWidth = extraArgs.visualize.lineWidth;
-        # else:
-        #     eAO_visSetIm.LineWidth = 2;
+        if isfield(extraArgs.visualize, 'lineWidth'):
+            eAT_visSetIm.LineWidth = extraArgs.visualize.lineWidth;
+            eAO_visSetIm = Bundle(dict(LineWidth = extraArgs.visualize.lineWidth))
+        else:
+            eAO_visSetIm = Bundle(dict(LineWidth = 2))
 
 
         # If we're stopping once we hit an initial condition requirement, plot
@@ -561,10 +543,6 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             elif np.nonzero(plotDims) == 3:
                 ax.plot_wireframe(projectedInit[0], projectedInit[1], projectedInit[2], 'b*')
 
-
-
-        ## Visualize Inital Value Function/Set
-
         #---Visualize Initial Value Set----------------------------------------
         if isfield(extraArgs.visualize, 'initialValueSet') and extraArgs.visualize.initialValueSet:
 
@@ -572,12 +550,10 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                 extraArgs.visualize.plotColorVS0 = 'g';
 
 
-            extraOuts.hVS0 = visSetIm(dataPlot, gPlot, extraArgs.visualize.plotColorVS0, sliceLevel, eAT_visSetIm);
+            visSetIm(dataPlot, gPlot, extraArgs.visualize.plotColorVS0, sliceLevel, eAT_visSetIm);
 
             if isfield(extraArgs.visualize,'plotAlphaVS0'):
                 extraOuts.hVS0.FaceAlpha = extraArgs.visualize.plotAlphaVS0;
-
-
 
         #---Visualize Initial Value Function-----------------------------------
         if isfield(extraArgs.visualize, 'initialValueFunction') and \
@@ -598,29 +574,17 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
             # Visualize Initial Value function (hVF0)
-            extraOuts.hVF0= visFuncIm(gPlot,dataPlot,\
-                extraArgs.visualize.plotColorVF0,\
-                extraArgs.visualize.plotAlphaVF0);
+            show3D(gPlot,dataPlot,(16,9), disp=1)
 
 
         ## Visualize Target Function/Set
-
-        #---Visualize Target Set-----------------------------------------------
-        if isfield(extraArgs.visualize, 'targetSet')  \
-                and extraArgs.visualize.targetSet:
-
-
+        if isfield(extraArgs.visualize, 'targetSet')  and extraArgs.visualize.targetSet:
             if not isfield(extraArgs.visualize,'plotColorTS'):
                 extraArgs.visualize.plotColorTS = 'g';
 
 
-            extraOuts.hTS = visSetIm(targPlot, gPlot, \
+            visSetIm(targPlot, gPlot, \
                 extraArgs.visualize.plotColorTS, sliceLevel, eAT_visSetIm);
-
-            if isfield(extraArgs.visualize,'plotAlphaTS'):
-                extraOuts.hTS.FaceAlpha = extraArgs.visualize.plotAlphaTS;
-
-
 
         #---Visualize Target Function------------------------------------------
         if isfield(extraArgs.visualize, 'targetFunction') and \
@@ -640,7 +604,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
             # Visualize Target function (hTF)
-            extraOuts.hTF= visFuncIm(gPlot,targPlot,\
+            show3D(gPlot,targPlot,\
                 extraArgs.visualize.plotColorTF,\
                 extraArgs.visualize.plotAlphaTF);
 
@@ -654,9 +618,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             if not isfield(extraArgs.visualize,'plotColorOS'):
                 extraArgs.visualize.plotColorOS = 'r';
 
-
             # Visualize obstacle set (hOS)
-            extraOuts.hOS = visSetIm(gPlot, obsPlot, \
+            visSetIm(gPlot, obsPlot, \
                 extraArgs.visualize.plotColorOS, sliceLevel, eAO_visSetIm);
 
 
@@ -679,29 +642,25 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
             # Visualize function
-            extraOuts.hOF= visFuncIm(gPlot,-obsPlot,\
-                extraArgs.visualize.plotColorOF,\
-                extraArgs.visualize.plotAlphaOF);
+            visFuncIm(gPlot,-obsPlot, extraArgs.visualize.plotColorOF, extraArgs.visualize.plotAlphaOF);
 
         ## Visualize Value Function/Set
-        #---Visualize Value Set Heat Map---------------------------------------
-        if isfield(extraArgs.visualize, 'valueSetHeatMap') and \
-                extraArgs.visualize.valueSetHeatMap:
-            maxVal = max(np.abs(data0[:]))
-            clims = [-maxVal-1, maxVal+1];
-            # fix this later
-            extraOuts.hVSHeat = ax.imshow(np.hstack((gPlot.vs[0],gPlot.vs[1])),\
-                                            cmap=dataPlot,vmin=clims[0], \
-                                            vmax=clims[1], origin='lower');
-            # if isfield(extraArgs.visualize,'colormap'):
-            #     plt.colormap(extraArgs.visualize.colormap)
-            # else:
-            #     cmapAutumn = colormap('autumn');
-            #     cmapCool = colormap('cool');
-            #     cmap[:32,:] = cmapCool(64:-2:1,:);
-            #     cmap[32:64,:] = cmapAutumn(64:-2:1,:);
-            #     colormap(cmap);
-            fig.colorbar()
+        # if isfield(extraArgs.visualize, 'valueSetHeatMap') and extraArgs.visualize.valueSetHeatMap:
+        #     maxVal = np.max(np.abs(data0.flatten()))
+        #     clims = [-maxVal-1, maxVal+1];
+        #     # fix this later
+        #     ax.imshow(np.hstack((gPlot.vs[0],gPlot.vs[1])),\
+        #                                     cmap=dataPlot,vmin=clims[0], \
+        #                                     vmax=clims[1], origin='lower');
+        #     # if isfield(extraArgs.visualize,'colormap'):
+        #     #     plt.colormap(extraArgs.visualize.colormap)
+        #     # else:
+        #     #     cmapAutumn = colormap('autumn');
+        #     #     cmapCool = colormap('cool');
+        #     #     cmap[:32,:] = cmapCool(64:-2:1,:);
+        #     #     cmap[32:64,:] = cmapAutumn(64:-2:1,:);
+        #     #     colormap(cmap);
+        #     fig.colorbar()
 
 
         #---Visualize Value Set------------------------------------------------
@@ -710,7 +669,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             if not isfield(extraArgs.visualize,'plotColorVS'):
                 extraArgs.visualize.plotColorVS = 'b'
 
-            extraOuts.hVS = visSetIm(gPlot, dataPlot, extraArgs.visualize.plotColorVS, sliceLevel, eAT_visSetIm)
+            visSetIm(dataPlot, gPlot, extraArgs.visualize.plotColorVS, sliceLevel, eAT_visSetIm)
 
 
         #---Visualize Value Function-------------------------------------------
@@ -729,74 +688,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
             # Visualize Value function (hVF)
-            extraOuts.hVF= visFuncIm(gPlot,dataPlot,\
-                extraArgs.visualize.plotColorVF,\
-                extraArgs.visualize.plotAlphaVF);
-
-
-
-        ## General Visualization Stuff
-
-        #---Set Angle, Lighting, axis, Labels, Title---------------------------
-
-        # fix this later
-        # # Set Angle
-        # if pDims >2 or view3D or isfield(extraArgs.visualize, 'viewAngle'):
-        #     if isfield(extraArgs.visualize, 'viewAngle'):
-        #         view(extraArgs.visualize.viewAngle)
-        #     else:
-        #         view(30,10)
-        #
-        #
-        #     # Set Lighting
-        #     if needLight# and (gPlot.dim == 3)
-        #         lighting phong
-        #         c = camlight;
-        #         #need_light = False;
-        #
-        #     if extraArgs.,camlightPosition')
-        #         c.Position = extraArgs.visualize.camlightPosition;
-        #     else
-        #         c.Position = [-30 -30 -30];
-
-
-
-        # # Grid and axis
-        # if extraArgs.,viewGrid') and \
-        #         not extraArgs.visualize.viewGrid
-        #     grid off
-        #
-        #
-        # if extraArgs.,viewAxis')
-        #     axis(extraArgs.visualize.viewAxis)
-        #
-        # axis square
-
-        # Labels
-        if isfield(extraArgs.visualize, 'xTitle'):
-            ax.set_xlabel(extraArgs.visualize.xTitle)
-
-
-        if isfield(extraArgs.visualize, 'yTitle'):
-            ax.set_ylabel(extraArgs.visualize.yTitle)
-
-
-        if isfield(extraArgs.visualize, 'zTitle'):
-            ax.set_zlabel(extraArgs.visualize.zTitle)
-
-        # ax.set_title(f't = {0} ')
-        # gcf = plt.gcf()
-        # set(gcf,'Color','white')
-        #
-        # if extraArgs.,fontSize')
-        #     set(gca,'FontSize',extraArgs.visualize.fontSize)
-        #
-        #
-        # if extraArgs.,lineWidth')
-        #     set(gca,'LineWidth',extraArgs.visualize.lineWidth)
-
-
-        # drawnow;
+            visFuncIm(gPlot,dataPlot, extraArgs.visualize.plotColorVF, extraArgs.visualize.plotAlphaVF);
 
     ## Extract dynamical system if needed
     if isfield(schemeData, 'dynSys'):
@@ -816,7 +708,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     ## SchemeFunc and SchemeData
     schemeFunc = termLaxFriedrichs;
     # Extract accuracy parameter o/w set default accuracy
-    accuracy = 'medium' #'veryHigh'; # sylvia used veryHigh in her code
+    accuracy = 'veryHigh'
     if isfield(schemeData, 'accuracy'):
         accuracy = schemeData.accuracy;
 
@@ -834,7 +726,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         schemeData.positive = 0;
 
     ## Time integration
-    integratorOptions = odeCFLset('factorCFL', 0.8, 'singleStep', 'on');
+    ode_cfl_opts = Bundle({'factorCFL': 0.8, 'singleStep': 'on'})
+    integratorOptions = odeCFLset(ode_cfl_opts)
 
     startTime = cputime();
 
@@ -873,7 +766,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         elif lowMemory:
             data = data0.astype(np.float32)
         else:
-            data = np.zeros((data0size[0:gDim] +(len(tau), )));
+            data = np.zeros((data0size[0:gDim] +(len(tau), )), dtype=np.float64);
             data[0, ...] = data0;
 
 
@@ -881,12 +774,12 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     elif numDims(data0) == gDim + 1:
         # Continue an old computation
         if keepLast:
-            data = data0[data0size[-1], ...]; # check these indexing
+            data = data0[data0size[-1], ...]
         elif lowMemory:
             data = data0[data0size[-1], ...].astype(np.float32)
         else:
-            print(f'data0size[:gDim] {data0size[:gDim].shape}, len(tau): {len(tau)}')
-            data = np.zeros((data0size[:gDim].shape+(len(tau),)))
+            # print(f'data0size[:gDim] {data0size[:gDim].shape}, len(tau): {len(tau)}')
+            data = np.zeros((data0size[:gDim].shape+(len(tau),)), dtype=np.float64)
             data[:data0size[-1], ...] = data0;
 
 
@@ -899,15 +792,13 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
     else:
         error('Inconsistent initial condition dimension!')
 
-
-
     if isfield(extraArgs,'ignoreBoundary') and extraArgs.ignoreBoundary:
         _, dataTrimmed = truncateGrid(g, data0, g.min+4*g.dx, g.max-4*g.dx);
 
 
     for i in range(istart, len(tau)):
         if not quiet:
-            print(f'tau[{i}] {tau[i]}')
+            info(f'tau[{i}]: {tau[i]}')
 
         ## Variable schemeData
         if isfield(extraArgs, 'SDModFunc'):
@@ -918,20 +809,17 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
             schemeData = extraArgs.SDModFunc(schemeData, i, tau, data, obstacles, paramsIn);
 
-
         if keepLast:
             y0 = data;
         elif lowMemory:
             if flipOutput:
-                y0 = data[ 0,...];
+                y0 = data[0,...];
             else:
-                y0 = data[size(data, g.dim), ...];
-
-
+                y0 = data[size(data, g.dim+1), ...];
         else:
             y0 = data[i-1, ...]
 
-        y = np.expand(y0.flatten(), 1);
+        y = expand(y0.flatten(), 1) # this is the value func
 
 
         tNow = tau[i-1];
@@ -942,19 +830,17 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             if compMethod =='minVOverTime' or compMethod =='maxVOverTime':
                 yLast = y;
 
-
             if not quiet:
-                print(f'Computing {tNow}, {tau[i]}')
-
-
+                info(f'Computing {tNow}, {tau[i]}')
 
             # Solve hamiltonian and apply to value function (y) to get updated
             # value function # integrator function is an odeCFL function
-            tNow, y = integratorFunc(schemeFunc, [tNow, tau[i]], y, \
-                                        integratorOptions, schemeData)
+            # integratorFunc is @OdeCFL3, derivFunc is upwindFirstWENO5,
+            # dissipator=artificialDissipationGLF, schemeFunc is termLaxFriedrichs
+            tNow, y = integratorFunc(schemeFunc, [tNow, tau[i]], y, integratorOptions, schemeData)
 
             if np.any(np.isnan(y)):
-                logger.fatal(f'Nans encountered in the integrated result {y}')
+                error(f'Nans encountered in the integrated result of HJI PDE data')
 
 
 
@@ -976,14 +862,13 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                 # - 'minVWithV0' to do min with original data (default)
                 # - 'maxVWithV0' to do max with original data
 
-                # if strcmp(compMethod, 'zero') \
-                #         or strcmp(compMethod, 'set')
-                #         or strcmp(compMethod, 'none'):
-                #     # note: compMethod 'zero' is handled at the beginning of
-                #     # the code. compMethod 'set' and 'none' require no
-                #     # computation.
-                #     pass
-                if strcmp(compMethod, 'minVOverTime'):  #Min over Time
+                if strcmp(compMethod, 'zero') or strcmp(compMethod, 'set') \
+                        or strcmp(compMethod, 'none'):
+                    # note: compMethod 'zero' is handled at the beginning of
+                    # the code. compMethod 'set' and 'none' require no
+                    # computation.
+                    pass
+                elif strcmp(compMethod, 'minVOverTime'):  #Min over Time
                     y = omin(y, yLast)
                 elif strcmp(compMethod, 'maxVOverTime'):
                     y = omax(y, yLast)
@@ -1012,8 +897,6 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                     else:
                         target_i = targets[i,...];
                         y = omin(y, target_i)
-
-
                 else:
                     error('Check which compMethod you are using')
 
@@ -1044,7 +927,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
                 # move everything below 0
-                maxVal = np.max(np.abs(extraArgs.targetFunction));
+                maxVal = np.max(np.abs(extraArgs.targetFunction.flatten()));
                 ytemp = y - maxVal;
                 targettemp = extraArgs.targetFunction - maxVal;
 
@@ -1053,11 +936,11 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
                 if strcmp(compMethod, 'minVWithL')  or strcmp(compMethod, 'minVwithL')  or strcmp(compMethod, 'minVWithTarget'):
                     # Take min
-                    ytemp = omin(ytemp, targettemp)
+                    ytemp = omin(ytemp, targettemp.flatten())
 
                 elif strcmp(compMethod, 'maxVWithL') or strcmp(compMethod, 'maxVwithL')  or strcmp(compMethod, 'maxVWithTarget'):
                     # Take max
-                    ytemp = omax(ytemp, targettemp);
+                    ytemp = omax(ytemp, targettemp.flatten());
                 else:
                     error('check your compMethod!')
 
@@ -1077,7 +960,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                 if strcmp(obsMode, 'time-varying'):
                     obstacle_i = obstacles[i,...];
 
-                y = omax(y, -obstacle_i);
+                y = omax(y, -obstacle_i.flatten());
 
 
 
@@ -1322,13 +1205,6 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                     if strcmp(targMode, 'time-varying'):
                         _ , targPlot = proj(g, obstacle_i, np.logical_not(plotDims), projpt);
 
-
-
-
-
-
-
-
             ## Visualize Target Function/Set
 
             #---Visualize Target Set-----------------------------------------------
@@ -1337,21 +1213,17 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                     and extraArgs.visualize.targetSet:
 
                 # Visualize obstacle set (hOS)
-                extraOuts.hTS = visSetIm(gPlot, targPlot, \
+                visSetIm( targPlot, gPlot,\
                     extraArgs.visualize.plotColorTS, sliceLevel, eAT_visSetIm);
 
                 if isfield(extraArgs.visualize,'plotAlphaTS'):
                     extraOuts.hTS.FaceAlpha = extraArgs.visualize.plotAlphaTS;
-
-
-
 
             #---Visualize Target Function------------------------------------------
             if  strcmp(targMode, 'time-varying')  and isfield(extraArgs.visualize, 'targetSet')  and extraArgs.visualize.targetFunction:
 
                 # Visualize function
                 extraOuts.hTF= visFuncIm(gPlot,targPlot, extraArgs.visualize.plotColorTF, extraArgs.visualize.plotAlphaTF);
-
 
             ## Visualize Obstacle Function/Set
 
@@ -1361,7 +1233,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                     and extraArgs.visualize.obstacleSet:
 
                 # Visualize obstacle set (hOS)
-                extraOuts.hOS = visSetIm(gPlot, obsPlot, \
+                visSetIm(obsPlot, gPlot, \
                     extraArgs.visualize.plotColorOS, sliceLevel, eAO_visSetIm);
 
                 if isfield(extraArgs.visualize,'plotAlphaOS'):
@@ -1386,7 +1258,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             #---Visualize Value Set--------------------------------------------
             if isfield(extraArgs.visualize, 'valueSet') and extraArgs.visualize.valueSet:
 
-                extraOuts.hVS = visSetIm(gPlot, dataPlot, \
+                visSetIm(gPlot, dataPlot, \
                     extraArgs.visualize.plotColorVS, sliceLevel, eAT_visSetIm);
 
 
@@ -1452,32 +1324,32 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
     return data, tau, extraOuts
 
+
 def getNumericalFuncs(dissType='global', accuracy='medium'):
     # Dissipation
     if (dissType == 'global'):
         dissFunc = artificialDissipationGLF
-    # elif (dissType == 'local'):
-    #     dissFunc = artificialDissipationLLF
-    # elif (dissType == 'locallocal'):
-    #     dissFunc = artificialDissipationLLLF
-    # else:
+    elif (dissType == 'local'):
+        dissFunc = artificialDissipationLLF
+    elif (dissType == 'locallocal'):
+        dissFunc = artificialDissipationLLLF
+    else:
         error('Unknown dissipation function #s'.format(dissType))
 
-
     # Accuracy
-    # if accuracy is 'low':
-    #     derivFunc = upwindFirstFirst
-    #     integratorFunc = odeCFL1
-    if accuracy is 'medium':
+    if accuracy is 'low':
+        derivFunc = upwindFirstFirst
+        integratorFunc = odeCFL1
+    elif accuracy is 'medium':
         derivFunc = upwindFirstENO2
         integratorFunc = odeCFL2
-    # elif accuracy is 'high':
-    #     derivFunc = upwindFirstENO3
-    #     integratorFunc = odeCFL3
-    # elif accuracy is 'veryHigh':
-    #     derivFunc = upwindFirstWENO5
-    #     integratorFunc = odeCFL3
+    elif accuracy is 'high':
+        derivFunc = upwindFirstENO3
+        integratorFunc = odeCFL3
+    elif accuracy is 'veryHigh':
+        derivFunc = upwindFirstWENO5
+        integratorFunc = odeCFL3
     else:
-        error('Unknown accuracy level #s'.format(accuracy))
+        error(f'Unknown accuracy level {accuracy}')
 
     return dissFunc, integratorFunc, derivFunc

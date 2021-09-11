@@ -1,3 +1,5 @@
+from Utilities import isfield, cell, np
+
 def artificialDissipationGLF(t, data, derivL, derivR, schemeData):
     """
      artificialDissipationGLF: (global) Lax-Friedrichs dissipation calculation.

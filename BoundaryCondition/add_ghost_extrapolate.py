@@ -1,3 +1,4 @@
+import copy
 from Utilities import *
 
 def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
@@ -47,55 +48,70 @@ def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
      Lekan Molu, Circa, August Week I, 2021
     """
     if not width:
-        width = 1;
+        width = 1
 
     if((width < 0) or (width > size(dataIn, dim))):
-        error('Illegal width parameter');
+        error('Illegal width parameter')
 
     if(ghostData and isinstance(ghostData, Bundle)):
         slopeMultiplier = -1 if(ghostData.towardZero) else +1
     else:
-        slopeMultiplier = +1;
+        slopeMultiplier = +1
 
     # create cell array with array size
-    dims = ndims(dataIn);
-    sizeIn = size(dataIn);
-    indicesOut = cell(dims, 1);
+    dims = ndims(dataIn)
+    sizeIn = size(dataIn)
+    indicesOut = []
     for i in range(dims):
-        indicesOut[i] = list(range(sizeIn[i]))
-    indicesIn = indicesOut;
+        indicesOut.append(tuple(range(sizeIn[i])))
+    indicesIn = copy.copy(indicesOut)
 
     # create appropriately sized output array
-    sizeOut = sizeIn;
-    sizeOut[dim] = sizeOut[dim] + 2 * width;
-    dataOut = zeros(sizeOut);
+    sizeOut = copy.copy(list(sizeIn))
+
+    sizeOut[dim] = sizeOut[dim] + (2 * width)
+    dataOut = zeros(tuple(sizeOut), dtype=np.float64)
 
     # fill output array with input data
-    indicesOut[dim] = range(width + 1, sizeOut(dim) - width);
-    dataOut[indicesOut[:]] = dataIn;
+    indicesOut[dim] = list(range(width, sizeOut[dim] - width)) # correct
+    # dynamic slicing to save the day
+    # see https://stackoverflow.com/questions/31094641/dynamic-axis-indexing-of-numpy-ndarray
+    I = [slice(None)]*dataOut.ndim
+    I[dim] = indicesOut[dim]
+    dataOut[tuple(I)] = dataIn # correct
+    # dataOut[tuple(indicesOut[dim]),...] = dataIn # correct
 
     # compute slopes
-    indicesOut[dim] = 1;
-    indicesIn[dim] = 2;
-    slopeBot = dataIn[indicesOut[:]] - dataIn[indicesIn[:]]
+    indicesOut[dim] = 0
+    indicesIn[dim] = 1
+    slopeBot = dataIn[indicesOut[dim]] - dataIn[indicesIn[dim]]
 
-    indicesOut[dim] = sizeIn[dim]
-    indicesIn[dim] = sizeIn[dim] - 1;
-    slopeTop = dataIn(indicesOut[:]) - dataIn(indicesIn[:]);
+    indicesOut[dim] = sizeIn[dim]-1
+    indicesIn[dim] = sizeIn[dim] - 2
+    slopeTop = dataIn[indicesOut[dim]] - dataIn[indicesIn[dim]]
 
     # adjust slope sign to correspond with sign of data at array edge
-    indicesIn[dim] = 1;
-    slopeBot = slopeMultiplier.dot(np.abs(slopeBot)) * np.sign(dataIn(indicesIn[:]));
-    indicesIn[dim] = sizeIn[dim];
-    slopeTop = slopeMultiplier.dot(np.abs(slopeTop)) * np.sign(dataIn(indicesIn[:]));
+    indicesIn[dim] = 0
+    slopeBot = slopeMultiplier * np.abs(slopeBot) * np.sign(dataIn[indicesIn[dim]])
+    indicesIn[dim] = sizeIn[dim]-1 # account for python/C indexing
+    slopeTop = slopeMultiplier * np.abs(slopeTop) * np.sign(dataIn[indicesIn[dim]])
 
     # now extrapolate
     for i in range(width):
-        indicesOut[dim] = i;
-        indicesIn[dim] = 1;
-        dataOut[indicesOut[:]] = (dataIn(indicesIn[:]) + (width - i + 1) * slopeBot);
+        indicesOut[dim] = i
+        indicesIn[dim] = 0
 
-        indicesOut[dim] = sizeOut[dim] - i + 1;
-        indicesIn[dim] = sizeIn[dim];
-        dataOut[indicesOut[:]] = (dataIn[indicesIn[:]] + (width - i + 1) * slopeTop);
+        I = [slice(None)]*dataOut.ndim
+        I[dim] = indicesOut[dim]
+        dataOut[tuple(I)] = (dataIn[indicesIn[dim]] + (width - i + 1) * slopeBot)
+        # dataOut[indicesOut[dim]] = (dataIn[indicesIn[dim]] + (width - i + 1) * slopeBot)
+
+        if i == 0:
+            indicesOut[dim] = sizeOut[dim] - i -1
+        else:
+            indicesOut[dim] = sizeOut[dim] - i
+        indicesIn[dim] = sizeIn[dim]-1
+        I[dim] = indicesOut[dim]
+        dataOut[tuple(I)] = (dataIn[indicesIn[dim]] + (width - i + 1) * slopeTop)
+        # dataOut[indicesOut[dim]] = (dataIn[indicesIn[dim]] + (width - i + 1) * slopeTop)
     return dataOut

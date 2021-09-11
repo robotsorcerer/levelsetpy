@@ -1,6 +1,7 @@
+import sys
 from Utilities import *
 
-def odeCFLset(**kwargs):
+def odeCFLset(kwargs):
     """
      odeCFLset: Create/alter options for CFL constrained ode integrators.
      CFL: Courant–Friedrichs–Lewy condition
@@ -24,10 +25,13 @@ def odeCFLset(**kwargs):
        FactorCFL     Scalar by which to multiply CFL timestep bound in order
                        to determine the timestep to actually take.
                        Typically in range (0,1), default = 0.5
-                       choose 0.9 for aggressive integration.
+                       choose 0.9 for aggressive integration. This is alpha in
+                       (3.8-3.10), Osher and Fedkiw. It helps establish the stability condition
+                       such that small errors in the approx are not amplified as the solution
+                       is marched forward in time.
 
        MaxStep       Maximum step size (independent of CFL).
-                       Default is REALMAX.
+                       Default is sys.float_info.max.
 
        PostTimestep  Function handle to a routine with prototype
                             [ yOut, schemeDataOut ] = f(t, yIn, schemeDataIn)
@@ -47,8 +51,7 @@ def odeCFLset(**kwargs):
                        Either 'on' or 'off', default = 'off'.
 
        TerminalEvent Function handle to a routine with prototype
-                            [ value, schemeDataOut ] = ...
-                                                f(t, y, tOld, yOld, schemeDataIn)
+                    [ value, schemeDataOut ] = f(t, y, tOld, yOld, schemeDataIn)
                        which is called after every timestep and can be used to
                        halt time integration before the final time is reached.
                        The input parameters include the state and time from
@@ -70,15 +73,11 @@ def odeCFLset(**kwargs):
        agreement contained in the file LICENSE in the top directory of
        the distribution.
 
-     Created by Ian Mitchell, 2/6/04
-     $Date: 2010-08-09 21:31:46 -0700 (Mon, 09 Aug 2010) $
-     $Id: odeCFLset.m 50 2010-08-10 04:31:46Z mitchell $
-
      Lekan: August 16, 2021
     """
     #---------------------------------------------------------------------------
     # No output, no input means caller just wants a list of available options.
-    if(len(kwargs)==0):
+    if not kwargs:
         info(f'    factorCFL: [ positive scalar {0.5} ]')
         info('      maxStep: [ positive scalar {REALMAX} ]')
         info(f' postTimestep: [ function handle | '
@@ -86,75 +85,75 @@ def odeCFLset(**kwargs):
         info('   singleStep: [ on | {off} ]')
         info('        stats: [ on | {off} ]')
         info('terminalEvent: [ function handle | {[]} ]')
-        return;
+        return
 
         #---------------------------------------------------------------------------
     # First input argument is an old options structure
-    if((len(kwargs) > 0) and isinstance(kwargs[0], Bundle)):
-        options = kwargs[0]
+    if len(kwargs) > 0 and 'options' in kwargs.__dict__.keys():
+        options = kwargs.options
         startArg = 1
     else:
         # Create the default options structure.
         options = Bundle(dict())
-        options.factorCFL = 0.5;
-        options.maxStep = realmax;
-        options.postTimestep = [];
-        options.singleStep = 'off';
-        options.stats = 'off';
-        options.terminalEvent = [];
+        options.factorCFL = 0.5
+        options.maxStep = sys.float_info.max
+        options.postTimestep = []
+        options.singleStep = 'off'
+        options.stats = 'off'
+        options.terminalEvent = []
         startArg = 0
 
     #---------------------------------------------------------------------------
     # Loop through remaining name value pairs
     keys = list(kwargs.__dict__.keys())
     for i in range(startArg, len(kwargs)):
-        name = kwargs[keys[i]];
-        value = kwargs.__dict__[name];
+        name = keys[i]
+        value = kwargs.__dict__[name]
 
         # Remember that the case labels are lower case.
         if name.lower()=='factorcfl':
-            if((value.dtype==np.float64) and (np.prod(size(value)) == 1) and (value > 0.0)):
-                options.factorCFL = value;
+            if(isfloat(value) and (len([value]) == 1) and (value > 0.0)):
+                options.factorCFL = value
             else:
-                error('FactorCFL must be a positive scalar double value');
+                error('FactorCFL must be a positive scalar double value')
 
         elif name.lower()== 'maxstep':
-            if((value.dtype==np.float64) and (np.prod(size(value)) == 1) and (value > 0.0)):
-                options.maxStep = value;
+            if(isfloat(value) and (len([value]) == 1) and (value > 0.0)):
+                options.maxStep = value
             else:
-                error('MaxStep must be a positive scalar double value');
+                error('MaxStep must be a positive scalar double value')
 
         elif name.lower()==  'posttimestep':
             if(hasattr(value, '__call__') or value is None):
-                options.postTimestep = value;
+                options.postTimestep = value
             elif(isinstance(value, 'cell')):
                 for j in range(length(value)):
                     if(not hasattr(value[j], '__call__')):
                         error('Each element in a postTimestep cell vector must '
-                        'be a function handle.');
-                options.postTimestep = value;
+                        'be a function handle.')
+                options.postTimestep = value
             else:
                 error('PostTimestep parameter must be a function handle or '
-                    'a cell vector of function handles.');
+                    'a cell vector of function handles.')
 
         elif name.lower()==  'singlestep':
-            if(isinstance(value, 'str') and (value=='on') or (value=='off')):
-                options.singleStep = value;
+            if(isinstance(value, str) and (value=='on') or (value=='off')):
+                options.singleStep = value
             else:
-                error('SingleStep must be one of the strings ''on'' or ''off''');
+                error('SingleStep must be one of the strings ''on'' or ''off''')
 
         elif name.lower()==  'stats':
-            if(isinstance(value, 'str') and (value=='on') or (value=='off')):
-                options.stats = value;
+            if(isinstance(value, str) and (value=='on') or (value=='off')):
+                options.stats = value
             else:
-                error('Stats must be one of the strings \'on\' or \'off\'');
+                error('Stats must be one of the strings \'on\' or \'off\'')
 
         elif name.lower()==  'terminalevent':
             if(value is None or hasattr(value, '__call__')):
-                options.terminalEvent = value;
+                options.terminalEvent = value
             else:
-                error('PostTimestep parameter must be a function handle.');
+                error('PostTimestep parameter must be a function handle.')
         else:
-            error(f'Unknown odeCFL option, {name}');
+            error(f'Unknown odeCFL option, {name}')
 
     return options

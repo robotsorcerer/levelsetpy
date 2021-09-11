@@ -11,8 +11,6 @@ from Grids import createGrid
 from InitialConditions import *
 from Visualization.mesh_implicit import implicit_mesh
 
-from mpl_toolkits.mplot3d import Axes3D
-
 def get_grid():
 
     g3min = -.6*np.ones((3, 1),dtype=np.float64)
@@ -28,22 +26,8 @@ def slender_cylinder(g3):
     cylinder = shapeCylinder(g3, axis_align, center, radius);
 
     spacing = tuple(g3.dx.flatten().tolist())
+    mesh = implicit_mesh(cylinder, level=0., spacing=spacing)
 
-    # Use marching cubes to obtain the surface mesh of the implicit function
-    verts, faces, normals, values = measure.marching_cubes(cylinder, level=0., spacing=spacing,
-                                                           gradient_direction='ascent')
-
-    # Display resulting triangular mesh using Matplotlib. This can also be done
-    # with mayavi (see skimage.measure.marching_cubes_lewiner docstring).
-    fig = plt.figure(figsize=(16, 10))
-    ax = fig.add_subplot(111, projection='3d')
-    # ax.plot3D(g3.xs[0].flatten(), g3.xs[1].flatten(), g3.xs[2].flatten(), color='cyan')
-    # ax = fig.add_subplot(111, projection='3d')
-
-    # Fancy indexing: `verts[faces]` to generate a collection of triangles
-    mesh = Poly3DCollection(verts[faces])
-    mesh.set_edgecolor('k')
-    mesh.set_facecolor('r')
     ax.add_collection3d(mesh)
 
 
