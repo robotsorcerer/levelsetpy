@@ -12,7 +12,7 @@ def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
 
      creates ghost cells to manage the boundary conditions for the array dataIn
 
-     this m-file fills the ghost cells with periodic data
+     this script fills the ghost cells with periodic data
        data from the top of the array is put in the bottom ghost cells
        data from the bottom of the array is put in the top ghost cells
        in 2D for dim == 1
@@ -54,30 +54,29 @@ def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
       logger.fatal('Illegal width parameter')
 
     # create cell array with array indices
-    dims = ndims(dataIn)
+    dims = dataIn.ndim
     sizeIn = dataIn.shape
     indicesOut = cell(dims, 1)
     for i in range(dims):
-      indicesOut[i] = list(range(sizeIn[i]))
+      indicesOut[i] = index_array(1, sizeIn[i])
     indicesIn = copy.copy(indicesOut)
 
     # create appropriately sized output array
-    sizeOut = copy.copy(sizeIn)
+    sizeOut = copy.copy(list(sizeIn))
     sizeOut[dim] = sizeOut[dim] + 2 * width
-    dataOut = zeros(sizeOut, dtype=np.float64)
+    dataOut = zeros(tuple(sizeOut), dtype=np.float64)
 
     # fill output array with input data
-    indicesOut[dim] = width + list(range(sizeOut[dim])) - width
-    dataOut[tuple(indicesOut[dim]),...] = dataIn
+    indicesOut[dim] = np.arange(width + 0, sizeOut[dim] - width, dtype=np.intp)
+    dataOut[np.ix_(*indicesOut)] = dataIn
 
     # fill ghost cells
-    indicesIn[dim] = (sizeIn[dim] - np.arange(width + 1,sizeIn[dim])).tolist()
-    indicesOut[dim] = list(range(width))
-    dataOut[indicesOut[dim]] = dataIn[indicesIn[dim]]
+    indicesIn[dim] = np.arange(sizeIn[dim] - width,sizeIn[dim], dtype=np.intp)
+    indicesOut[dim] = np.arange(width, dtype=np.intp)
+    dataOut[np.ix_(*indicesOut)] = dataIn[np.ix_(*indicesIn)]
 
-    indicesIn[dim] = list(range(width))
-    indicesOut[dim] = (sizeIn[dim] - np.arange(width + 1,sizeIn[dim])).tolist()
-    dataOut[indicesOut[dim]] = dataIn[indicesIn[dim]]
-
+    indicesIn[dim] = np.arange(width, dtype=np.intp)
+    indicesOut[dim] = np.arange(sizeIn[dim] - width, sizeIn[dim], dtype=np.intp)
+    dataOut[np.ix_(*indicesOut)] = dataIn[np.ix_(*indicesIn)]
 
     return dataOut

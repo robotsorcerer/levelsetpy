@@ -98,11 +98,12 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
     if(numT == 2):
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         # Is this a vector level set integration?
-        if(iscell(y0)):
+        # print('yo: ', type(y0))
+        if(isinstance(y0, list)):
             numY = len(y0)
 
             # We need a cell vector form of schemeFunc.
-            if(iscell(schemeFunc)):
+            if(isinstance(schemeFunc, list)):
                 schemeFuncCell = schemeFunc
             else:
                 schemeFuncCell = [schemeFunc for i in range(numY)]
@@ -116,39 +117,50 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
         t = tspan[0]
         steps = 0
         startTime = cputime()
-        stepBound = zeros(numY, 1)
-        ydot = cell(numY, 1)
+        stepBound = zeros(numY, 1, dtype=np.float64)
+        ydot = [np.nan for i in range(numY)] #ell(numY, 1)
         y = y0
 
+        # print('GOT HERE: ', tspan, len(tspan))
         while(tspan[1] - t >= small * np.abs(tspan[1])):
+            # print(f'tspan[1]-t: {tspan[1] - t} small * np.abs(tspan[1]): {small * np.abs(tspan[1])}')
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             # First substep: Forward Euler from t_n to t_{n+1}.
 
             # Approximate the derivative and CFL restriction.
             for i in range(numY):
+                # print(i, 'yshap: ', y.shape)
                 ydot[i], stepBound[i], schemeData = schemeFuncCell[i](t, y, schemeData)
 
+                # print('stepBound[i]: ', stepBound[i])
+                # print('ydot: ', ydot[i].shape)
                 # If this is a vector level set, rotate the lists of vector arguments.
-                # if(iscell(y)):
-                #     y = y[ 1:, 0 ]
+                if(iscell(y)):
+                    # print('y in cell shp: ', y.shape)
+                    y = y[ 1:]
 
                 if(iscell(schemeData)):
-                    schemeData = schemeData[1:, 0]
+                    # print('schemeData: ', len(schemeData))
+                    schemeData = schemeData[1:]
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             # Determine CFL bound on timestep, but not beyond the final time.
             #   For vector level sets, use the most restrictive stepBound.
             #   We'll use this fixed timestep for both substeps..
-            deltaT = min(min(options.factorCFL@stepBound),  \
-                           min(tspan[1] - t, options.maxStep))
+            # print('stepBound ', stepBound, ' options.maxStep ', options.maxStep)
+            deltaT = min(np.min(options.factorCFL*stepBound),  tspan[1] - t, options.maxStep)
 
             # Take the first substep.
             t1 = t + deltaT
+            # print('y first substep: ', y.shape)
             if(iscell(y)):
-                y1 = cell(numY, 1)
+                y1 = [np.nan for _ in range(numY)] #cell(numY, 1)
                 for i in range(numY):
                     y1[i] +=(deltaT * ydot[i])
             else:
+                # print('y b4 y1: ', y.shape, ': ydot[0] ', ydot, ydot[0].shape)
                 y1 = y + deltaT * ydot[0]
+            # print('y1 first substep: ', y1.shape)
+
 
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             # Second substep: Forward Euler from t_{n+1} to t_{n+2}.
@@ -228,7 +240,7 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
             # If there is a terminal event function registered, we need
             #   to maintain the info from the last timestep.
             if(not(options.terminalEvent)):
-                yOld , tOld =y,  t
+                yOld , tOld = y,  t
 
             # Combine t_n and t_{n+3/2} to get third order approximation of t_{n+1}.
             t = (1/3) * (t + 2 * tThreeHalf)

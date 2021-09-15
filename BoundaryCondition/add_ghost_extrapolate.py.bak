@@ -9,7 +9,7 @@ def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
 
      Creates ghost cells to manage the boundary conditions for the array dataIn.
 
-     This m-file fills the ghost cells with data linearly extrapolated
+     This script fills the ghost cells with data linearly extrapolated
        from the grid edge, where the sign of the slope is chosen to make sure the
        extrapolation goes away from or towards the zero level set.
 

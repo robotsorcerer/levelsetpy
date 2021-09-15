@@ -1,5 +1,8 @@
 from Utilities import *
+from BoundaryCondition import addGhostPeriodic
+from .augment_periodic import augmentPeriodicData
 from ValueFuncs import *
+from scipy.interpolate import RegularGridInterpolator
 
 def eval_u(gs, datas, xs, interp_method='linear'):
     """
@@ -31,10 +34,10 @@ def eval_u(gs, datas, xs, interp_method='linear'):
      Lekan Molux, 2021-08-09
      """
 
-    if isbundle(gs) and isinstance(datas, np.array) and len(xs.shape)>=2:
+    if isinstance(gs, Bundle) and isinstance(datas, np.ndarray) and len(xs.shape)>=2:
         # Option 1
         v = eval_u_single(gs, datas, xs, interp_method)
-    elif isbundle(gs) and iscell(datas) and isvector(xs):
+    elif isinstance(gs, Bundle) and iscell(datas) and isvector(xs):
         # Option 2
         v = cell(len(datas), 1)
         for i in range(len(datas)):
@@ -69,14 +72,14 @@ def  eval_u_single(g, data, x, interp_method):
     """
     # If the number of columns does not match the grid dimensions, try taking
     # transpose
-    if size(x, 2) != g.dim:
+    if size(x, 1) != g.dim:
       x = x.T
 
     g, data = augmentPeriodicData(g, data)
 
     ## Dealing with periodicity
     for i in range(g.dim):
-        if (isfield(g, 'bdry') and g.bdry[i]==addGhostPeriodic):
+        if (isfield(g, 'bdry') and id(g.bdry[i])==id(addGhostPeriodic)):
             # Map input points to within grid bounds
             period = max(g.vs[i]) - min(g.vs[i])
 
@@ -90,16 +93,12 @@ def  eval_u_single(g, data, x, interp_method):
                 x[i_below_bounds, i] += period
                 i_below_bounds = x[:,i] < min(g.vs[i])
 
-    ## Interpolate
-    # Input checking
-    x = checkInterpInput(g, x)
+    # Interpolate
 
-    # eg. v = interpn(g.vs{1}, g.vs{2}, data, x(:,1), x(:,2), interp_method)
-    interpn_argin_x = []
+    data_tup = [x.squeeze() for x in g.vs]
+    interp_func = RegularGridInterpolator(data_tup, data)
+    eval_pts = [xx.squeeze() for xx in [x]*len(g.vs)]
+    # print(f'data: {data.shape}, g.vs: {[x.shape for x in g.vs]}, x: {x.shape}')
+    v = interp_func(eval_pts)
 
-    for i in range(g.dim):
-        interpn_argin_x.append(x[:,i])
-
-    v = np.interp(g.vs[:], data, interpn_argin_x[:])
-
-    return v
+    return v.take(0)

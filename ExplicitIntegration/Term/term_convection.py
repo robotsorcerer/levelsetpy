@@ -112,9 +112,9 @@ def termConvection(t, y, schemeData):
     grid = thisSchemeData.grid
 
     if(iscell(y)):
-        data = y[0].reshape(grid.shape)
+        data = y[0].reshape(grid.shape, order='F')
     else:
-        data = y.reshape(grid.shape)
+        data = y.reshape(grid.shape, order='F')
 
     # Get velocity field.
     if(iscell(thisSchemeData.velocity)):
@@ -129,9 +129,9 @@ def termConvection(t, y, schemeData):
                 vectorData = cell(numY, 1)
                 for i in range(numY):
                     if(iscell(schemeData)):
-                        vectorData[i] = y[i].reshape(schemeData[i].grid.shape)
+                        vectorData[i] = y[i].reshape(schemeData[i].grid.shape, order='F')
                     else:
-                        vectorData[i] = y[i].reshape(schemeData.grid.shape)
+                        vectorData[i] = y[i].reshape(schemeData.grid.shape, order='F')
                 velocity = thisSchemeData.velocity(t, vectorData, schemeData)
 
             else:
@@ -173,6 +173,6 @@ def termConvection(t, y, schemeData):
     stepBound = 1 / stepBoundInv
 
     # Reshape output into vector format and negate for RHS of ODE.
-    ydot = -delta.flatten()
+    ydot = expand(-delta.flatten(order='F'), 1)
 
     return ydot, stepBound, schemeData

@@ -112,25 +112,26 @@ def termLaxFriedrichs(t, y, schemeData):
     else:
         thisSchemeData = copy.copy(schemeData)
 
-    assert isfield(thisSchemeData, 'grid'),  'grid not in struct thisschemeData'
-    assert isfield(thisSchemeData, 'derivFunc'),  'derivFunc not in struct thisschemeData'
-    assert isfield(thisSchemeData,'dissFunc'),  'dissFunc not in struct thisschemeData'
-    assert isfield(thisSchemeData,'hamFunc'), 'hamFunc not in struct thisschemeData'
-    assert isfield(thisSchemeData,'partialFunc'),  'partialFunc not in struct thisschemeData'
+    assert isfield(thisSchemeData, 'grid'),  'grid not in bundle thisschemeData'
+    assert isfield(thisSchemeData, 'derivFunc'),  'derivFunc not in bundle thisschemeData'
+    assert isfield(thisSchemeData,'dissFunc'),  'dissFunc not in bundle thisschemeData'
+    assert isfield(thisSchemeData,'hamFunc'), 'hamFunc not in bundle thisschemeData'
+    assert isfield(thisSchemeData,'partialFunc'),  'partialFunc not in bundle thisschemeData'
 
     grid = thisSchemeData.grid
 
     #---------------------------------------------------------------------------
-    # if(iscell(y[0])):
-    #     data = y[0].reshape(grid.shape)
-    # else:
-    data = y.squeeze().reshape(grid.shape)
+    if(iscell(y)):
+        data = y[0].reshape(grid.shape, order='F')
+    else:
+        # print('yshap: ', y.shape, ' grid: ', grid.shape)
+        data = y.reshape(grid.shape, order='F')
 
     #---------------------------------------------------------------------------
     # Get upwinded and centered derivative approximations.
-    derivL = cell(grid.dim, 1)
-    derivR = cell(grid.dim, 1)
-    derivC = cell(grid.dim, 1)
+    derivL = [np.nan for i in range(grid.dim)] #cell(grid.dim, 1)
+    derivR = [np.nan for i in range(grid.dim)] #cell(grid.dim, 1)
+    derivC = [np.nan for i in range(grid.dim)] #cell(grid.dim, 1)
 
     for i in range(grid.dim):
         derivL[i], derivR[i] = thisSchemeData.derivFunc(grid, data, i)
@@ -144,9 +145,9 @@ def termLaxFriedrichs(t, y, schemeData):
         ham = result
     # Need to store the modified schemeData structure.
     if(iscell(schemeData)):
-        schemeData[0] = thisSchemeData
+        schemeData[0] = copy.copy(thisSchemeData)
     else:
-        schemeData = thisSchemeData
+        schemeData = copy.copy(thisSchemeData)
 
     # Lax-Friedrichs dissipative stabilization.
     diss, stepBound = thisSchemeData.dissFunc(t, data, derivL, derivR, thisSchemeData)
@@ -157,6 +158,6 @@ def termLaxFriedrichs(t, y, schemeData):
 
     #---------------------------------------------------------------------------
     # Reshape output into vector format and negate for RHS of ODE.
-    ydot = -delta.flatten()
+    ydot = expand(-delta.flatten(order='F'), 1)
 
     return ydot, stepBound, schemeData

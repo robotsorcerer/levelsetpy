@@ -136,9 +136,9 @@ def termReinit(t, y, schemeData):
     grid = thisSchemeData.grid
 
     if iscell(y):
-        data = y[0].reshape(grid.shape)
+        data = y[0].reshape(grid.shape, order='F')
     else:
-        data = y.reshape(grid.shape)
+        data = y.reshape(grid.shape, order='F')
 
     if isfield(thisSchemeData, 'subcell_fix_order'):
         if thisSchemeData.subcell_fix_order==0:
@@ -193,7 +193,7 @@ def termReinit(t, y, schemeData):
         # Converging flow, need to check which direction arrives first.
         flows = ((S * derivR <  0) and (S * derivL >  0))
         if(np.any(flows.flatten())):
-            conv = find(flows)
+            conv = np.where(flows)
             s = zeros(size(flows))
             s[conv] *=(np.abs(derivR[conv]) - np.abs(derivL[conv]))/(derivR[conv] - derivL[conv])
 
@@ -303,7 +303,7 @@ def termReinit(t, y, schemeData):
     stepBound = 1 / stepBoundInv
 
     # Reshape output into vector format and negate for RHS of ODE.
-    ydot = -delta[:]
+    ydot = expand(-delta[:], 1)
 
     return ydot, stepBound, schemeData
 

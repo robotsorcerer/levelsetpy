@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 import time
-import sys
+import sys, copy
 
 logger = logging.getLogger(__name__)
 
@@ -53,14 +53,26 @@ def ismember(a, b):
     return [bind.get(itm, None) for itm in a]  # None can be replaced by any other "not in b" value
 
 def omin(y, ylast):
-    if numDim(ylast)>1:
-        ylast = ylast.flatten()
-    return min(np.insert(ylast, 0, y))
+    if y.shape == ylast.shape:
+        temp = np.vstack((y, ylast))
+        return np.min(temp)
+    else: #if numDims(ylast.ndim)>1:
+        ylast = expand(ylast.flatten(), 1)
+        if y.shape[-1]!=1:
+            y = expand(y.flatten(), 1)
+        temp = np.vstack((y, ylast))
+    return np.min(temp) #min(np.insert(ylast, 0, y))
 
 def omax(y, ylast):
-    if numDim(ylast)>1:
-        ylast = ylast.flatten()
-    return max(np.insert(ylast, 0, y))
+    if y.shape == ylast.shape:
+        temp = np.vstack((y, ylast))
+        return np.max(temp)
+    else: # if numDims(ylast)>1:
+        ylast = expand(ylast.flatten(), 1)
+        if y.shape[-1]!=1:
+            y = expand(y.flatten(), 1)
+        temp = np.vstack((y, ylast))
+    return np.max(temp) #max(np.insert(ylast, 0, y))
 
 def strcmp(str1, str2):
     if str1==str2:
@@ -140,7 +152,7 @@ def zeros(rows, cols=None, dtype=ZEROS_TYPE):
     return np.zeros(shape, dtype=dtype)
 
 def ndims(x):
-    return len(size(x))
+    return x.ndim
 
 def isvector(x):
     assert numDims(x)>1, 'x must be a 1 x n vector or nX1 vector'
@@ -161,7 +173,7 @@ def cell(grid_len, dim=1):
     return [[] for i in range(grid_len)]
 
 def iscell(cs):
-    if isinstance(cs, list) or isinstance(cs, np.ndarray):
+    if isinstance(cs, list): # or isinstance(cs, np.ndarray):
         return True
     else:
         return False
@@ -172,7 +184,7 @@ def isnumeric(A):
     else:
         dtype = type(A)
 
-    acceptable_types=[np.float64, np.float32, np.int64, np.int32, float, int]
+    acceptable_types=[list, np.float64, np.float32, np.int64, np.int32, float, int]
 
     if dtype in acceptable_types:
         return True

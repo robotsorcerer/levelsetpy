@@ -118,7 +118,7 @@ def processGrid(gridIn, data=None, sparse_flag=False):
         else:
             error('Unknown format for gridIn parameter');
     else:
-        gridOut = gridIn;
+        gridOut = copy.copy(gridIn);
 
 
     # Now we should have a partially complete structure in gridOut.
@@ -230,7 +230,7 @@ def processGrid(gridIn, data=None, sparse_flag=False):
         gridOut.xs = np.meshgrid(*gridOut.vs, indexing='ij', sparse=sparse_flag)
 
     if isfield(gridOut, 'bdry'):
-        if(iscell(gridOut.bdry)):
+        if(iscell(gridOut.bdry) or isinstance(gridOut.bdry, np.ndarray)):
             if(not isColumnLength(gridOut.bdry, gridOut.dim)):
                 error(f'bdry field is not column cell vector of length dim: {gridOut.dim}');
             else:
@@ -238,8 +238,7 @@ def processGrid(gridIn, data=None, sparse_flag=False):
         else:
             if(isscalar(gridOut.bdry)):
                 bdry = gridOut.bdry;
-                gridOut.bdry = cell(gridOut.dim, 1);
-                gridOut.bdry[:] = bdry
+                gridOut.bdry = [bdry for _ in range(gridOut.dim)]
             else:
                 error('bdry field is not a cell vector or a scalar');
     else:

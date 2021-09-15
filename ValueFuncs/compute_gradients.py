@@ -1,6 +1,7 @@
 from Utilities import *
+from SpatialDerivative import upwindFirstWENO5
 
-def computeGradients(g, data, dim=None, derivFunc=None):
+def computeGradients(g, data, dims=None, derivFunc=None):
     """
      [derivC, derivL, derivR] = computeGradients(g, data, derivFunc, upWind)
 
@@ -19,54 +20,53 @@ def computeGradients(g, data, dim=None, derivFunc=None):
     Lekan Molu, August 11, 2021
     """
     if not dims:
-      dims = zeros(g.dim, 1)
-      dims.fill(True)
+        dims = zeros(g.dim, 1)
+        dims.fill(True)
 
     if not derivFunc:
-      # this computes the gradients of the value function
-      derivFunc = upwindFirstWENO5;
+        # this computes the gradients of the value function
+        derivFunc = upwindFirstWENO5
 
 
     # Go through each dimension and compute the gradient in each dim
-    derivC = cell(g.dim, 1);
+    derivC = cell(g.dim, 1)
 
-    if numDims(data) == g.dim
-      tau_length = 1;
+    if numDims(data) == g.dim:
+        tau_length = 1
     elif numDims(data) == g.dim + 1:
-      tau_length = size(data);
-      tau_length = tau_length[-1];
-      # colons = np.tile(':', (1, g.dim)) #repmat([']'}, 1, g.dim);
+        tau_length = size(data)
+        tau_length = tau_length[-1]
     else:
-      error('Dimensions of input data and grid don''t match!')
+        error('Dimensions of input data and grid don''t match!')
 
     # Just in case there are NaN values in the data (usually from TTR functions)
-    numInfty = 1e6;
-    data[np.isnan(data)] = numInfty;
+    numInfty = 1e6
+    data[np.isnan(data)] = numInfty
 
     # Just in case there are inf values
-    data[np.isinf(data)] = numInfty;
+    data[np.isinf(data)] = numInfty
 
     for i in range(g.dim):
-      if dims[i]:
-        derivC[i] = zeros(size(data));
+        if dims[i]:
+            derivC[i] = zeros(size(data))
 
-        ## data at a single time stamp
-        if tau_length == 1:
-          # Compute gradient using level set toolbox
-          derivL, derivR = derivFunc(g, data, i);
+            ## data at a single time stamp
+            if tau_length == 1:
+                # Compute gradient using upwinding weighted essentially non-oscillatory differences
+                derivL, derivR = derivFunc(g, data, i)
 
-          # Central gradient
-          derivC[i] = 0.5*(derivL + derivR);
-        else:
-          ## data at multiple time stamps
-          for t in range(tau_length):
-            derivL, derivR = derivFunc(g, data[t, ...], i);
-            derivC[i][t,...] = 0.5*(derivL + derivR);
+                # Central gradient
+                derivC[i] = 0.5*(derivL + derivR)
+            else:
+                ## data at multiple time stamps
+                for t in range(tau_length):
+                    derivL, derivR = derivFunc(g, data[t, ...], i)
+                    derivC[i][t,...] = 0.5*(derivL + derivR)
 
-        # Change indices where data was nan to nan
-        derivC[i][nanInds] = np.nan;
+            # Change indices where data was nan to nan
+            derivC[i][nanInds] = np.nan
 
-        # Change indices where data was inf to inf
-        derivC[i][infInds] = np.inf;
+            # Change indices where data was inf to inf
+            derivC[i][infInds] = np.inf
 
     return derivC, derivL, derivR

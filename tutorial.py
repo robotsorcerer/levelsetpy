@@ -4,8 +4,8 @@ import numpy as np
 from math import pi
 from Utilities import expand, zeros, Bundle, ones, error
 from Grids import createGrid
-from ValueFuncs import proj, HJIPDE_solve, eval_u
-from Visualization import visSetIm
+from ValueFuncs import *
+from Visualization import *
 from InitialConditions import shapeCylinder
 from DynamicalSystems import *
 import matplotlib.pyplot as plt
@@ -61,7 +61,7 @@ def main():
     grid_min = expand(np.array((-5, -5, -pi)), ax = 1) # Lower corner of computation domain
     grid_max = expand(np.array((5, 5, pi)), ax = 1)   # Upper corner of computation domain
     N = 41*ones(3, 1).astype(int) #expand(np.array((41, 41,  41)), ax = 1)        # Number of grid points per dimension
-    pdDims = 3               # 3rd dimension is periodic
+    pdDims = 2              # 3rd dimension is periodic
     g = createGrid(grid_min, grid_max, N, pdDims)
 
     ## target set
@@ -71,7 +71,7 @@ def main():
 
     ## time vector
     t0 = 0
-    tMax = 2
+    tMax =  2
     dt = 0.05
     tau = np.arange(t0, tMax+dt, dt) # account for pythonb's 0-indexing
 
@@ -87,11 +87,6 @@ def main():
     # do dStep2 here
 
     ## Pack problem parameters
-
-    #do dStep3 here
-    # new_params = dict(x=zeros(1, 3), wRange=[-wMax, wMax], speed=speed, \
-    #                   xhist=zeros(1, 3), uhist=zeros(1,3))
-    # dubins_default_params.update(new_params)
 
     # Define dynamic system
     # dCar = DubinsCar(dubins_default_params)
@@ -115,21 +110,22 @@ def main():
 
     ## Compute value function
     HJIextraArgs = Bundle(dict(
-                            visualize = Bundle(dict(
-                            valueSet = 1,
-                            initialValueSet = 1,
-                            figNum = 1, #set figure number
-                            deleteLastPlot = True, #delete previous plot as you update
-                            plotData = Bundle(dict(
-                            # comment these if you don't want to see a 2D slice
-                            plotDims = [1, 1, 0], #plot x, y
-                            projpt = [0], #project at theta = 0
-                            )),
-                            viewAngle = [0,90], # view 2D
-                            )),
-                            ))
+                            # visualize = Bundle(dict(
+                            # valueSet = True,
+                            # initialValueSet = True,
+                            # figNum = 1, #set figure number
+                            # deleteLastPlot = True, #delete previous plot as you update
+                            # plotData = Bundle(dict(
+                            # # comment these if you don't want to see a 2D slice
+                            # plotDims = [1, 1, 0], #plot x, y
+                            # projpt = [0], #project at theta = 0
+                            # )),
+                            # viewAngle = [0,90], # view 2D
+                            # )),
+                            )
+                            )
 
-    data, tau2, _ = HJIPDE_solve(data0, tau, schemeData, 'None', HJIextraArgs)
+    data, tau2, _ = HJIPDE_solve(data0, tau, schemeData, None, HJIextraArgs)
 
     ## Compute optimal trajectory from some initial state
     if compTraj:
@@ -156,10 +152,8 @@ def main():
 
 
             #flip data time points so we start from the beginning of time
-            dataTraj = np.flip(data,4) # I hope this is correct
+            dataTraj = np.flip(data,3)
 
-            # [traj, traj_tau] = ...
-            # computeOptTraj(g, data, tau, dynSys, extraArgs)
             [traj, traj_tau] = computeOptTraj(g, dataTraj, tau2, dCar, TrajextraArgs)
 
             # fig = plt.gcf()

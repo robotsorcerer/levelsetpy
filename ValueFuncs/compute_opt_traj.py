@@ -1,3 +1,4 @@
+import time
 from Utilities import *
 from .data_proj import proj
 from .compute_gradients import computeGradients
@@ -30,103 +31,97 @@ def computeOptTraj(g, data, tau, dynSys, extraArgs=Bundle({})):
     """
 
     # Default parameters
-    uMode = 'min';
-    visualize = False;
-    subSamples = 4;
+    uMode = 'min'
+    visualize = False
+    subSamples = 4
 
     if isfield(extraArgs, 'uMode'):
-        uMode = extraArgs.uMode;
+        uMode = extraArgs.uMode
 
     if isfield(extraArgs, 'dMode'):
-        dMode = extraArgs.dMode;
+        dMode = extraArgs.dMode
 
     # Visualization
     if isfield(extraArgs, 'visualize') and extraArgs.visualize:
-        visualize = extraArgs.visualize;
+        visualize = extraArgs.visualize
 
-        showDims = np.nonzero(extraArgs.projDim);
-        hideDims = np.logical_not(extraArgs.projDim)
-
-        # if isfield(extraArgs,'fig_num'):
-        #     f = figure(extraArgs.fig_num);
-        # else:
-        f = plt.figure()
+        showDims = np.nonzero(extraArgs.projDim)
+        hideDims = np.logical_not(extraArgs.projDim).squeeze()
+        # print(f'showDims: {showDims}, hideDims: {hideDims}')
+        f = plt.figure(figsize=(12, 7))
+        ax = f.add_subplot(111)
+        fontdict = {'fontsize':12, 'fontweight':'bold'}
 
     if isfield(extraArgs, 'subSamples'):
-        subSamples = extraArgs.subSamples;
-
-    clns = [':' for i in range(g.dim)]
+        subSamples = extraArgs.subSamples
 
     if np.any(np.diff(tau, n=1, axis=0)) < 0:
         error('Time stamps must be in ascending order!')
 
     # Time parameters
-    iter = 0;
-    tauLength = len(tau);
-    dtSmall = (tau[1]- tau[0])/subSamples;
-    # maxIter = 1.25*tauLength;
+    iter = 0
+    tauLength = len(tau)
+    dtSmall = (tau[1]- tau[0])/subSamples
+    # maxIter = 1.25*tauLength
 
     # Initialize trajectory
     traj = np.empty((g.dim, tauLength))
     traj.fill(np.nan)
-    traj[:,0] = dynSys.x;
-    tEarliest = 0;
+    traj[:,0] = dynSys.x
+    tEarliest = 0
 
     while iter <= tauLength:
         # Determine the earliest time that the current state is in the reachable set
         # Binary search
-        upper = tauLength;
-        lower = tEarliest;
+        upper = tauLength
+        lower = tEarliest
 
-        tEarliest = lower; #find_earliest_BRS_ind(g, data, dynSys.x, upper, lower);
+        tEarliest = lower #find_earliest_BRS_ind(g, data, dynSys.x, upper, lower)
 
         # BRS at current time
-        BRS_at_t = data[tEarliest, ...];
+        BRS_at_t = data[tEarliest, ...]
 
         # Visualize BRS corresponding to current trajectory point
         if visualize:
-            plt.plot(traj(showDims(1), iter), traj(showDims(2), iter), 'k.')
-            g2D, data2D = proj(g, BRS_at_t, hideDims, traj[hideDims,iter]);
-            vizLevelSet(g2D, data2D); # write this
-            tStr = logger.info('t = {.3f}; tEarliest = {.3f}'.format(tau[iter], tau[tEarliest]));
-            plt.title(tStr)
+            ax.plot(traj[showDims[0], iter], traj[showDims[1], iter], color='k', linestyle='-.')
+            # plt.show()
+            # print(f'traj: {traj.shape}, {iter}')
+            g2D, data2D = proj(g, BRS_at_t, hideDims, traj[hideDims,iter])
+            tStr = f't = {tau[iter]:.3f} tEarliest = {tau[tEarliest]:.3f}'
+            ax.contour(g2D.xs[0], g2D.xs[1], data2D, levels=1, colors='g')
+            ax.set_xlabel('X', fontdict=fontdict)
+            ax.set_ylabel('Y', fontdict=fontdict)
+            ax.grid('on')
+            ax.set_title(tStr)
 
             if isfield(extraArgs, 'fig_filename'):
-                plt.savefig(f'{extraArgs.fig_filename}_{iter}.png', dpi=79.0)
+                f.savefig(f'{extraArgs.fig_filename}_{iter}.png', dpi=79.0)
+            plt.show()
+            time.sleep(.3)
 
         if tEarliest == tauLength:
             # Trajectory has entered the target
             break
 
         # Update trajectory
-        Deriv = computeGradients(g, BRS_at_t);
-        N_Sim = 10  # lenth of integration steps
-        X_OL = list() # to store open loop control law on evolved states
+        Deriv = computeGradients(g, BRS_at_t)
 
         for j in range(subSamples):
-            deriv = eval_u(g, Deriv, dynSys.x);
-            u = dynSys.get_opt_u(deriv, uMode, tau[tEarliest], dynSys.x);
+            deriv = eval_u(g, Deriv, dynSys.x)
+            u = dynSys.get_opt_u(tau[tEarliest], deriv, uMode, dynSys.x)
             if dMode or var:
-                d = dynSys.get_opt_v(deriv, dMode, tau[tEarliest], dynSys.x);
+                d = dynSys.get_opt_v(tau[tEarliest], deriv, dMode, dynSys.x)
             else:
-                d = dynSys.get_opt_v(deriv, tau[tEarliest], dynSys.x)
-            xt = dynSys.update_dynamics(u, dtSmall, dynSys.x, d);
-
+                d = dynSys.get_opt_v(tau[tEarliest], deriv, None, dynSys.x)
             # integrate the dynamics
-            for t in range(N_sim):
-                xt = dynamics_RK4(dynSys.update_dynamics, xt, u, d)
-                X_OL.append(np.array(xt))
-        # update dynamical systems state
-        dynSys.x = X_OL[-1]
-        dynSys.xhist = np.concatenate((dynsSus.xhist, dynSys.x), 1)
-        dynSys.uhist = np.concatenate((dynsSus.uhist, u), 1)
+            xt = dynSys.update_state(u, dtSmall, dynSys.x, d)
 
         # Record new point on nominal trajectory
         iter += 1
         traj[:,iter] = dynSys.x
 
     # Delete unused indices
-    traj = traj[:,:iter+1]
-    traj_tau = tau[:iter]
+    traj = traj[:,:iter]
+    traj_tau = tau[:iter-1]
 
     return  traj, traj_tau

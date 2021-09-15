@@ -2,6 +2,7 @@ from .dyn_sys_basic import DynSysBasic
 import copy
 import numpy as np
 from Utilities import *
+from ExplicitIntegration.runge_kutta4 import dynamics_RK4
 
 class DubinsCarBasic(DynSysBasic):
     def __init__(self, x, wRange, speed, dRange=None, dims=None):
@@ -75,7 +76,7 @@ class DubinsCarBasic(DynSysBasic):
 
         if numel(deriv)==1:
             deriv = cell(deriv, 1)
-        ## Optimal control: check these formulas
+        ## Optimal control
         if uMode=='max':
             uOpt = (deriv[2]>=0)*self.wRange[1] + (deriv[2]<0)*(self.wRange[0]);
         elif uMode=='min':
@@ -107,6 +108,45 @@ class DubinsCarBasic(DynSysBasic):
                   vOpt.append((deriv[i]>=0)*self.dRange[0][i] + \
                             (deriv[i]<0)*(self.dRange[1][i]))
         else:
-            error('Unknown dMode!')
+            warn(f'Unknown dMode: {dMode}!')
 
         return vOpt
+
+    def update_state(self, u, T=0, x0=None, d=[]):
+        # Updates state based on control
+        #
+        # Inputs:   obj - current quardotor object
+        #           u   - control (defaults to previous control)
+        #           T   - duration to hold control
+        #           x0  - initial state (defaults to current state if set to [])
+        #           d   - disturbance (defaults to [])
+        #
+        # Outputs:  x1  - final state
+        if x0 is None:
+            x0 = self.x
+
+        if T == 0:
+            return x0
+
+        if u is None:
+            return x0
+
+        if np.isnan(u):
+            warn(f'u is Nan')
+            return x0
+
+        if u.shape[0]<u.shape[1]:
+            u = u.T
+
+        if not np.any(d):
+            x = dynamics_RK4(self.dynamics, [0, T], x0, u, [])
+        else:
+            x = dynamics_RK4(self.dynamics, [0, T], x0, u, d)
+
+        x1 = np.asarray(x)
+
+        self.x = x1
+        self.u = u
+
+        self.xhist = np.concatenate((x1, self.xhist), 1)
+        self.uhist = np.concatenate((u, self.uhist), 1)

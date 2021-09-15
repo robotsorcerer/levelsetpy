@@ -82,24 +82,27 @@ def visSetIm_single(g, data, color, level, extraArgs):
     if isfield(extraArgs, 'LineWidth'):
         LineWidth = extraArgs.LineWidth
 
+    if isfield(extraArgs, 'savedict'):
+        savedict = extraArgs.savedict
+
     if g.dim==1:
         extraArgs.ax.plot(g.xs[0], data, linestyle='-', color=color)
         extraArgs.ax.plot(g.xs[0], np.zeros(size(g.xs[0])), linestyle=':', color='k')
 
     elif g.dim==2:
-        show2D(g, data, fc='g', savedict = {"save": False})
+        show2D(g, data, fc='g', savedict = {"save": False}, disp=extraArgs.disp)
 
     elif g.dim==3:
-        show3D(g, data, fc='g', savedict = {"save": False})
+        show3D(g, data, fc='g', savedict = {"save": False}, disp=extraArgs.disp)
     elif g.dim==4:
         visSetIm4D(g, data, color, level, sliceDim, applyLight)
 
 ## 3D Visualization
-def visSetIm3D( ax, g, data, color, level):
-    show3D(g, data, fc=color, level=level)
+def visSetIm3D( ax, g, data, color, level=0., disp=True):
+    show3D(g, data, fc=color, level=level, disp=disp)
 
 ## 4D Visualization
-def visSetIm4D(g, data, color, level, sliceDim):
+def visSetIm4D(g, data, color, level, sliceDim, disp=True):
     # Takes 6 slices in the dimension sliceDim and shows the 3D projections
     N = 6
     spC = 3
@@ -114,5 +117,5 @@ def visSetIm4D(g, data, color, level, sliceDim):
         g3D, data3D = proj(g, data, dim, xs)
 
         # Visualize 3D slices
-        show3D(g3D, data3D, color, ax=ax, level=level, disp=False)
+        show3D(g3D, data3D, color, ax=ax, level=level, disp=disp)
     plt.show()
