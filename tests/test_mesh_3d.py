@@ -28,6 +28,8 @@ def slender_cylinder(g3):
     spacing = tuple(g3.dx.flatten().tolist())
     mesh = implicit_mesh(cylinder, level=0., spacing=spacing)
 
+    fig = plt.figure(figsize=(16, 9))
+    ax = fig.add_subplot(121, projection='3d')
     ax.add_collection3d(mesh)
 
 
@@ -64,7 +66,7 @@ def cylinder_sphere(g3, savedict):
 
 
     sphere = shapeSphere(g3, center, radius=3)
-    sphere_mesh = implicit_mesh(sphere, level=0., spacing=spacing, face_color('g')
+    sphere_mesh = implicit_mesh(sphere, level=0., spacing=spacing, face_color='g')
     ax2 = fig.add_subplot(122, projection='3d')
     ax2.plot3D(g3.xs[0].flatten(), g3.xs[1].flatten(), g3.xs[2].flatten(), color='cyan')
     ax2.add_collection3d(sphere_mesh)

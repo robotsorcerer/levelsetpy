@@ -90,7 +90,7 @@ def main():
 
     # Define dynamic system
     # dCar = DubinsCar(dubins_default_params)
-    dCar = DubinsCarBasic(np.zeros((3,1)), wMax, speed)
+    dCar = DubinsCar(np.zeros((3,1)), wMax, speed)
 
     # Put grid and dynamic systems into schemeData
     schemeData = Bundle(dict(grid = g, dynSys = dCar, accuracy = 'high',

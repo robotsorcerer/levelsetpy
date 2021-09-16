@@ -49,28 +49,28 @@ def main(savedict):
     sph_rect_diff = shapeDifference(sphere, rect)
 
     savedict["savename"]="cylinder_2d.jpg"
-    show2D(g2, cylinder, title='Cylinder', winsize=(12, 7), ec='m', fc=None, savedict=savedict)
+    show2D(g2, cylinder, title='Cylinder', winsize=(12, 7), ec='m', fc=None, savedict=savedict, disp=True)
     savedict["savename"]="sphere_2d.jpg"
-    show2D(g2, sphere, title='Sphere', winsize=(12, 7), ec='m', fc=None, savedict=savedict)
+    show2D(g2, sphere, title='Sphere', winsize=(12, 7), ec='m', fc=None, savedict=savedict, disp=True)
     savedict["savename"]="sphere2_2d.jpg"
-    show2D(g2, sphere2, title='Sphere, C=(-.5, .5)', winsize=(12, 7), ec='m', fc=None, savedict=savedict)
+    show2D(g2, sphere2, title='Sphere, C=(-.5, .5)', winsize=(12, 7), ec='m', fc=None, savedict=savedict, disp=True)
     savedict["savename"]="rect_2d.jpg"
-    show2D(g2, rect, title='Unit Square Origin', winsize=(12, 7), ec='m', fc=None, savedict=savedict)
+    show2D(g2, rect, title='Unit Square Origin', winsize=(12, 7), ec='m', fc=None, savedict=savedict, disp=True)
     savedict["savename"]="rect2_2d.jpg"
-    show2D(g2, rect2, title='-Z&-X of [ -1, -1 ]', winsize=(12, 7), ec='m', fc=None, savedict=savedict)
+    show2D(g2, rect2, title='-Z&-X of [ -1, -1 ]', winsize=(12, 7), ec='m', fc=None, savedict=savedict, disp=True)
     savedict["savename"]="rect3_2d.jpg"
-    show2D(g2, rect3, title='RectCorner: [1,-0.5], W: [0.5,1.0]', winsize=(12, 7), ec='m', fc=None, savedict=savedict)
+    show2D(g2, rect3, title='RectCorner: [1,-0.5], W: [0.5,1.0]', winsize=(12, 7), ec='m', fc=None, savedict=savedict, disp=True)
     savedict["savename"]="rect4_2d.jpg"
-    show2D(g2, rect4, title='RectCent: [1,-0.5], W: [0.5,1.0]', winsize=(12, 7), ec='m', fc=None, savedict=savedict)
+    show2D(g2, rect4, title='RectCent: [1,-0.5], W: [0.5,1.0]', winsize=(12, 7), ec='m', fc=None, savedict=savedict, disp=True)
     # Show Unions
     savedict["savename"]="sphere_union_2d.jpg"
-    show2D(g2, sphere_union, title='Union of 2 Spheres', winsize=(12, 7), ec='m', fc=None, savedict=savedict)
+    show2D(g2, sphere_union, title='Union of 2 Spheres', winsize=(12, 7), ec='m', fc=None, savedict=savedict, disp=True)
     savedict["savename"]="rect_union_2d.jpg"
-    show2D(g2, rect_union, title='Union of 2 Rects', winsize=(12, 7), ec='m', fc=None, savedict=savedict)
+    show2D(g2, rect_union, title='Union of 2 Rects', winsize=(12, 7), ec='m', fc=None, savedict=savedict, disp=True)
     savedict["savename"]="rect_comp_2d.jpg"
-    show2D(g2, rect_comp, title='Rect Complement', winsize=(12, 7), ec='m', fc=None, savedict=savedict)
+    show2D(g2, rect_comp, title='Rect Complement', winsize=(12, 7), ec='m', fc=None, savedict=savedict, disp=True)
     savedict["savename"]="sph_rect_diff_2d.jpg"
-    show2D(g2, sph_rect_diff, title='Sphere-Rect Diff', winsize=(12, 7), ec='m', fc=None, savedict=savedict)
+    show2D(g2, sph_rect_diff, title='Sphere-Rect Diff', winsize=(12, 7), ec='m', fc=None, savedict=savedict, disp=True)
 
 
 

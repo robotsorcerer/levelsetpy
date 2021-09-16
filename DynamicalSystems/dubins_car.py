@@ -1,191 +1,152 @@
+from .dyn_sys import DynSys
 import copy
 import numpy as np
 from Utilities import *
-from DynamicalSystems import DynSys
+from ExplicitIntegration.runge_kutta4 import dynamics_RK4
 
 class DubinsCar(DynSys):
-    def __init__(self, kwargs):
-        # super().__init__(kwargs)
-        self.__doc__ = """
-               obj = DubinsCar(x, wMax, speed, dMax)
-                   Dubins Car class
-
-                kwargs = {
-                            wRange=[-wMax, wMax], speed=5, \
-                            dRange=zeros(3,2), dims=np.arange(3), \
-                            end=None, nu = 1, nd = 3, x = None, nx=3, \
-                            u = None
-                    }
-
-               Dynamics:
-                  \dot{x}_1 = v * cos(x_3) + d1
-                  \dot{x}_2 = v * sin(x_3) + d2
-                  \dot{x}_3 = u
-                       u \in [-wMax, wMax]
-                       d \in [-dMax, dMax]
-
-               Inputs:
-                 x      - state: [xpos; ypos]
-                 thetaMin   - minimum angle
-                 thetaMax   - maximum angle
-                 v - speed
-                 dMax   - disturbance bounds
-
-               Output:
-                 obj       - a DubinsCar2D object
-            """
-        # self.dyn_sys = DynSys(kwargs)
-        DynSys.__init__(self, kwargs)
-
-    def update_dynamics(self, x, u, d=zeros(3, 1), **kwargs):
+    def __init__(self, x, wRange, speed, dRange=None, dims=None):
         """
-        ^^^This is the ode function for the Dynamics of
-            the Dubins Car. This function takes the base
-            parameters of the dubins car model <computed
-            in our `__init__` function> and returns the
-            o.d.e of the LHS according to:
-
-                \dot{x}_1 = v * cos(x_3) + d1
-                \dot{x}_2 = v * sin(x_3) + d2
-                \dot{x}_3 = w
-
-            There is an implicit assumption that the user is working
-             in relative coordinates between the cars.
-
-            Inputs:
-                x: 3-D state, or N X 3D state for N evolved states
-                u: control==w
-                d: disturbance
-
-            Function parameters:
-                v: linear speed
-                w: orientation of the cars w.r.t one another
-
-            This is optional:
-                kwargs: dictionary containing
-                [wRange, speed, dRange, dims]
-
-                kwargs must be suppied if any of these parameters
-                must change during simulation.
-
-             Adopted from Mo Chen, 2016-06-08
-             Lekan Molu, 2021-08-08
+            Wrapper around Sylvia's Dubins Car Class
+            dRange must be a {2X3} vector
+            or a {1X3} vector
         """
-        x = to_column_mat(x)
-        self.x = x
-
-        x0 = kwargs['x0'] if 'x0' in kwargs else None
-        if not x0:
-            x0 = self.x
-
-
-        if self.T==0:
-            x1 = x0;
-            return x1
-
-        # Basic vehicle properties
-        self.dims = kwargs['dims'] if 'dims' in kwargs else self.dims
-        self.dims = kwargs['dims'] if 'dims' in kwargs else self.dims
-        # assert self.dims.shape[0]==1, "first dimension of dims array can not be non-singleton"
-        self.pdim = np.hstack([np.nonzero(self.dims == 1), np.nonzero(self.dims == 2)]) # Position dimensions
-        #obj.hdim = find(dims == 3);   # Heading dimensions
-        self.nx = len(self.dims);
-
-        if numel(self.x) != self.nx:
-            error(f'Initial state dim, x_0: {numel(x)} != obj.nx: {self.nx}!');
-
-        self.nu = 1;
-        self.nd = 3;
-
-        self.x = x;
-        self.xhist = self.x;
-
-
-        if not np.any(u):
-            logger.warn(f'Controls u is empty')
-            return self.x
-
-        if np.any(np.isnan(u)):
-            logger.warn(f'Controls u contain NaNs')
-            return self.x
-
-        u = to_column_mat(u)
-
-        if 'wRange' in kwargs: # if we want to change the default
-            self.wRange = kwargs['wRange'] # angke bounds
-        #self.thetaMax = thetaMax;
-        if 'speed' in kwargs:
-            self.speed = kwargs['speed'] # speed, v
-        if 'dRange' in kwargs:
-            self.dRange = kwargs['dRange'] # disturbance bounds
-        if 'dims' in kwargs:
-            self.dims = kwargs['dims'] # dims should be 3 in length
-        # integrate=kwargs['integrate'] if 'integrate' in kwargs else None
-
-        def dynamics_helper(x, u, d, dims, dim):
-            if dim==1:
-                dx = self.speed * np.cos(x[dims==2]) + d[0]
-            elif dim==2:
-                dx = self.speed * np.sin(x[dims==2]) + d[1]
-            elif dim==3:
-                dx = u + d[2]
-            else:
-                error('Only dimension 1-3 are defined for dynamics of DubinsCar!')
-            return dx
-
-        if iscell(self.x):
-            # this for aggregated evolved states
-            dx = cell(len(self.dims), 1);
-
-            for i in range(len(self.dims)):
-                dx[i] = dynamics_helper(x, u, d, self.dims, self.dims[i]);
+        self.x = to_column_mat(x)
+        # Angle bounds
+        if wRange is None:
+            self.wRange = np.array([[-1, 1]]).T
+        elif numel(wRange) == 2:
+            self.wRange = wRange
         else:
-            # this for a single state
-            dx = zeros(self.nx, 1);
+            self.wRange = [-wRange, wRange] #np.array([[-wRange, wRange]]).T
 
-            dx[0] = self.speed * np.cos(x[2]) + d[0];
-            dx[1] = self.speed * np.sin(x[2]) + d[1];
+        self.speed = 5 if not speed else speed # Constant speed = speed
+
+        # Disturbance
+        if dRange is None:
+            self.dRange = np.zeros((2, 3))
+        elif np.any(dRange.shape)==1:
+            # make it 2 x 3 by stacking
+            self.dRange = np.vstack([-dRange, dRange])
+        else:
+            self.dRange = dRange
+
+        # Dimensions that are active
+        self.dims = np.arange(3) if dims is None else dims
+
+        pdim = np.where((self.dims==0) | (self.dims==1))
+        DynSys.__init__(self, nx=len(self.dims), nu=1,nd=3,
+                                x = self.x, xhist=self.x, pdim=pdim
+                               )
+
+    def dynamics(self, t, x, u, d=None):
+        # Dynamics of the Dubins Car
+        #    \dot{x}_1 = v * cos(x_3) + d1
+        #    \dot{x}_2 = v * sin(x_3) + d2
+        #    \dot{x}_3 = w
+        #   Control: u = w;
+        if not d:
+            d = np.zeros((3,1))
+        if iscell(x):
+            dx = cell(len(self.dims), 1)
+            for i in range(len(self.dims)):
+                dx[i] = self.dynamics_helper(x, u, d, self.dims, self.dims[i])
+        else:
+            dx = np.zeros((self.nx, 1), dtype=np.float64)
+            dx[0] = self.speed * np.cos(x[2]) + d[0]
+            dx[1] = self.speed * np.sin(x[2]) + d[1]
             dx[2] = u + d[2]
 
-        return np.array(dx)
+        return dx
 
-    def get_opt_u(self, deriv, uMode='min', t=None, y=None):
-        "Returns optimal control law"
+    def dynamics_helper(self, x, u, d, dims, dim):
+        if dim==0:
+            # print('dims: ', dims, 'x: ', [d.shape for d in x])
+            dx = self.speed * np.cos(x[2]) + d[0]
+        elif dim==1:
+            dx = self.speed * np.sin(x[2]) + d[1]
+        elif dim==2:
+            dx = u + d[2]
+        else:
+            error('Only dimension 1-3 are defined for dynamics of DubinsCar!')
+        return dx
 
-        if not iscell(deriv):
+    def get_opt_u(self, t=0, deriv=0, uMode='min', y=0):
+        "Returns optimal control law; t, y=None by default"
+
+        if numel(deriv)==1:
             deriv = cell(deriv, 1)
-
-        ## Optimal control: check these formulas
+        ## Optimal control
         if uMode=='max':
-            uOpt = (deriv[self.dims==3]>=0)@self.wRange[1] + (deriv[self.dims==3]<0)@(self.wRange[0]);
+            uOpt = (deriv[2]>=0)*self.wRange[1] + (deriv[2]<0)*(self.wRange[0]);
         elif uMode=='min':
-            uOpt = (deriv[self.dims==3]>=0)@(self.wRange[0]) + (deriv[self.dims==3]<0)@self.wRange[1];
+            uOpt = (deriv[2]>=0)*(self.wRange[0]) + (deriv[2]<0)*self.wRange[1]
+            # print(uOpt.shape, 'uOpt')
         else:
             error('Unknown control Mode!')
 
         return uOpt
 
-    def get_opt_v(self, deriv, dMode='max', t=None, y=None):
+    def get_opt_v(self, t=0, deriv=0, dMode='max', y=0):
         """Returns optimal disturbance
         """
-        if not iscell(deriv):
+        if numel(deriv)==1:
             deriv = cell(deriv, 1)
 
-        vOpt = zeros(3, 1);
+        vOpt = []
 
         ## Optimal control
         if dMode=='max':
           for i in range(3):
-              if np.any(self.dims[self.dims == i]):
-                  vOpt[i] = (deriv[self.dims==i]>=0)@self.dRange[1][i] + \
-                            (deriv[self.dims==i]<0)@(self.dRange[0][i])
+              if np.any(self.dims == i):
+                  vOpt.append((deriv[i]>=0)*self.dRange[1][i] + \
+                            (deriv[i]<0)*(self.dRange[0][i]))
 
         elif dMode=='min':
           for i in range(3):
               if np.any(self.dims[self.dims == i]):
-                  vOpt[i] = (deriv[self.dims==i]>=0)@self.dRange[0][i] + \
-                            (deriv[self.dims==i]<0)@(self.dRange[1][i])
+                  vOpt.append((deriv[i]>=0)*self.dRange[0][i] + \
+                            (deriv[i]<0)*(self.dRange[1][i]))
         else:
-            error('Unknown dMode!')
+            warn(f'Unknown dMode: {dMode}!')
 
         return vOpt
+
+    def update_state(self, u, T=0, x0=None, d=[]):
+        # Updates state based on control
+        #
+        # Inputs:   obj - current quardotor object
+        #           u   - control (defaults to previous control)
+        #           T   - duration to hold control
+        #           x0  - initial state (defaults to current state if set to [])
+        #           d   - disturbance (defaults to [])
+        #
+        # Outputs:  x1  - final state
+        if x0 is None:
+            x0 = self.x
+
+        if T == 0:
+            return x0
+
+        if u is None:
+            return x0
+
+        if np.isnan(u):
+            warn(f'u is Nan')
+            return x0
+
+        if u.shape[0]<u.shape[1]:
+            u = u.T
+
+        if not np.any(d):
+            x = dynamics_RK4(self.dynamics, [0, T], x0, u, [])
+        else:
+            x = dynamics_RK4(self.dynamics, [0, T], x0, u, d)
+
+        x1 = np.asarray(x)
+
+        self.x = x1
+        self.u = u
+
+        self.xhist = np.concatenate((x1, self.xhist), 1)
+        self.uhist = np.concatenate((u, self.uhist), 1)

@@ -1,61 +1,30 @@
 """ This file defines the base dynamical systems class. """
-import abc
+import numpy as np
 from Utilities import cell
 
 class DynSys(object):
-    "Dynamical Systems Superclass."
-    __metaclass__ = abc.ABCMeta
+    def __init__(self, nx=None, nu=None, nd=None, x=None, u=None,
+                        xhist=None, uhist=None, pdim=None, vdim=None,
+                        hdim=None, hpxpy=None, hpxpyhist = None,
+                        hvxvy=None, hvxvyhist=None, data=None):
+        self.nx = nx          # Number of state dimensions
+        self.nu = nu          # Number of control inputs
+        self.nd = nd          # Number of disturbance dimensions
 
-    def __init__(self, params):
-        # For bookkeepping and plotting
-        for var, val in params.items():
-            object.__setattr__(self, var, val)
+        self.x = x           # State
+        self.u = u           # Recent control signal
 
-        # see test_dubins.py
+        self.xhist = xhist       # History of state
+        self.uhist = uhist       # History of control
 
-    @abc.abstractmethod
-    def update_dynamics(self, x):
-        """
-        Evaluate a single step of the dynamics.
-        Args:
-            x: The state space.
-        """
-        raise NotImplementedError("Must be implemented in subclass.")
+        self.pdim = pdim       # position dimensions
+        self.vdim = vdim       # velocity dimensions
+        self.hdim = hdim       # heading dimensions
 
-    @abc.abstractmethod
-    def get_opt_u(self, deriv, uMode='min', t=None, y = None):
-        """
-        Derive Optimal Control Law
-        Args:
-            deriv: derivative
-            t: time
-            y: measurement
-        """
-        raise NotImplementedError("Must be implemented in subclass.")
+        self.hpxpy = hpxpy          # Position
+        self.hpxpyhist = hpxpyhist      # Position history
+        self.hvxvy   = hvxvy        # Velocity
+        self.hvxvyhist = hvxvyhist      # Velocity history
 
-    @abc.abstractmethod
-    def get_opt_v(self, deriv, uMode='min', t=None, y = None):
-        """
-        Derive Optimal Disturbance Law
-        Args:
-            deriv: derivative
-            t: time
-            y: measurement
-        """
-        raise NotImplementedError("Must be implemented in subclass.")
-
-    @abc.abstractmethod
-    def update_state(self,  u, T, x0, d):
-        """
-        Update state based on new control
-        Args:
-            % Inputs:   self - current dynamical systems object
-                        u   - control (defaults to previous control)
-                        T   - duration to hold control
-                        x0  - initial state (defaults to current state if set to [])
-                        d   - disturbance (defaults to [])
-
-            Outputs:  x1  - final state
-
-        """
-        raise NotImplementedError("Must be implemented in subclass.")
+        # Data (any data that one may want to store for convenience)
+        self.data = data
