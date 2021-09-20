@@ -53,6 +53,7 @@ def truncateGrid(gOld, dataOld=None, xmin=None, xmax=None, process=True):
         if dataOld:
             dataNew = dataOld[np.logical_and(gOld.vs[0]>xmin, gOld.vs[0]<xmax)]
 
+
     elif gOld.dim==2:
         if np.any(dataOld):
             r = np.logical_and(gOld.vs[0]>xmin[0], gOld.vs[0]<xmax[0]).squeeze()
@@ -74,6 +75,7 @@ def truncateGrid(gOld, dataOld=None, xmin=None, xmax=None, process=True):
             forth_idx = np.logical_and(gOld.vs[3]>xmin[3], gOld.vs[3]<xmax[3]).squeeze()
 
             dataNew = dataOld[row_idx, :, :,:][:,col_idx,:,:][:,:,z_idx,:][:,:,:,forth_idx]
+
     else:
         error('truncateGrid has only been implemented up to 4 dimensions!')
 

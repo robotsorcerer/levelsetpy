@@ -61,8 +61,10 @@ def  upwindFirstENO3b(grid, data, dim, generateAll=0):
     if(generateAll):
         # Compute the left and right approximations.
         # No need to build WENO approximation, just return all the ENO approx.
-        derivL = upwindFirstENO3bHelper(grid, gdata, dim, -1);
-        derivR = upwindFirstENO3bHelper(grid, gdata, dim, +1);
+        res = upwindFirstENO3bHelper(grid, gdata, dim, -1);
+        derivL = res.eno_approx
+        res = upwindFirstENO3bHelper(grid, gdata, dim, +1);
+        derivR = res.eno_approx
 
         #---------------------------------------------------------------------------
         # If necessary, check equivalence of ENO terms.
@@ -76,8 +78,11 @@ def  upwindFirstENO3b(grid, data, dim, generateAll=0):
             checkEquivalentApprox(derivL[2], derivR[1], small)
     else:
         #Compute the left and right ENO approximations.
-        dL, smoothL = upwindFirstENO3bHelper(grid, gdata, dim, -1)
-        dR, smoothR = upwindFirstENO3bHelper(grid, gdata, dim, +1)
+        res = upwindFirstENO3bHelper(grid, gdata, dim, -1)
+        dL, smoothL = res.eno_approx, res.smooth_est
+
+        res = upwindFirstENO3bHelper(grid, gdata, dim, +1)
+        dR, smoothR = res.eno_approx, res.smooth_est
 
         #The best ENO approximant has the smallest smoothness estimate
         derivL = choose(dL, smoothL)

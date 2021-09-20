@@ -146,10 +146,10 @@ def projSingle(g, data, dims, xs, NOut, process):
 
 
         # Process the grid to populate the remaining fields if necessary
-        print( 'g.vs b4 proc', [x.shape for x in g.vs])
+        # print( 'g.vs b4 proc', [x.shape for x in g.vs])
         if process:
             gOut = processGrid(gOut)
-        print( 'g.vs aft proc', [x.shape for x in gOut.vs])
+        # print( 'g.vs aft proc', [x.shape for x in gOut.vs])
 
         # Only compute the grid if value function is not requested
         if not np.any(data) or data is None:
@@ -173,11 +173,12 @@ def projSingle(g, data, dims, xs, NOut, process):
 
     # Take a slice
     # Preprocess periodic dimensions
-    print('data b4 aug: ', data.shape, 'g.vs b4', [x.shape for x in g.vs])
+    # print('data b4 aug: ', data.shape, 'g.vs b4', [x.shape for x in g.vs])
     g, data = augmentPeriodicData(g, data)
 
     eval_pt = cell(g.dim, 1)
     xsi = 0
+    # print(f'dims: {dims}')
     for i in range(g.dim):
         if dims[i]:
             # If this dimension is periodic, wrap the input point to the correct period
@@ -195,19 +196,26 @@ def projSingle(g, data, dims, xs, NOut, process):
     print('data: after aug', data.shape, 'g.vs ', [x.shape for x in g.vs],  'eval_pt: ', [x.shape for x in eval_pt[:-1]])
     # https://stackoverflow.com/questions/21836067/interpolate-3d-volume-with-numpy-and-or-scipy
     data_coords = [x.squeeze() for x in g.vs]
+    # print(f'g.vs in proj: {[x.shape for x in g.vs]}')
     fn = RegularGridInterpolator(data_coords, data)
     # fn = RegularGridInterpolator(*g.vs, data)
-    eval_pt = [x.squeeze() for x in eval_pt if isinstance(x, np.ndarray)]
+    eval_pt = [x.squeeze() for x in eval_pt if isinstance(x, np.ndarray)] + [np.array([x]) for x in eval_pt if not isinstance(x, np.ndarray)]
     print('eval_pt ', [x.shape for x in eval_pt])
-    # eval_pt = np.tile(np.asarray(eval_pt), (3, 1, 1)).T
-    print('eval_pt: ', eval_pt.shape)
+    # if len(eval_pt==3):
+    #     x, y = [a.shape[0] for a in eval_pt]
+    # eval_pt = np.tile(np.asarray(eval_pt), (eval_pt[0].shape[0], 1, 1)).T
+    eshape = tuple([x.shape for x in eval_pt])
+    if len(eshape) != data.ndim:
+        eval_pt = np.tile(eval_pt, [*(data.shape[:-1]), 1])
+        print(f'eval_pt in tile: {eval_pt.shape}')
+    print('eval_pt post tile ', [x.shape for x in eval_pt])
     temp = fn(eval_pt)
-    # temp = fn(eval)
-    print('temp: ', temp.shape)
-    # temp = np.interp(np.asarray(g.vs).flatten(order='F').astype(float), data.flatten(Order='F'), np.asarray(eval_pt).flatten(order='F').astype(float))
+    print('temp post eval: ', temp.shape)
+    dataOut = copy.copy(temp)
 
-    dataOut = temp.squeeze()
+    temp = g.vs[np.logical_not(dims)]
+    print(f'temp after: {temp.shape}, dataOut: {dataOut.shape}')
 
-    dataOut = np.interp(g.vs[np.logical_not(dims)], dataOut, gOut.xs[:])
+    dataOut = np.interp(temp, dataOut, gOut.xs[:])
 
     return gOut, dataOut

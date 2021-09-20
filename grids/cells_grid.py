@@ -47,6 +47,7 @@ def cells_from_grid(g, bounds, padding=None):
     for i in range(numel(gs)):
         ii = np.asarray(np.unravel_index(i, size(gs), order='F'))
         iip = copy.copy(ii)
+        # print('iip: ', iip)
         for j in range(g.dim):
             iip[j] += 1
         grid_min = []

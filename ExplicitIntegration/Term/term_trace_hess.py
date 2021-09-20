@@ -157,7 +157,7 @@ def getMatrix(t, data, schemeData, inM):
     # Convert result to cell matrix, if necessary
     if isfloat(outM):
         outM = np.expand_dims(np.asarray(([[outM]])), 0)
-    elif not isinstance(outM, 'cell'):
+    elif not isinstance(outM, cell):
         error('Input matrix must be a matrix, cell matrix, or function handle.')
 
     return outM

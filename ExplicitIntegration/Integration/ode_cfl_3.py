@@ -98,7 +98,6 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
     if(numT == 2):
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         # Is this a vector level set integration?
-        # print('yo: ', type(y0))
         if(isinstance(y0, list)):
             numY = len(y0)
 

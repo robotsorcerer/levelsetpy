@@ -8,9 +8,9 @@ def augmentPeriodicData(g, data):
     for i  in range(g.dim):
         if isfield(g, 'bdry') and (id(g.bdry[i])==id(addGhostPeriodic)):
             # Grid points
-            # print(f'g.vs[i]: b4 {g.vs[i].shape}, {g.vs[i][-1]}')
-            g.vs[i] = np.concatenate((g.vs[i], expand(g.vs[i][-1], 1) + g.dx[i]), 0)
-            # print(f'g.vs[i]: aft {g.vs[i].shape}')
+            # print(f'g.vs[{i}]: b4 {g.vs[i].shape}, {g.vs[i][-1].shape}, {g.dx[i]}')
+            g.vs[i] = np.concatenate((g.vs[i], expand(g.vs[i][-1] + g.dx[i], 1)), 0)
+            # print(f'g.vs[{i}]: aft {g.vs[i].shape}')
             # Input data eg. data = cat(:, data, data(:,:,1))
             # indices = np.arange(g.dim, dtype=np.intp)
             # indices[i] = 0

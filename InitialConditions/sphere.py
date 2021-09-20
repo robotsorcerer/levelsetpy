@@ -42,21 +42,21 @@ def shapeSphere(grid, center=None, radius=1):
     """
 
     if not np.any(center):
-        center = zeros(grid.dim, 1);
+        center = zeros(grid.dim, 1)
     elif(numel(center) == 1):
-        center = center * ones(grid.dim, 1, dtype=np.float64);
+        center = center * ones(grid.dim, 1, dtype=np.float64)
 
     #---------------------------------------------------------------------------
     # Signed distance function calculation.
     data = (grid.xs[0] - center[0])**2
     for i in range(1, grid.dim):
         data += (grid.xs[i] - center[i])**2
-    data = np.sqrt(data) - radius;
+    data = np.sqrt(data) - radius
 
     #---------------------------------------------------------------------------
     # Warn the user if there is no sign change on the grid
     #  (ie there will be no implicit surface to visualize).
     if(np.all(data.flatten() < 0) or (np.all(data.flatten() > 0))):
         logger.warn(f'Implicit surface not visible because function has '
-                'single sign on grid');
+                'single sign on grid')
     return data

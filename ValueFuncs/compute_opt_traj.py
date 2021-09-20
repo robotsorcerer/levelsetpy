@@ -85,7 +85,7 @@ def computeOptTraj(g, data, tau, dynSys, extraArgs=Bundle({})):
         if visualize:
             ax.plot(traj[showDims[0], iter], traj[showDims[1], iter], color='k', linestyle='-.')
             # plt.show()
-            # print(f'traj: {traj.shape}, {iter}')
+            # print(f'g.vs in opt_traj: {[x.shape for x in g.vs]}')
             g2D, data2D = proj(g, BRS_at_t, hideDims, traj[hideDims,iter])
             tStr = f't = {tau[iter]:.3f} tEarliest = {tau[tEarliest]:.3f}'
             ax.contour(g2D.xs[0], g2D.xs[1], data2D, levels=1, colors='g')

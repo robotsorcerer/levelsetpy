@@ -83,7 +83,7 @@ def derivativeLeft(data, dxInv, dim, indices1, stencil):
         offset = i - 3
         indices1[dim] = indexDer + offset
         indices2[dim] = indexDer + offset - 1
-        v.append(data[np.ix_(*indices1)] - data[np.ix_(*indices2)]) * dxInv
+        v.append((data[np.ix_(*indices1)] - data[np.ix_(*indices2)]) * dxInv)
 
     return derivativeWENO(v)
 

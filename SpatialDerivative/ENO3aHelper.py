@@ -122,8 +122,8 @@ def upwindFirstENO3aHelper(grid, data, dim, approx4, stripDD=False):
     coeffL = +1 * grid.dx[dim]
     coeffR = -1 * grid.dx[dim]
 
-    indices1[dim] =np.arange(size(D2, dim)-2, dtype=np.intp)
-    indices2[dim] =np.arange(1, size(D2, dim)-1, dtype=np.intp)
+    indices1[dim] = np.arange(size(D2, dim)-2, dtype=np.intp)
+    indices2[dim] = np.arange(1, size(D2, dim)-1, dtype=np.intp)
 
 
     dL[0] += coeffL*D2[np.ix_(*indices1)]
@@ -132,8 +132,8 @@ def upwindFirstENO3aHelper(grid, data, dim, approx4, stripDD=False):
     if(approx4):
         dL[3] += coeffL*D2[np.ix_(*indices2)]
 
-    indices1[dim] = indices1[dim] + 1
-    indices2[dim] = indices2[dim] + 1
+    indices1[dim] += 1
+    indices2[dim] += 1
     dR[0] += coeffR*D2[np.ix_(*indices1)]
     dR[1] += coeffR*D2[np.ix_(*indices1)]
     dR[2] += coeffR*D2[np.ix_(*indices2)]

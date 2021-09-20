@@ -1,3 +1,4 @@
+import copy
 import sys, os
 sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )
 import numpy as np
@@ -22,7 +23,7 @@ def main():
          1. Run Backward Reachable Set (BRS) with a goal
              uMode = 'min' <-- goal
              minWith = 'none' <-- Set (not tube)
-             compTraj = false <-- no trajectory
+             compTraj = False <-- no trajectory
          2. Run BRS with goal, then optimal trajectory
              uMode = 'min' <-- goal
              minWith = 'none' <-- Set (not tube)
@@ -40,7 +41,7 @@ def main():
              uMode = 'max' <-- avoid
              dMode = 'min' <-- opposite of uMode
              minWith = 'minVOverTime' <-- Tube (not set)
-             compTraj = false <-- no trajectory
+             compTraj = False <-- no trajectory
          6. Change to a Forward Reachable Tube (FRT)
              add schemeData.tMode = 'forward'
              note: now having uMode = 'max' essentially says "see how far I can
@@ -63,11 +64,13 @@ def main():
     N = 41*ones(3, 1).astype(int) #expand(np.array((41, 41,  41)), ax = 1)        # Number of grid points per dimension
     pdDims = 2              # 3rd dimension is periodic
     g = createGrid(grid_min, grid_max, N, pdDims)
+    # print(f'g.vs after creation: {[x.shape for x in g.vs]}')
 
     ## target set
     data0 = shapeCylinder(g, 2, zeros(len(N), 1, np.float64), radius=1)
     # show3D(g=g, mesh=data0, savedict={"save":False})
     # also try shapeRectangleByCorners, shapeSphere, etc.
+    # print(f'g.vs after cyl: {[x.shape for x in g.vs]}')
 
     ## time vector
     t0 = 0
@@ -96,6 +99,7 @@ def main():
     schemeData = Bundle(dict(grid = g, dynSys = dCar, accuracy = 'high',
                             uMode = uMode))
     #do dStep4 here
+    # print(f'g.vs after scheme: {[x.shape for x in g.vs]}')
 
     ## additive random noise
     #do Step8 here
@@ -122,10 +126,10 @@ def main():
                             # )),
                             # viewAngle = [0,90], # view 2D
                             # )),
-                            )
-                            )
+                            ))
 
     data, tau2, _ = HJIPDE_solve(data0, tau, schemeData, None, HJIextraArgs)
+    # print(f'g.vs after solve: {[x.shape for x in g.vs]}')
 
     ## Compute optimal trajectory from some initial state
     if compTraj:
@@ -134,8 +138,9 @@ def main():
         xinit = np.array(([[2, 2, -pi]]))
 
         #check if this initial state is in the BRS/BRT
-        #value = eval_u(g, data, x)
-        value = eval_u(g,data[:,:,:,-1],xinit)
+        geval = copy.deepcopy(g)
+        value = eval_u(geval,data[:,:,:,-1],xinit)
+        # print(f'g.vs after eval: {[x.shape for x in g.vs]}')
         if value <= 0: #if initial state is in BRS/BRT
             # find optimal trajectory
 

@@ -11,9 +11,7 @@ def shapeUnion(shape1, shape2):
 
      The union is created by taking the pointwise minimum of the functions.
 
-     If the two shapes are defined by signed distance functions,
-       the resulting union function will be close to but not exactly
-       a signed distance function.
+     See O&F, pg 10, Geometry Toolbox.
 
      parameters:
        shape1      Implicit surface function data array for one shape.
@@ -22,16 +20,11 @@ def shapeUnion(shape1, shape2):
        data	Output data array (same size as shape1 and shape2)
                      containing an implicit surface function of the union.
 
-     Copyright 2004 Ian M. Mitchell (mitchell@cs.ubc.ca).
-     This software is used, copied and distributed under the licensing
-       agreement contained in the file LICENSE in the top directory of
-       the distribution.
-
-     Ian Mitchell, 6/23/04
+     Lekan Molu, September, 2021
     """
 
     #---------------------------------------------------------------------------
-    data = np.minimum(shape1, shape2);
+    data = np.minimum(shape1, shape2)
 
     #---------------------------------------------------------------------------
     # Warn the user if there is no sign change on the grid
@@ -43,7 +36,7 @@ def shapeUnion(shape1, shape2):
 
 def shapeIntersection(shape1, shape2):
     """
-     shapeUnion: implicit surface function for the intersection of two shapes.
+     shapeIntersection: implicit surface function for the intersection of two shapes.
 
        data = shapeIntersection(shape1, shape2)
 
@@ -52,23 +45,21 @@ def shapeIntersection(shape1, shape2):
 
      The intersection is created by taking the pointwise minimum of the functions.
 
-     If the two shapes are defined by signed distance functions,
-       the resulting intersection function will be close to but not exactly
-       a signed distance function.
+      Creates an implicit surface function for the union of two shapes
+        which are themselves defined by implicit surface functions.
 
-     parameters:
-       shape1      Implicit surface function data array for one shape.
-       shape2      Implicit surface function data array for the other shape.
+      The union is created by taking the pointwise minimum of the functions.
 
-       data	Output data array (same size as shape1 and shape2)
-                     containing an implicit surface function of the intersection.
+      See O&F, pg 10, Geometry Toolbox.
 
-     Copyright 2004 Ian M. Mitchell (mitchell@cs.ubc.ca).
-     This software is used, copied and distributed under the licensing
-       agreement contained in the file LICENSE in the top directory of
-       the distribution.
+      parameters:
+        shape1      Implicit surface function data array for one shape.
+        shape2      Implicit surface function data array for the other shape.
 
-     Ian Mitchell, 6/23/04
+        data	Output data array (same size as shape1 and shape2)
+                      containing an implicit surface function of the union.
+
+      Lekan Molu, September, 2021
     """
 
     #---------------------------------------------------------------------------

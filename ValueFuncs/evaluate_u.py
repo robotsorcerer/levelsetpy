@@ -2,7 +2,7 @@ from Utilities import *
 from BoundaryCondition import addGhostPeriodic
 from .augment_periodic import augmentPeriodicData
 from ValueFuncs import *
-from scipy.interpolate import RegularGridInterpolator
+from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
 
 def eval_u(gs, datas, xs, interp_method='linear'):
     """
@@ -80,11 +80,13 @@ def  eval_u_single(g, data, x, interp_method):
     ## Dealing with periodicity
     for i in range(g.dim):
         if (isfield(g, 'bdry') and id(g.bdry[i])==id(addGhostPeriodic)):
-            # Map input points to within grid bounds
+            # Map input points within grid bounds
             period = max(g.vs[i]) - min(g.vs[i])
 
             i_above_bounds = x[:,i] > max(g.vs[i])
             while np.any(i_above_bounds):
+                # print(f'i_above_bounds: {i_above_bounds}')
+                # print('x: ', x, ' x[i_above_bounds, i]: ', x[i_above_bounds, i])
                 x[i_above_bounds, i] -= period
                 i_above_bounds = x[:,i] > max(g.vs[i])
 
@@ -97,7 +99,13 @@ def  eval_u_single(g, data, x, interp_method):
 
     data_tup = [x.squeeze() for x in g.vs]
     interp_func = RegularGridInterpolator(data_tup, data)
-    eval_pts = [xx.squeeze() for xx in [x]*len(g.vs)]
+    if len(x)==len(g.vs):
+        eval_pts = x.squeeze()
+    else:
+        eval_pts = [xx.squeeze() for xx in [x]*len(g.vs)]
+
+    # interp = LinearNDInterpolator(list(zip(*g.vs)), data)
+    # Z = interp(X, Y, ZZ)
     # print(f'data: {data.shape}, g.vs: {[x.shape for x in g.vs]}, x: {x.shape}')
     v = interp_func(eval_pts)
 
