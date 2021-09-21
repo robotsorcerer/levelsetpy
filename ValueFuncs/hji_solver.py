@@ -840,6 +840,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             # integratorFunc is @OdeCFL3, derivFunc is upwindFirstWENO5,
             # dissipator=artificialDissipationGLF, schemeFunc is termLaxFriedrichs
             # print('y b4 int: ', y.shape)
+            # print(f'schemeData: {schemeData.derivFunc}')
             tNow, y, _ = integratorFunc(schemeFunc, [tNow, tau[i]], y, integratorOptions, schemeData)
 
             if np.any(np.isnan(y)):

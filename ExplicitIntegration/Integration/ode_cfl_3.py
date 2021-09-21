@@ -128,7 +128,7 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
 
             # Approximate the derivative and CFL restriction.
             for i in range(numY):
-                # print(i, 'yshap: ', y.shape)
+                # approximate H(x,p) term in the HJ PDE with Lax-Friedrichs
                 ydot[i], stepBound[i], schemeData = schemeFuncCell[i](t, y, schemeData)
 
                 # print('stepBound[i]: ', stepBound[i])

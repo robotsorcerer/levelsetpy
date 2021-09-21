@@ -140,6 +140,7 @@ def main():
         #check if this initial state is in the BRS/BRT
         geval = copy.deepcopy(g)
         value = eval_u(geval,data[:,:,:,-1],xinit)
+        print(f'value: {value}')
         # print(f'g.vs after eval: {[x.shape for x in g.vs]}')
         if value <= 0: #if initial state is in BRS/BRT
             # find optimal trajectory
