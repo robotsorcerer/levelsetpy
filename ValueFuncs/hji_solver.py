@@ -407,9 +407,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             or (isfield(extraArgs, 'makeVideo') and extraArgs.makeVideo):
         # Mark initial iteration, state that for the first plot we need
         # lighting
-        timeCount = 0;
-        needLight = True;
-
+        timeCount = 0
         #---Projection Parameters----------------------------------------------
 
         # Extract the information about plotData
@@ -459,16 +457,6 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         else:
             sliceLevel = 0;
 
-
-        # Do we want to see every single plot at every single time step, or
-        # only the most recent one?
-        if isfield(extraArgs.visualize, 'deleteLastPlot'):
-            deleteLastPlot = extraArgs.visualize.deleteLastPlot
-        else:
-            deleteLastPlot = False;
-
-        view3D = 0;
-
         # Project
         if (projDims == 0):
             gPlot = g;
@@ -511,19 +499,12 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
                 if extraArgs.targetFunction:
                     [_, targPlot] = proj(g, target_i, np.logical_not(plotDims), projpt);
-        #---Initialize Figure--------------------------------------------------
-
-
         # Initialize the figure for visualization
         winsize = (16,9)
         fig = plt.figure(figsize=winsize);
         fig.tight_layout()
+		plt.ion()
         ax = fig.add_subplot(1, 1, 1)
-
-
-        # Clear figure unless otherwise specified
-        plt.clf()
-
         ax.grid('on')
 
         # Set defaults
@@ -547,7 +528,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                 ax.plot(projectedInit[0], projectedInit[1], 'b*')
             elif np.nonzero(plotDims) == 3:
                 ax.plot_wireframe(projectedInit[0], projectedInit[1], projectedInit[2], 'b*')
-            plt.show()
+            # plt.show()
         #---Visualize Initial Value Set----------------------------------------
         if isfield(extraArgs.visualize, 'initialValueSet') and extraArgs.visualize.initialValueSet:
 
@@ -564,22 +545,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
         if isfield(extraArgs.visualize, 'initialValueFunction') and \
                 extraArgs.visualize.initialValueFunction:
 
-            # If we're making a 3D plot, mark so we know to view this at an
-            # angle appropriate for 3D
-            if gPlot.dim >= 2:
-                view3D = 1;
-
-            # Set up default parameters
-            if isfield(extraArgs.visualize,'plotColorVF0'):
-                extraArgs.visualize.plotColorVF0 = 'g';
-
-
-            if not isfield(extraArgs.visualize,'plotAlphaVF0'):
-                extraArgs.visualize.plotAlphaVF0 = .5;
-
-
             # Visualize Initial Value function (hVF0)
-            show3D(gPlot,dataPlot,(16,9), disp=True)
+            show3D(gPlot,dataPlot,(16,9), disp=False)
 
 
         ## Visualize Target Function/Set
@@ -611,7 +578,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             # Visualize Target function (hTF)
             show3D(gPlot,targPlot,\
                 extraArgs.visualize.plotColorTF,\
-                extraArgs.visualize.plotAlphaTF, disp=True);
+                extraArgs.visualize.plotAlphaTF, disp=0);
 
 
         ## Visualize Obstacle Function/Set
@@ -636,15 +603,12 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             if gPlot.dim >= 2:
                 view3D = 1;
 
-
             # Set up default parameters
             if not isfield(extraArgs.visualize,'plotColorOF'):
                 extraArgs.visualize.plotColorOF = 'r';
 
-
             if not isfield(extraArgs.visualize,'plotAlphaOF'):
                 extraArgs.visualize.plotAlphaOF = .5;
-
 
             # Visualize function
             visFuncIm(gPlot,-obsPlot, extraArgs.visualize.plotColorOF, extraArgs.visualize.plotAlphaOF);
@@ -771,7 +735,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             data = data0.astype(np.float32)
         else:
             data = np.zeros((data0size[0:gDim] +(len(tau), )), dtype=np.float64);
-            data[0, ...] = data0;
+            data[:,:,:,0] = data0;
+            # data[0, ...] = data0;
 
 
         istart = 1;
@@ -783,7 +748,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             data = data0[data0size[-1], ...].astype(np.float32)
         else:
             data = np.zeros((data0size[:gDim].shape+(len(tau),)), dtype=np.float64)
-            data[:data0size[-1], ...] = data0;
+            # data[:data0size[-1], ...] = data0;
+            data[:,:,:,:data0size[-1]] = data0;
 
 
         # Start at custom starting index if specified
@@ -801,8 +767,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
     # print(f'len(tau): {len(tau)}')
     for i in range(istart, len(tau)):
-        # if not quiet:
-        #     info(f'tau[{i}]: {tau[i]}')
+        debug(f'tau[{i}]: {tau[i]}')
 
         ## Variable schemeData
         if isfield(extraArgs, 'SDModFunc'):
@@ -834,7 +799,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             if compMethod =='minVOverTime' or compMethod =='maxVOverTime':
                 yLast = y;
             if not quiet:
-                info(f'Solving HJ Value at Time Step: {tNow:.4f}/{tau[i]:.2f}')
+                debug(f'Solving HJ Value at Time Step: {tNow:.4f}/{tau[i]:.2f}')
             # Solve hamiltonian and apply to value function (y) to get updated
             # value function # integrator function is an odeCFL function
             # integratorFunc is @OdeCFL3, derivFunc is upwindFirstWENO5,

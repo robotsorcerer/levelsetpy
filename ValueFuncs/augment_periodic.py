@@ -20,6 +20,5 @@ def augmentPeriodicData(g, data):
             # print(' data b4: ', data.shape)
             data = np.concatenate((data, to_app), i)
             # print(' data aft: ', data.shape)
-            print()
 
     return g, data

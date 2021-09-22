@@ -35,26 +35,23 @@ def eval_u(gs, datas, xs, interp_method='linear'):
 	 """
 	# for parti-games, the center of a cell may return a 1-D array
 	if xs.ndim < 2: xs = np.expand_dims(xs, 0)
-	# print(f'g: {gs}, datas: {datas.shape}, xs: {xs}')
 	if isinstance(gs, Bundle) and isinstance(datas, np.ndarray) and len(xs.shape)>=2:
 		# Option 1
 		v = eval_u_single(gs, datas, xs, interp_method)
 	elif isinstance(gs, Bundle) and iscell(datas) and isvector(xs):
 		# Option 2
-		# print(f'len(data): {len(datas)}')
 		v = [np.nan for i in range(len(datas))]
-		# geval = [copy.deepcopy(gs) for i in range(len(datas))]
 		for i in range(len(datas)):
 			# print(f'gs[{i}]: {gs.shape}')
 			v[i] = eval_u_single(gs, datas[i], xs, interp_method)
 			# print(f'gs[{i}] aft: {gs.shape}')
-		v = np.array(v)
+		v = np.asarray(v)
 	elif iscell(gs) and iscell(datas) and iscell(xs):
 		# Option 3
 		v = cell(len(gs), 1)
 		for i in range(len(gs)):
 			v[i] = eval_u_single(gs[i], datas[i], xs[i], interp_method)
-		v = np.array(v)
+		v = np.asarray(v)
 	else:
 		error('Unrecognized combination of input data types!')
 
@@ -81,7 +78,7 @@ def  eval_u_single(g, data, x, interp_method):
 	if size(x, 1) != g.dim:
 	  x = x.T
 
-	# print(f'b4 aug: g: {[x.shape for x in g.vs]}')
+	# print(f'x: {x.shape}')
 	geval, dataOld = copy.deepcopy(g), copy.copy(data)
 	g, data = augmentPeriodicData(geval, dataOld)
 	# print(f'aft aug: g: {[x.shape for x in g.vs]}')
@@ -112,7 +109,7 @@ def  eval_u_single(g, data, x, interp_method):
 	else:
 		eval_pts = [xx.squeeze() for xx in [x]*len(g.vs)]
 
-	# print(f'data: {data.shape}, g.vs: {[x.shape for x in g.vs]}, x: {x.shape}')
+	# print(f'eval_pts: {[x.shape for x in eval_pts]}')
 	v = interp_func(eval_pts)
 
 	return v.take(0)

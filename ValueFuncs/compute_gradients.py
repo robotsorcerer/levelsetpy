@@ -71,7 +71,4 @@ def computeGradients(g, data, dims=None, derivFunc=None):
             # Change indices where data was inf to inf
             derivC[i][infInds] = np.inf
 
-    # derivL = np.asarray(derivL)
-    # derivC = np.asarray(derivC)
-    # print(f'derivC: {derivC.shape} derivL: {derivL.shape} derivR: {derivR.shape}')
     return derivC, derivL, derivR

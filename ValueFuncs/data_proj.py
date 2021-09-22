@@ -217,7 +217,7 @@ def projSingle(g, data, dims, xs, NOut, process):
     temp = interp_func(flat.T).reshape(*points[0].shape)
 
     dataOut = copy.copy(temp.squeeze())
-    temp = np.asarray(g.vs)[np.logical_not(dims)]
+    temp = np.asarray(g.vs, dtype=np.object)[np.logical_not(dims)]
     data_coords = tuple([x.squeeze() for x in temp])
     interp_func = RegularGridInterpolator(data_coords, dataOut)
     # points = np.meshgrid(*gOut.xs, indexing='ij')

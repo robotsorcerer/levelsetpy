@@ -172,9 +172,14 @@ def isColumnLength(x1, x2):
     return ((ndims(x1) == 2) and (x1.shape[0] == x2) and (x1.shape[1] == 1))
 
 def cell(grid_len, dim=1):
-    if dim!=1:
-        logger.fatal('This has not been implemented for n>1 cells')
-    return [[] for i in range(grid_len)]
+    x = [np.nan for _ in range(grid_len)]
+    if dim==1:
+        return x
+    elif dim>1:
+        return [x for _ in range(dim)]
+    else:
+        error(f"Dim {dim} Specified for cell not supported")
+
 
 def iscell(cs):
     if isinstance(cs, list): # or isinstance(cs, np.ndarray):

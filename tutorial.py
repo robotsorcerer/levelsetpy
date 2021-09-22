@@ -1,4 +1,5 @@
 import copy
+from absl import flags, app
 import sys, os
 sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )
 import numpy as np
@@ -10,15 +11,29 @@ from Visualization import *
 from InitialConditions import shapeCylinder
 from DynamicalSystems import *
 from SpatialDerivative import upwindFirstENO3a
+import matplotlib as mpl
+mpl.use("Qt5Agg")
 import matplotlib.pyplot as plt
 
+flags.DEFINE_boolean('verbose', False, 'How much debug info to print.')
+# General variables now in flags
+flags.DEFINE_boolean('matplots', 1, 'Show plots?')
+flags.DEFINE_boolean('hj_progress', False, 'Display optimization progress')
+
+FLAGS = flags.FLAGS
+FLAGS(sys.argv) # we need to explicitly to tell flags library to parse argv before we can access FLAGS.xxx.
 
 import logging
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
-# logging.basicConfig(level=, )
+if FLAGS.verbose:
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+else:
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+
 logger = logging.getLogger(__name__)
 
-def main():
+
+
+def main(argv):
     """
       Reproduces Sylvia's Tutorial on BRS
          1. Run Backward Reachable Set (BRS) with a goal
@@ -130,7 +145,8 @@ def main():
                             ))
 
     data, tau2, _ = HJIPDE_solve(data0, tau, schemeData, None, HJIextraArgs)
-    # print(f'g.vs after solve: {[x.shape for x in g.vs]}')
+    # print(f'tau2: {tau2}')
+    print(f'data: {data.shape}, data[1:10]: {data[:10, 0, 0, 0]}')
 
     ## Compute optimal trajectory from some initial state
     if compTraj:
@@ -139,8 +155,8 @@ def main():
         xinit = np.array(([[2, 2, -pi]]))
 
         #check if this initial state is in the BRS/BRT
-        geval = copy.deepcopy(g)
-        value = eval_u(geval,data[:,:,:,-1],xinit)
+        # geval = copy.deepcopy(g)
+        value = eval_u(copy.copy(g),data[:,:,:,-1],xinit)
         print(f'value: {value}')
         # print(f'Tut g.vs after eval: {[x.shape for x in g.vs]}')
         # print(f'Tut geval.vs after eval: {[x.shape for x in geval.vs]}')
@@ -163,7 +179,7 @@ def main():
             #flip data time points so we start from the beginning of time
             dataTraj = np.flip(data,3)
 
-            [traj, traj_tau] = computeOptTraj(copy.copy(g), dataTraj, tau2, dCar, TrajextraArgs)
+            traj, traj_tau = computeOptTraj(copy.copy(g), dataTraj, tau2, dCar, TrajextraArgs)
 
             # fig = plt.gcf()
             # plt.clf()
@@ -192,4 +208,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    logger.info("Started HJ Optimization")
+    app.run(main)
+    # main()

@@ -31,10 +31,12 @@ def dynamics_RK4(OdeFun, tspan, x, u, v):
     U = np.array(u)
     V = np.array(v)
 
+    # print(f'X: {X.shape}, h: {h}')
     for j in range(M):
         if np.any(tspan): # integrate for this much time steps
             for h in np.arange(tspan[0], tspan[1], hh):
                 k1 = OdeFun(None, X, U, V)
+                # print(f'X + h/2: {(X + h/2).shape}, k1: {k1.shape}')
                 k2 = OdeFun(None, X + h/2 * k1, U, V)
                 k3 = OdeFun(None, X + h/2 * k2, U, V)
                 k4 = OdeFun(None, X + h * k3, U, V)
