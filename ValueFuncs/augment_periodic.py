@@ -12,13 +12,14 @@ def augmentPeriodicData(g, data):
             g.vs[i] = np.concatenate((g.vs[i], expand(g.vs[i][-1] + g.dx[i], 1)), 0)
             # print(f'g.vs[{i}]: aft {g.vs[i].shape}')
             # Input data eg. data = cat(:, data, data(:,:,1))
-            # indices = np.arange(g.dim, dtype=np.intp)
-            # indices[i] = 0
+            indices = [np.arange(data.shape[j], dtype=np.intp) for j in range(data.ndim)]
+            indices[i] = [0]
             # print('indices: ', indices, ' data: ', data.shape)
-            # to_app = data[np.ix_(indices)]
-            to_app = expand(data[i,...], i)
-            # print('to_app ', to_app.shape, ' data b4: ', data.shape)
+            to_app = data[np.ix_(*indices)]
+            # to_app = expand(data[0,...], i)
+            # print(' data b4: ', data.shape)
             data = np.concatenate((data, to_app), i)
-            # print(i, ' data aft: ', data.shape)
+            # print(' data aft: ', data.shape)
+            print()
 
     return g, data

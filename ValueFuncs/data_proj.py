@@ -58,33 +58,49 @@ def proj(g, data, dimsToRemove, xs=None, NOut=None, process=True):
         if NOut.ndim < 2:
             NOut = expand(NOut, 1)
     # print(f'NOut: {NOut} {NOut.shape}')
-    dataDims = numDims(data)
+    dataDims = data.ndim
     if np.any(data) and np.logical_not(dataDims == g.dim or dataDims == g.dim+1) \
         and not isinstance(data, list):
         logger.fatal('Inconsistent input data dimensions!')
 
     # Project data
-    gOut, dataOut = projSingle(g, data, dimsToRemove, xs, NOut, process)
-
-    # Project data
-    if isinstance(data, list):
-        numTimeSteps = len(data)
+    if dataDims == g.dim:
+        gOut, dataOut = projSingle(g, data, dimsToRemove, xs, NOut, process)
     else:
-        numTimeSteps = data.shape[dataDims-1]
-        # colonsIn = [[':'] for i in range(g.dim)]
+        # Project grid
+        gOut, _ = projSingle(g, None, dimsToRemove, xs, NOut, process)
 
-    dataOut = np.zeros( NOut.T.shape + (numTimeSteps,) )
-    # colonsOut =   [[':'] for i in range(g.dim)] #repmat({':'}, 1, gOut.dim)
-
-    for i in range(numTimeSteps):
+        # Project data
         if isinstance(data, list):
-            _, dataOut[i,...] = projSingle(g, data[i], dimsToRemove, xs, NOut, process)
+            numTimeSteps = len(data)
         else:
-            _, dataOut[i,...] = projSingle(g, data[i, ...], dimsToRemove, xs, NOut, process)
+            numTimeSteps = data.shape[dataDims-1]
 
-        # dataO.append(dataOut)
+        dataOut = [] #np.zeros( NOut.T.shape + (numTimeSteps,) )
 
-    return gOut, dataOut
+        for i in range(numTimeSteps):
+            if isinstance(data, list):
+                _, res = projSingle(g, data[i], dimsToRemove, xs, NOut, process)
+                dataOut.append(res)
+            else:
+                print(f'{i}, data: {data.shape}')
+                _, res = projSingle(g, data, dimsToRemove, xs, NOut, process)
+                # indices = []
+                # for i in range(data.ndim):
+                #     indices.append(np.arange(data.shape[i], dtype=np.intp))
+                # if data.ndim >3:
+                #     gtemp, res = projSingle(g, data[:,:,:,i], dimsToRemove, xs, NOut, process)
+                #     # gtemp, res = projSingle(gtemp, data[:,:,:,i], dimsToRemove, xs, NOut, process)
+                #     dataOut.append(res)
+                # else:
+                #     _, res = projSingle(g, data, dimsToRemove, xs, NOut, process)
+                dataOut.append(res)
+
+            dataO.append(dataOut)
+
+        dataOut = np.asarray(dataOut)
+
+    return gOut, np.asarray(dataOut)
 
 
 
@@ -172,13 +188,11 @@ def projSingle(g, data, dims, xs, NOut, process):
         return gOut, dataOut
 
     # Take a slice
-    # Preprocess periodic dimensions
-    # print('data b4 aug: ', data.shape, 'g.vs b4', [x.shape for x in g.vs])
     g, data = augmentPeriodicData(g, data)
 
     eval_pt = cell(g.dim, 1)
     xsi = 0
-    # print(f'dims: {dims}')
+    # print(f'xs: {xs}')
     for i in range(g.dim):
         if dims[i]:
             # If this dimension is periodic, wrap the input point to the correct period
@@ -188,34 +202,31 @@ def projSingle(g, data, dims, xs, NOut, process):
                     xs[xsi] -= period
                 while xs[xsi] < min(g.vs[i]):
                     xs[xsi] += period
-            eval_pt[i] = xs[xsi]
+            eval_pt[i] = np.asarray([xs[xsi]])
+            # print(f'xs[xsi]: {xs[xsi].dtype} {eval_pt[i].shape} {xs[xsi]}')
             xsi += 1
         else:
-            eval_pt[i] = g.vs[i]
+            eval_pt[i] = g.vs[i].squeeze()
 
-    print('data: after aug', data.shape, 'g.vs ', [x.shape for x in g.vs],  'eval_pt: ', [x.shape for x in eval_pt[:-1]])
+    # print('data: after aug', data.shape)
     # https://stackoverflow.com/questions/21836067/interpolate-3d-volume-with-numpy-and-or-scipy
-    data_coords = [x.squeeze() for x in g.vs]
-    # print(f'g.vs in proj: {[x.shape for x in g.vs]}')
-    fn = RegularGridInterpolator(data_coords, data)
-    # fn = RegularGridInterpolator(*g.vs, data)
-    eval_pt = [x.squeeze() for x in eval_pt if isinstance(x, np.ndarray)] + [np.array([x]) for x in eval_pt if not isinstance(x, np.ndarray)]
-    print('eval_pt ', [x.shape for x in eval_pt])
-    # if len(eval_pt==3):
-    #     x, y = [a.shape[0] for a in eval_pt]
-    # eval_pt = np.tile(np.asarray(eval_pt), (eval_pt[0].shape[0], 1, 1)).T
-    eshape = tuple([x.shape for x in eval_pt])
-    if len(eshape) != data.ndim:
-        eval_pt = np.tile(eval_pt, [*(data.shape[:-1]), 1])
-        print(f'eval_pt in tile: {eval_pt.shape}')
-    print('eval_pt post tile ', [x.shape for x in eval_pt])
-    temp = fn(eval_pt)
-    print('temp post eval: ', temp.shape)
-    dataOut = copy.copy(temp)
+    data_coords = tuple([x.squeeze() for x in g.vs])
+    interp_func = RegularGridInterpolator(data_coords, data)
+    points = np.meshgrid(*eval_pt, indexing='ij')
+    flat = np.array([m.flatten(order='F') for m in points])
+    temp = interp_func(flat.T).reshape(*points[0].shape)
 
-    temp = g.vs[np.logical_not(dims)]
-    print(f'temp after: {temp.shape}, dataOut: {dataOut.shape}')
-
-    dataOut = np.interp(temp, dataOut, gOut.xs[:])
+    dataOut = copy.copy(temp.squeeze())
+    temp = np.asarray(g.vs)[np.logical_not(dims)]
+    data_coords = tuple([x.squeeze() for x in temp])
+    interp_func = RegularGridInterpolator(data_coords, dataOut)
+    # points = np.meshgrid(*gOut.xs, indexing='ij')
+    # print('gOut.xs: ', [temp.shape for temp in gOut.xs])
+    # print('points: ', [temp.shape for temp in points])
+    flat = np.array([m.flatten(order='F') for m in gOut.xs])
+    # print(f'flat: {flat.shape}')
+    # dataOut = interp_func(flat.T).reshape(*points[0].shape)
+    dataOut = interp_func(flat.T).reshape(*gOut.xs[0].shape)
+    # print(f'dataOut: {dataOut.shape}')
 
     return gOut, dataOut

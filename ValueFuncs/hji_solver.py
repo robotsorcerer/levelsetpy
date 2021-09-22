@@ -801,8 +801,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
     # print(f'len(tau): {len(tau)}')
     for i in range(istart, len(tau)):
-        if not quiet:
-            info(f'tau[{i}]: {tau[i]}')
+        # if not quiet:
+        #     info(f'tau[{i}]: {tau[i]}')
 
         ## Variable schemeData
         if isfield(extraArgs, 'SDModFunc'):
@@ -834,7 +834,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             if compMethod =='minVOverTime' or compMethod =='maxVOverTime':
                 yLast = y;
             if not quiet:
-                info(f'Computing {tNow}, {tau[i]}')
+                info(f'Solving HJ Value at Time Step: {tNow:.4f}/{tau[i]:.2f}')
             # Solve hamiltonian and apply to value function (y) to get updated
             # value function # integrator function is an odeCFL function
             # integratorFunc is @OdeCFL3, derivFunc is upwindFirstWENO5,
@@ -992,11 +992,10 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
             initValue = eval_u(g, data_i, extraArgs.stopInit);
             if not np.isnan(initValue) and initValue <= 0:
                 extraOuts.stoptau = tau[i];
-                tau[i+1:] = []; # check this
+                tau  = tau[:i+1]
 
                 if not lowMemory and not keepLast:
-                    # check this
-                    data[i+1:size(data, gDim+1), ...] = [];
+                    data = data[:i+1, ...]
 
                 break
 
@@ -1012,10 +1011,10 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
             if stopSetFun(np.isin(setInds, dataInds)):
                 extraOuts.stoptau = tau[i];
-                tau[i+1:] = [];
+                tau  = tau[:i+1]
 
                 if not lowMemory and not keepLast:
-                    data[i+1:size(data, gDim+1), ...] = [];
+                    data = data[:i+1, ...]
 
                 break
 
@@ -1043,7 +1042,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                 tau[i+1:] = [];
 
                 if not lowMemory and not keepLast:
-                    data[i+1:size(data, gDim+1), ...] = [];
+                    data = data[:i+1, ...]
 
                 break
 
@@ -1128,10 +1127,10 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
             if projDims == 0:
                 gPlot = g;
-                dataPlot = data_i;
+                dataPlot = copy.copy(data_i)
 
                 if strcmp(obsMode, 'time-varying'):
-                    obsPlot = copy.copy(obstacle_i);
+                    obsPlot = copy.copy(obstacle_i)
 
                 if strcmp(targMode, 'time-varying'):
                     targPlot = copy.copy(target_i)
@@ -1141,9 +1140,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
                 # allows us to take the union/intersection through some dimensions
                 # and to project at a particular slice through other dimensions.
                 if iscell(projpt) and len(projpt)>1:
-                    idx = np.nonzero(plotDims==0);
-                    print('plotDims: ', plotDims)
-                    plotDimsTemp = np.ones((plotDims));
+                    idx = np.nonzero(plotDims==0)
+                    plotDimsTemp = np.ones((plotDims))
                     gPlot = g;
                     dataPlot = data_i;
                     if strcmp(obsMode, 'time-varying'):
@@ -1171,7 +1169,6 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
                 else:
-                    # print('projpt ', np.logical_not(plotDims), np.logical_not(plotDims).astype(np.int64).dtype)
                     # projpt='min'
                     gPlot, dataPlot = proj(g, data_i, np.logical_not(plotDims).astype(np.int64), projpt);
 

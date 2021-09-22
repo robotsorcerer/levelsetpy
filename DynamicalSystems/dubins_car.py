@@ -35,7 +35,7 @@ class DubinsCar(DynSys):
         self.dims = np.arange(3) if dims is None else dims
 
         pdim = np.where((self.dims==0) | (self.dims==1))
-        DynSys.__init__(self, nx=len(self.dims), nu=1,nd=3,
+        DynSys.__init__(self, nx=len(self.dims), nu=1,nd=3, uhist=np.zeros((1, 1), dtype=np.float64),
                                 x = self.x, xhist=self.x, pdim=pdim
                                )
 
@@ -53,15 +53,16 @@ class DubinsCar(DynSys):
                 dx[i] = self.dynamics_helper(x, u, d, self.dims, self.dims[i])
         else:
             dx = np.zeros((self.nx, 1), dtype=np.float64)
-            dx[0] = self.speed * np.cos(x[2]) + d[0]
-            dx[1] = self.speed * np.sin(x[2]) + d[1]
+            # print(f'dx: {dx.shape}, x: {x.shape}, d: {d.shape}')
+            dx[0] = self.speed * np.cos(x[0,2]) + d[0]
+            dx[1] = self.speed * np.sin(x[0,2]) + d[1]
             dx[2] = u + d[2]
 
         return dx
 
     def dynamics_helper(self, x, u, d, dims, dim):
         if dim==0:
-            # print('dims: ', dims, 'x: ', [d.shape for d in x])
+            # print('x: ', [a.shape for a in x])
             dx = self.speed * np.cos(x[2]) + d[0]
         elif dim==1:
             dx = self.speed * np.sin(x[2]) + d[1]
@@ -135,7 +136,8 @@ class DubinsCar(DynSys):
             warn(f'u is Nan')
             return x0
 
-        if u.shape[0]<u.shape[1]:
+        # print(f'u: {u}, {u.shape}')
+        if numel(u) > 1 and isinstance(u, np.ndarray) and u.shape[0]<u.shape[1]:
             u = u.T
 
         if not np.any(d):
@@ -149,4 +151,4 @@ class DubinsCar(DynSys):
         self.u = u
 
         self.xhist = np.concatenate((x1, self.xhist), 1)
-        self.uhist = np.concatenate((u, self.uhist), 1)
+        # self.uhist = np.concatenate((u, self.uhist), 1)

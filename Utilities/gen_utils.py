@@ -102,6 +102,10 @@ def warn(arg):
     assert isinstance(arg, str), 'logger.warn argument must be a string'
     logger.warn(arg)
 
+def debug(arg):
+    assert isinstance(arg, str), 'logger.debug argument must be a string'
+    logger.debug(arg)
+
 def length(A):
     if isinstance(A, list):
         A = np.asarray(A)

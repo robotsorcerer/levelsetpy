@@ -9,6 +9,7 @@ from ValueFuncs import *
 from Visualization import *
 from InitialConditions import shapeCylinder
 from DynamicalSystems import *
+from SpatialDerivative import upwindFirstENO3a
 import matplotlib.pyplot as plt
 
 
@@ -141,7 +142,8 @@ def main():
         geval = copy.deepcopy(g)
         value = eval_u(geval,data[:,:,:,-1],xinit)
         print(f'value: {value}')
-        # print(f'g.vs after eval: {[x.shape for x in g.vs]}')
+        # print(f'Tut g.vs after eval: {[x.shape for x in g.vs]}')
+        # print(f'Tut geval.vs after eval: {[x.shape for x in geval.vs]}')
         if value <= 0: #if initial state is in BRS/BRT
             # find optimal trajectory
 
@@ -152,6 +154,7 @@ def main():
                                 dMode = 'max',
                                 visualize = True, #show plot
                                 fig_num = 2, #figure number
+                                derivFunc= upwindFirstENO3a,
                                 #we want to see the first two dimensions (x and y)
                                 projDim = np.array([[1, 1, 0]])
                             ))
@@ -160,7 +163,7 @@ def main():
             #flip data time points so we start from the beginning of time
             dataTraj = np.flip(data,3)
 
-            [traj, traj_tau] = computeOptTraj(g, dataTraj, tau2, dCar, TrajextraArgs)
+            [traj, traj_tau] = computeOptTraj(copy.copy(g), dataTraj, tau2, dCar, TrajextraArgs)
 
             # fig = plt.gcf()
             # plt.clf()

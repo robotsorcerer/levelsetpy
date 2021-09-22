@@ -29,22 +29,24 @@ def computeGradients(g, data, dims=None, derivFunc=None):
 
 
     # Go through each dimension and compute the gradient in each dim
-    derivC = cell(g.dim, 1)
+    derivC = [np.nan for i in range(g.dim) ]
 
     if numDims(data) == g.dim:
         tau_length = 1
     elif numDims(data) == g.dim + 1:
-        tau_length = size(data)
-        tau_length = tau_length[-1]
+        tau_length = data.shape[-1] #size(data)
+        # tau_length = tau_length[-1]
     else:
         error('Dimensions of input data and grid don''t match!')
 
     # Just in case there are NaN values in the data (usually from TTR functions)
     numInfty = 1e6
-    data[np.isnan(data)] = numInfty
+    nanInds  = np.isnan(data)
+    data[nanInds] = numInfty
 
     # Just in case there are inf values
-    data[np.isinf(data)] = numInfty
+    infInds = np.isinf(data)
+    data[infInds] = numInfty
 
     for i in range(g.dim):
         if dims[i]:
@@ -61,7 +63,7 @@ def computeGradients(g, data, dims=None, derivFunc=None):
                 ## data at multiple time stamps
                 for t in range(tau_length):
                     derivL, derivR = derivFunc(g, data[t, ...], i)
-                    derivC[i][t,...] = 0.5*(derivL + derivR)
+                    derivC[i] = 0.5*(derivL + derivR)
 
             # Change indices where data was nan to nan
             derivC[i][nanInds] = np.nan
@@ -69,4 +71,7 @@ def computeGradients(g, data, dims=None, derivFunc=None):
             # Change indices where data was inf to inf
             derivC[i][infInds] = np.inf
 
+    # derivL = np.asarray(derivL)
+    # derivC = np.asarray(derivC)
+    # print(f'derivC: {derivC.shape} derivL: {derivL.shape} derivR: {derivR.shape}')
     return derivC, derivL, derivR

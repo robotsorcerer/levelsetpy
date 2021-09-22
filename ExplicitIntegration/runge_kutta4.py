@@ -1,4 +1,4 @@
-import numpy as onp
+import numpy as np
 
 def dynamics_RK4(OdeFun, tspan, x, u, v):
     """
@@ -25,26 +25,26 @@ def dynamics_RK4(OdeFun, tspan, x, u, v):
     """
     M = 4 # RK4 steps per interval
     h = 0.2 # time step
-    if onp.any(tspan):
+    if np.any(tspan):
         hh = (tspan[1]-tspan[0])/10/M
-    X = onp.array(x)
-    U = onp.array(u)
-    V = onp.array(v)
+    X = np.array(x)
+    U = np.array(u)
+    V = np.array(v)
 
     for j in range(M):
-        if onp.any(tspan): # integrate for this much time steps
-            for h in np.range(tspan[0], tspan[1], hh):
-                k1 = OdeFun(X, U, V)
-                k2 = OdeFun(X + h/2 * k1, U, V)
-                k3 = OdeFun(X + h/2 * k2, U, V)
-                k4 = OdeFun(X + h * k3, U, V)
+        if np.any(tspan): # integrate for this much time steps
+            for h in np.arange(tspan[0], tspan[1], hh):
+                k1 = OdeFun(None, X, U, V)
+                k2 = OdeFun(None, X + h/2 * k1, U, V)
+                k3 = OdeFun(None, X + h/2 * k2, U, V)
+                k4 = OdeFun(None, X + h * k3, U, V)
 
                 X  = X+(h/6)*(k1 +2*k2 +2*k3 +k4)
         else:
-            k1 = OdeFun(X, U, V)
-            k2 = OdeFun(X + h/2 * k1, U, V)
-            k3 = OdeFun(X + h/2 * k2, U, V)
-            k4 = OdeFun(X + h * k3, U, V)
+            k1 = OdeFun(None, X, U, V)
+            k2 = OdeFun(None, X + h/2 * k1, U, V)
+            k3 = OdeFun(None, X + h/2 * k2, U, V)
+            k4 = OdeFun(None, X + h * k3, U, V)
 
             X  = X+(h/6)*(k1 +2*k2 +2*k3 +k4)
 
