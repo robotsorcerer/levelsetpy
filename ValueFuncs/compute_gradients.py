@@ -20,7 +20,7 @@ def computeGradients(g, data, dims=None, derivFunc=None):
     Lekan Molu, August 11, 2021
     """
     if not dims:
-        dims = zeros(g.dim, 1)
+        dims = zeros(g.dim, 1, order=ORDER_TYPE)
         dims.fill(True)
 
     if not derivFunc:
@@ -34,8 +34,7 @@ def computeGradients(g, data, dims=None, derivFunc=None):
     if numDims(data) == g.dim:
         tau_length = 1
     elif numDims(data) == g.dim + 1:
-        tau_length = data.shape[-1] #size(data)
-        # tau_length = tau_length[-1]
+        tau_length = data.shape[-1] 
     else:
         error('Dimensions of input data and grid don''t match!')
 
@@ -50,7 +49,7 @@ def computeGradients(g, data, dims=None, derivFunc=None):
 
     for i in range(g.dim):
         if dims[i]:
-            derivC[i] = zeros(size(data))
+            derivC[i] = zeros(size(data), order=ORDER_TYPE)
 
             ## data at a single time stamp
             if tau_length == 1:

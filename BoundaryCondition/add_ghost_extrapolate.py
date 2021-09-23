@@ -70,7 +70,7 @@ def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
     sizeOut = copy.copy(list(sizeIn))
 
     sizeOut[dim] = sizeOut[dim] + (2 * width)
-    dataOut = zeros(tuple(sizeOut), dtype=np.float64)
+    dataOut = zeros(tuple(sizeOut), dtype=np.float64, order=ORDER_TYPE)
 
     # fill output array with input data
     indicesOut[dim] = np.arange(width, sizeOut[dim] - width, dtype=np.intp) # correct

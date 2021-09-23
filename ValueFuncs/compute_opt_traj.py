@@ -4,7 +4,7 @@ from .data_proj import proj
 from .compute_gradients import computeGradients
 from matplotlib import pyplot as plt
 from ExplicitIntegration import dynamics_RK4
-from Visualization import vizLevelSet
+from Visualization import visSetIm
 from ValueFuncs import eval_u
 
 def computeOptTraj(g, data, tau, dynSys, extraArgs=Bundle({})):
@@ -63,16 +63,18 @@ def computeOptTraj(g, data, tau, dynSys, extraArgs=Bundle({})):
 	iter = 0
 	tauLength = len(tau)
 	dtSmall = (tau[1]- tau[0])/subSamples
-	# maxIter = 1.25*tauLength
+	# print(f'dtSmall: {dtSmall}')
 
 	# Initialize trajectory
-	traj = np.empty((g.dim, tauLength))
+	traj = np.empty((g.dim, tauLength), order=ORDER_TYPE)
 	traj.fill(np.nan)
 	traj[:,0] = dynSys.x
 	tEarliest = 0
 
 	if visualize:
 		f = plt.figure(figsize=(12, 7))
+		# ax = f.add_subplot(1, 2, 1)
+		# ax2 = f.add_subplot(1, 2, 2)
 		f.tight_layout()
 		fontdict = {'fontsize':12, 'fontweight':'bold'}
 		plt.ion()
@@ -81,46 +83,40 @@ def computeOptTraj(g, data, tau, dynSys, extraArgs=Bundle({})):
 		# 	if key.startswith('keymap.'):
 		# 		plt.rcParams[key] = ''
 
-	while iter <= tauLength:
+	while iter < tauLength:
 		# Determine the earliest time that the current state is in the reachable set
-		# Binary search
 		upper = tauLength
 		lower = tEarliest
 
-		tEarliest = lower #find_earliest_BRS_ind(g, data, dynSys.x, upper, lower)
+		tEarliest = lower
 
 		# BRS at current time
-		BRS_at_t = data[:,:,:,tEarliest]
+		BRS_at_t = data[tEarliest, ...]
 
 		# Visualize BRS corresponding to current trajectory point
+		geval = copy.deepcopy(g)
 		if visualize:
 			ax = f.gca()
-			# print(f'traj: {traj.shape} showDims {showDims}')
-			ax.scatter(traj[showDims[0], iter], traj[showDims[1], iter], c='k')
-			# plt.show()
-			# print(f'g.vs in opt_traj: {[x.shape for x in g.vs]}')
-			tStr = f't = {tau[iter]:.3f} tEarliest = {tau[tEarliest]:.3f}'
+			ax.scatter(traj[showDims[0], iter], traj[showDims[1], iter], c='k', label="angular velocity")
+			tStr = f'Cur Time: {tau[iter]:.3f}/{tau[-1]:.3f}'
 			ax.set_xlabel('X', fontdict=fontdict)
 			ax.set_ylabel('Y', fontdict=fontdict)
 			ax.grid('on')
 			ax.set_title(tStr)
-			ax.set_xlim(left=g.min[0], right=g.max[0])
-			ax.set_ylim(g.min[1], g.max[1])
+			# ax.set_xlim(left=g.min[0], right=g.max[0])
+			# ax.set_ylim(g.min[1], g.max[1])
+			ax.legend(loc='upper right')
 			# ax.set_color_cycle(['red', 'blue', 'black', 'green', 'magenta'])
-			# print('BRS_at_t ', BRS_at_t.shape)
-			geval = copy.deepcopy(g)
 			g2D, data2D = proj(geval, BRS_at_t, hideDims, traj[hideDims,iter])
-			# print(f'prj cot g.vs after eval: {[x.shape for x in g.vs]}')
-			# print(f'prj cot geval.vs after eval: {[x.shape for x in geval.vs]}')
 			try:
-				ax.contour(g2D.xs[0], g2D.xs[1], data2D, levels=1, colors='g')
+				visSetIm(data2D, g2D, ax)
+				# ax.contour(g2D.xs[0], g2D.xs[1], data2D, levels=0, colors='g')
 			except KeyboardInterrupt:
 					plt.close('all')
 			if isfield(extraArgs, 'fig_filename'):
 				f.savefig(f'{extraArgs.fig_filename}_{iter}.png', bbox_inches='tight', dpi=79.0)
-			# plt.show()
-			# plt.cla()
-			plt.pause(1)
+			plt.pause(.1)
+			plt.cla()
 
 		if tEarliest == tauLength:
 			# Trajectory has entered the target
@@ -128,35 +124,25 @@ def computeOptTraj(g, data, tau, dynSys, extraArgs=Bundle({})):
 
 		# Update trajectory
 		Deriv, _, _ = computeGradients(geval, BRS_at_t, derivFunc=extraArgs.derivFunc)
-		# print()
-		# print(f'cot cg g_grad: {geval.shape},  geval: {[x.shape for x in geval.vs]}') #', datas: {[len(x) for x in Deriv]} {dynSys.x}')
-		# print(f'cot cg g: {g.shape},  g: {[x.shape for x in g.vs]}') #', datas: {[len(x) for x in Deriv]} {dynSys.x}')
-
 
 		for j in range(subSamples):
-			# print(f'{j} b4: g.vs: {[x.shape for x in g.vs]}')
-			# print(f'{j} dynSys.x : {dynSys.x.shape}')
 			deriv = eval_u(copy.copy(g), Deriv, dynSys.x)
-			# print(f'{j} after: g: {[x.shape for x in g.vs]}')
-			# print(f'ss fl  g_eval: {[x.shape for x in g_eval.vs]}') #', datas: {[len(x) for x in Deriv]} {dynSys.x}')
-			# print(f'{j} ss fl  g: {[x.shape for x in g.vs]}') #', datas: {[len(x) for x in Deriv]} {dynSys.x}')
-
 			u = dynSys.get_opt_u(tau[tEarliest], deriv, uMode, dynSys.x)
 			if dMode or var:
 				d = dynSys.get_opt_v(tau[tEarliest], deriv, dMode, dynSys.x)
 			else:
 				d = dynSys.get_opt_v(tau[tEarliest], deriv, None, dynSys.x)
 			# integrate the dynamics
-			print(f'{j}: dynSys.x.T first: {dynSys.x.T}')
-			xt = dynSys.update_state(u, dtSmall, dynSys.x, d)
-
-			# print(f'{j}: dynSys.x.T: {dynSys.x.T}')
+			dynSys.update_state(u, dtSmall, dynSys.x, d)
+		print(f'{iter}: dynSys.x.T : {dynSys.x.T.squeeze()}')
+		# print()
 		# Record new point on nominal trajectory
 		iter += 1
-		traj[:,iter] = dynSys.x.squeeze()
+		if iter != tauLength:
+			traj[:,iter] = dynSys.x.squeeze()
 
 	# Delete unused indices
-	traj = traj[:,:iter]
+	traj = traj[:,:iter-1]
 	traj_tau = tau[:iter-1]
 
 	return  traj, traj_tau

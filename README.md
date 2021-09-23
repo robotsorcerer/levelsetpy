@@ -13,3 +13,9 @@ The [Tests](/Tests) folder contains examples of running basic tests. For example
 
 + Fix len of smooth in derivL computation in upwindFirstWENO5.py
 + data_proj is a lotta issue
++ hyperpts in initialConditions
++ SpatialDerivative/Other Folder
+
+
+Be sure your ordering is consistent for the following NUMPY classes/methods
+# array, asarray, zeros, ones, diag, reshape, flatten,

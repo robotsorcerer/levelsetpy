@@ -122,10 +122,10 @@ def termLaxFriedrichs(t, y, schemeData):
 
     #---------------------------------------------------------------------------
     if(iscell(y)):
-        data = y[0].reshape(grid.shape, order='F')
+        data = y[0].reshape(grid.shape, order=ORDER_TYPE)
     else:
         # print('yshap: ', y.shape, ' grid: ', grid.shape)
-        data = y.reshape(grid.shape, order='F')
+        data = y.reshape(grid.shape, order=ORDER_TYPE)
 
     #---------------------------------------------------------------------------
     # Get upwinded and centered derivative approximations.
@@ -158,6 +158,6 @@ def termLaxFriedrichs(t, y, schemeData):
 
     #---------------------------------------------------------------------------
     # Reshape output into vector format and negate for RHS of ODE.
-    ydot = expand(-delta.flatten(order='F'), 1)
+    ydot = expand(-delta.flatten(order=ORDER_TYPE), 1)
 
     return ydot, stepBound, schemeData

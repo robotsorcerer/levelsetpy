@@ -18,7 +18,7 @@ def proj(g, data, dimsToRemove, xs=None, NOut=None, process=True):
         g            - grid corresponding to input data
         data         - input data
         dimsToRemove - vector of len g.dim specifying dimensions to project
-                    For example, if g.dim = 4, then dims = [0 0 1 1] would
+                    for example, if g.dim = 4, then dims = [0 0 1 1] would
                     project the last two dimensions
                     xs           - Type of projection (defaults to 'min')
                     'min':    takes the union across the projected dimensions
@@ -83,24 +83,14 @@ def proj(g, data, dimsToRemove, xs=None, NOut=None, process=True):
                 _, res = projSingle(g, data[i], dimsToRemove, xs, NOut, process)
                 dataOut.append(res)
             else:
-                print(f'{i}, data: {data.shape}')
                 _, res = projSingle(g, data, dimsToRemove, xs, NOut, process)
-                # indices = []
-                # for i in range(data.ndim):
-                #     indices.append(np.arange(data.shape[i], dtype=np.intp))
-                # if data.ndim >3:
-                #     gtemp, res = projSingle(g, data[:,:,:,i], dimsToRemove, xs, NOut, process)
-                #     # gtemp, res = projSingle(gtemp, data[:,:,:,i], dimsToRemove, xs, NOut, process)
-                #     dataOut.append(res)
-                # else:
-                #     _, res = projSingle(g, data, dimsToRemove, xs, NOut, process)
                 dataOut.append(res)
 
             dataO.append(dataOut)
 
         dataOut = np.asarray(dataOut)
 
-    return gOut, np.asarray(dataOut)
+    return gOut, dataOut
 
 
 
@@ -115,7 +105,7 @@ def projSingle(g, data, dims, xs, NOut, process):
        g       - grid corresponding to input data
        data    - input data
        dims    - vector of len g.dim specifying dimensions to project
-                     For example, if g.dim = 4, then dims = [0 0 1 1] would
+                     for example, if g.dim = 4, then dims = [0 0 1 1] would
                      project the last two dimensions
        xs      - Type of projection (defaults to 'min')
            'min':    takes the union across the projected dimensions
@@ -135,7 +125,7 @@ def projSingle(g, data, dims, xs, NOut, process):
      Python by Lekan July 29. 2021
     """
 
-    # Create ouptut grid by keeping dimensions that we are not collapsing
+    # create ouptut grid by keeping dimensions that we are not collapsing
     if not g:
         if not isnumeric(xs) or xs!='max' and xs!='min':
             logger.fatal('Must perform min or max projection when not specifying grid!')
@@ -156,13 +146,11 @@ def projSingle(g, data, dims, xs, NOut, process):
         gOut.bdry = bdrg if bdrg.ndim==2 else expand(bdrg, 1)
 
         if numel(NOut) == 1:
-            gOut.N = NOut*ones(gOut.dim, 1).astype(np.int64)
+            gOut.N = NOut*ones(gOut.dim, 1, order=ORDER_TYPE).astype(np.int64)
         else:
             gOut.N = NOut
 
 
-        # Process the grid to populate the remaining fields if necessary
-        # print( 'g.vs b4 proc', [x.shape for x in g.vs])
         if process:
             gOut = processGrid(gOut)
         # print( 'g.vs aft proc', [x.shape for x in gOut.vs])
@@ -202,31 +190,24 @@ def projSingle(g, data, dims, xs, NOut, process):
                     xs[xsi] -= period
                 while xs[xsi] < min(g.vs[i]):
                     xs[xsi] += period
-            eval_pt[i] = np.asarray([xs[xsi]])
-            # print(f'xs[xsi]: {xs[xsi].dtype} {eval_pt[i].shape} {xs[xsi]}')
+            eval_pt[i] = np.asarray([xs[xsi]], order=ORDER_TYPE)
             xsi += 1
         else:
             eval_pt[i] = g.vs[i].squeeze()
 
-    # print('data: after aug', data.shape)
     # https://stackoverflow.com/questions/21836067/interpolate-3d-volume-with-numpy-and-or-scipy
     data_coords = tuple([x.squeeze() for x in g.vs])
     interp_func = RegularGridInterpolator(data_coords, data)
     points = np.meshgrid(*eval_pt, indexing='ij')
-    flat = np.array([m.flatten(order='F') for m in points])
-    temp = interp_func(flat.T).reshape(*points[0].shape)
+    flat = np.array([m.flatten(order='f') for m in points], order=ORDER_TYPE)
+    temp = interp_func(flat.T).reshape(*points[0].shape, order=ORDER_TYPE)
 
     dataOut = copy.copy(temp.squeeze())
     temp = np.asarray(g.vs, dtype=np.object)[np.logical_not(dims)]
     data_coords = tuple([x.squeeze() for x in temp])
     interp_func = RegularGridInterpolator(data_coords, dataOut)
-    # points = np.meshgrid(*gOut.xs, indexing='ij')
-    # print('gOut.xs: ', [temp.shape for temp in gOut.xs])
-    # print('points: ', [temp.shape for temp in points])
-    flat = np.array([m.flatten(order='F') for m in gOut.xs])
-    # print(f'flat: {flat.shape}')
-    # dataOut = interp_func(flat.T).reshape(*points[0].shape)
-    dataOut = interp_func(flat.T).reshape(*gOut.xs[0].shape)
-    # print(f'dataOut: {dataOut.shape}')
+
+    flat = np.array([m.flatten(order=ORDER_TYPE) for m in gOut.xs])
+    dataOut = interp_func(flat.T).reshape(*gOut.xs[0].shape, order=ORDER_TYPE)
 
     return gOut, dataOut

@@ -4,7 +4,7 @@ import sys, os
 sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )
 import numpy as np
 from math import pi
-from Utilities import expand, zeros, Bundle, ones, error
+from Utilities import expand, zeros, Bundle, ones, error, ORDER_TYPE
 from Grids import createGrid
 from ValueFuncs import *
 from Visualization import *
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 def main(argv):
     """
-      Reproduces Sylvia's Tutorial on BRS
+      Reproduces Tutorial on BRS
          1. Run Backward Reachable Set (BRS) with a goal
              uMode = 'min' <-- goal
              minWith = 'none' <-- Set (not tube)
@@ -75,8 +75,8 @@ def main(argv):
     compTraj = True
 
     ## Grid
-    grid_min = expand(np.array((-5, -5, -pi)), ax = 1) # Lower corner of computation domain
-    grid_max = expand(np.array((5, 5, pi)), ax = 1)   # Upper corner of computation domain
+    grid_min = expand(np.array((-5, -5, -pi), order=ORDER_TYPE), ax = 1) # Lower corner of computation domain
+    grid_max = expand(np.array((5, 5, pi), order=ORDER_TYPE), ax = 1)   # Upper corner of computation domain
     N = 41*ones(3, 1).astype(int) #expand(np.array((41, 41,  41)), ax = 1)        # Number of grid points per dimension
     pdDims = 2              # 3rd dimension is periodic
     g = createGrid(grid_min, grid_max, N, pdDims)
@@ -109,7 +109,7 @@ def main(argv):
 
     # Define dynamic system
     # dCar = DubinsCar(dubins_default_params)
-    dCar = DubinsCar(np.zeros((3,1)), wMax, speed)
+    dCar = DubinsCar(np.zeros((3,1), order=ORDER_TYPE), wMax, speed)
 
     # Put grid and dynamic systems into schemeData
     schemeData = Bundle(dict(grid = g, dynSys = dCar, accuracy = 'high',
@@ -146,7 +146,7 @@ def main(argv):
 
     data, tau2, _ = HJIPDE_solve(data0, tau, schemeData, None, HJIextraArgs)
     # print(f'tau2: {tau2}')
-    print(f'data: {data.shape}, data[1:10]: {data[:10, 0, 0, 0]}')
+    # print(f'data: {data.shape}, data[1:10]: {data[:10, 0, 0, 0]}')
 
     ## Compute optimal trajectory from some initial state
     if compTraj:
@@ -172,7 +172,7 @@ def main(argv):
                                 fig_num = 2, #figure number
                                 derivFunc= upwindFirstENO3a,
                                 #we want to see the first two dimensions (x and y)
-                                projDim = np.array([[1, 1, 0]])
+                                projDim = np.array([[1, 1, 0]], order=ORDER_TYPE)
                             ))
 
 
@@ -198,7 +198,7 @@ def main(argv):
             # ax2.set_xlim(left=-5, right=5)
             # ax2.set_ylim(left=-5, right=5)
             # add the target set to that
-            g2D, data2D = proj(g, data0, [0, 0, 1])
+            g2D, data2D = proj(g, data0, np.asarray([0, 0, 1], order=ORDER_TYPE))
             # visSetIm(g2D, data2D, 'green')
             # ax2.set_title('2D projection of the trajectory & target set')
             # hold off

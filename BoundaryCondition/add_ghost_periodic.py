@@ -1,8 +1,8 @@
 import copy
 import logging
+from Utilities import *
 logger = logging.getLogger(__name__)
 
-from Utilities import *
 
 def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
     """
@@ -64,7 +64,7 @@ def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
     # create appropriately sized output array
     sizeOut = copy.copy(list(sizeIn))
     sizeOut[dim] = sizeOut[dim] + 2 * width
-    dataOut = zeros(tuple(sizeOut), dtype=np.float64)
+    dataOut = zeros(tuple(sizeOut), dtype=np.float64, order=ORDER_TYPE)
 
     # fill output array with input data
     indicesOut[dim] = np.arange(width + 0, sizeOut[dim] - width, dtype=np.intp)

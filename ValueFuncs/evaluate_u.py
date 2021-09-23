@@ -45,13 +45,13 @@ def eval_u(gs, datas, xs, interp_method='linear'):
 			# print(f'gs[{i}]: {gs.shape}')
 			v[i] = eval_u_single(gs, datas[i], xs, interp_method)
 			# print(f'gs[{i}] aft: {gs.shape}')
-		v = np.asarray(v)
+		v = np.asarray(v, order=ORDER_TYPE)
 	elif iscell(gs) and iscell(datas) and iscell(xs):
 		# Option 3
 		v = cell(len(gs), 1)
 		for i in range(len(gs)):
 			v[i] = eval_u_single(gs[i], datas[i], xs[i], interp_method)
-		v = np.asarray(v)
+		v = np.asarray(v, order=ORDER_TYPE)
 	else:
 		error('Unrecognized combination of input data types!')
 
@@ -78,10 +78,8 @@ def  eval_u_single(g, data, x, interp_method):
 	if size(x, 1) != g.dim:
 	  x = x.T
 
-	# print(f'x: {x.shape}')
 	geval, dataOld = copy.deepcopy(g), copy.copy(data)
 	g, data = augmentPeriodicData(geval, dataOld)
-	# print(f'aft aug: g: {[x.shape for x in g.vs]}')
 
 	# Dealing with periodicity
 	for i in range(g.dim):
@@ -112,4 +110,5 @@ def  eval_u_single(g, data, x, interp_method):
 	# print(f'eval_pts: {[x.shape for x in eval_pts]}')
 	v = interp_func(eval_pts)
 
+	# print(f'v: {v}')
 	return v.take(0)

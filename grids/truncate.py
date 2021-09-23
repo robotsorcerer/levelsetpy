@@ -22,9 +22,9 @@ def truncateGrid(gOld, dataOld=None, xmin=None, xmax=None, process=True):
      grid
     """
     gNew = Bundle(dict(dim=gOld.dim, vs=cell(gOld.dim, 1),
-                        N = np.zeros((gOld.dim, 1), dtype=np.int64),
-                        min=np.zeros((gOld.dim, 1),  dtype=np.float64),
-                        max=np.zeros((gOld.dim, 1),  dtype=np.float64),
+                        N = np.zeros((gOld.dim, 1), dtype=np.int64, order=ORDER_TYPE),
+                        min=np.zeros((gOld.dim, 1),  dtype=np.float64, order=ORDER_TYPE),
+                        max=np.zeros((gOld.dim, 1),  dtype=np.float64, order=ORDER_TYPE),
                         bdry = gOld.bdry
                     ))
     small = 1e-3

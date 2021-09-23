@@ -3,6 +3,7 @@ import copy
 import numpy as np
 from Utilities import *
 from ExplicitIntegration.runge_kutta4 import dynamics_RK4
+from scipy.integrate import RK45, solve_ivp
 
 class DubinsCar(DynSys):
     def __init__(self, x, wRange, speed, dRange=None, dims=None):
@@ -15,7 +16,7 @@ class DubinsCar(DynSys):
         self.x = x
         # Angle bounds
         if wRange is None:
-            self.wRange = np.array([[-1, 1]]).T
+            self.wRange = np.array([[-1, 1]], order=ORDER_TYPE).T
         elif numel(wRange) == 2:
             self.wRange = wRange
         else:
@@ -25,7 +26,7 @@ class DubinsCar(DynSys):
 
         # Disturbance
         if dRange is None:
-            self.dRange = np.zeros((2, 3))
+            self.dRange = np.zeros((2, 3), order=ORDER_TYPE)
         elif np.any(dRange.shape)==1:
             # make it 2 x 3 by stacking
             self.dRange = np.vstack([-dRange, dRange])
@@ -37,7 +38,7 @@ class DubinsCar(DynSys):
 
         pdim = np.where((self.dims==0) | (self.dims==1))
         DynSys.__init__(self, nx=len(self.dims), nu=1,nd=3, uhist=[],
-                                x = self.x, xhist=self.x, pdim=pdim
+                                x = self.x, xhist=[self.x], pdim=pdim
                                )
 
     def dynamics(self, t, x, u, d=None):
@@ -51,13 +52,13 @@ class DubinsCar(DynSys):
         # time.sleep(5)
         # debug(f'x: {x}')
         if not d:
-            d = np.zeros((3,1))
+            d = np.zeros((3,1), order=ORDER_TYPE)
         if iscell(x):
             dx = cell(len(self.dims), 1)
             for i in range(len(self.dims)):
                 dx[i] = self.dynamics_helper(x, u, d, self.dims, self.dims[i])
         else:
-            dx = np.zeros((self.nx, 1), dtype=np.float64)
+            dx = np.zeros((self.nx, 1), dtype=np.float64, order=ORDER_TYPE)
             # print(f'dx in dyna: {dx.shape}, x: {x.shape}, d: {d.shape}')
             dx[0] = self.speed * np.cos(x[2]) + d[0]
             dx[1] = self.speed * np.sin(x[2]) + d[1]
@@ -65,12 +66,34 @@ class DubinsCar(DynSys):
             # info(f'dx in dynamics return: {[x.shape for x in dx]}')
         return dx
 
+    def dynamics_RK45(self, t, x):
+        """
+        # Dynamics of the Dubins Car
+        #    \dot{x}_1 = v * cos(x_3) + d1
+        #    \dot{x}_2 = v * sin(x_3) + d2
+        #    \dot{x}_3 = w
+        #   Control: u = w;
+        """
+        if not self.d:
+            self.d = np.zeros((3,1), order=ORDER_TYPE)
+        if iscell(x):
+            dx = cell(len(self.dims), 1)
+            for i in range(len(self.dims)):
+                dx[i] = self.dynamics_helper(x, self.u, self.d, self.dims, self.dims[i])
+        else:
+            dx = np.zeros((self.nx, 1), dtype=np.float64, order=ORDER_TYPE)
+            # print(f'x: {x.shape}, d: {self.d}')
+            if x.ndim>1 and x.shape[-1]==3:
+                x = expand(x[-1, ...], 1)
+            print(f'x: {x.T}, d: {self.d}')
+            dx[0] = self.speed * np.cos(x[2]) + self.d[0]
+            dx[1] = self.speed * np.sin(x[2]) + self.d[1]
+            dx[2] = self.u + self.d[2]
+            # info(f'dx in dynamics return: {[x.shape for x in dx]}')
+        return dx
+
     def dynamics_helper(self, x, u, d, dims, dim):
         d = np.asarray(d)
-        # print('x in dyna_help: ', [a.shape for a in x])
-        # print(f'd in dyna_help: {d.shape}')
-        # print(f'speed in dyna_help: {self.speed}')
-        # print('u in dyna_help: ', u)
 
         if dim==0:
             dx = self.speed * np.cos(x[2]) + d[0]
@@ -80,13 +103,6 @@ class DubinsCar(DynSys):
             dx = u + d[2]
         else:
             error('Only dimension 1-3 are defined for dynamics of DubinsCar!')
-        # if isinstance(dx, np.ndarray):
-        #     print(f'dx in dyna_help: {dx.shape}')
-        # else:
-        #     print(f'dx in dyna_help: {dx}')
-        # print()
-        # import time
-        # time.sleep(1)
         return dx
 
     def get_opt_u(self, t=0, deriv=0, uMode='min', y=0):
@@ -144,9 +160,11 @@ class DubinsCar(DynSys):
             x0 = self.x
 
         if T == 0:
+            x1 = x0
             return x0
 
         if u is None:
+            x1 = x0
             return x0
 
         if np.isnan(u):
@@ -157,73 +175,46 @@ class DubinsCar(DynSys):
         if numel(u) > 1 and isinstance(u, np.ndarray) and u.shape[0]<u.shape[1]:
             u = u.T
 
+        if np.isnan(u):
+            x1 = x0
+            return x1
+
         x0 = x0.T if x0.shape[0]<x0.shape[1] else x0
-        # print(f'x b4 RK4: {x0.shape}')
+
         if not np.any(d):
             x = self.integrate_dynamics([0, T], x0, u, [])
         else:
             x = self.integrate_dynamics([0, T], x0, u, d)
-        x1 = np.asarray(x)
-        # print(f'x aft RK4: {x1.shape}')
-
+        x1 = np.asarray(x, order=ORDER_TYPE)
+        """
+        self.u, self.d = u, d
+        x = solve_ivp(self.dynamics_RK45, [0, T], x0, method='RK45') #, , u, [])
+        # x = RK45(self.dynamics_RK45, 0, x0.squeeze(), T, vectorized=True) #, , u, [])
+        print('x.t.shape, x.y.shape ', x.t.shape, x.y.shape)
+        x1 = np.asarray(expand(x.y[...,-1], 1), order=ORDER_TYPE)
+        """
         self.x = x1
         self.u = u
 
-        # print(f'self.xhist: {self.xhist.shape}')
-        # print(f'self.uhist: {self.uhist.shape}, u: {u}')
-        self.xhist = np.hstack((x1, self.xhist))
+        self.xhist.append(x1)
         self.uhist.append(u)
 
-        return x1
-
     def integrate_dynamics(self, tspan, x, u, v):
-        """
-        # RK4 integrator for a time-invariant dynamical system under a control, u,
-        and disturbance, v.
 
-        # See https://lpsa.swarthmore.edu/NumInt/NumIntFourth.html
+        M = 40 # RK4 steps per interval
+        h = tspan[1]/100/M # time step very important
+        X = np.asarray(x, order=ORDER_TYPE)
+        U = np.asarray(u, order=ORDER_TYPE)
+        V = np.asarray(v, order=ORDER_TYPE)
 
-        This impl adopted from unstable-zeros's learning CBFs example for two airplanes
+        num= (tspan[1] - tspan[0])*M
+        
+        for _ in range(M):
+            k1 = self.dynamics(None, X, U, V)
+            k2 = self.dynamics(None, X + h/2 * k1, U, V)
+            k3 = self.dynamics(None, X + h/2 * k2, U, V)
+            k4 = self.dynamics(None, X + h * k3, U, V)
 
-        https://github.com/unstable-zeros/learning-cbfs/blob/master/airplane_example/learning_cbfs_airplane.ipynb
-
-        This function must be called within a loop for a total of N
-        steps of integration, Obviously, the smallet the value of T, the better
-
-        Inputs:
-            self.dynamics: Right Hand Side of Ode function to be integrated
-            tspan: A list [start, end] that specifies over what time horizon to integrate the dynamics
-            x: State, must be a list, initial condition
-            u: Control, must be a list
-            v: Disturbance, must be a list
-
-            Author: Lekan Molu, August 09, 2021
-        """
-        M = 4 # RK4 steps per interval
-        h = 0.2 # time step
-        if np.any(tspan):
-            hh = (tspan[1]-tspan[0])/10/M
-        X = np.array(x)
-        U = np.array(u)
-        V = np.array(v)
-
-        # print(f'X: {X.shape}, h: {h}')
-        for j in range(M):
-            if np.any(tspan): # integrate for this much time steps
-                for h in np.arange(tspan[0], tspan[1], hh):
-                    k1 = self.dynamics(None, X, U, V)
-                    # print(f'X + h/2: {(X + h/2).shape}, k1: {k1.shape}')
-                    k2 = self.dynamics(None, X + h/2 * k1, U, V)
-                    k3 = self.dynamics(None, X + h/2 * k2, U, V)
-                    k4 = self.dynamics(None, X + h * k3, U, V)
-
-                    X  = X+(h/6)*(k1 +2*k2 +2*k3 +k4)
-            else:
-                k1 = self.dynamics(None, X, U, V)
-                k2 = self.dynamics(None, X + h/2 * k1, U, V)
-                k3 = self.dynamics(None, X + h/2 * k2, U, V)
-                k4 = self.dynamics(None, X + h * k3, U, V)
-
-                X  = X+(h/6)*(k1 +2*k2 +2*k3 +k4)
+            X  = X+(h/6)*(k1 +2*k2 +2*k3 +k4)
 
         return list(X)

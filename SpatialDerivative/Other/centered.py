@@ -51,6 +51,6 @@ def centeredFirstSecond(grid, data, dim):
     # Take a difference in the appropriate dimension.
     indices1[dim] = quickarray(0, size(gdata, dim) - 2)
     indices2[dim] = quickarray(2, size(gdata, dim))
-    deriv = 0.5 * dxInv@(gdata[indices2[:]] - gdata[indices1[:]]);
+    deriv = 0.5 * dxInv*(gdata[indices2[:]] - gdata[indices1[:]]);
 
     return deriv

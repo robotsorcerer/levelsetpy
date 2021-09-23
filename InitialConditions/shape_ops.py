@@ -1,5 +1,6 @@
 import numpy as np
 import logging
+from Utilities import ORDER_TYPE
 logger = logging.getLogger(__name__)
 
 def shapeUnion(shape1, shape2):
@@ -65,12 +66,12 @@ def shapeIntersection(shape1, shape2):
     """
 
     #---------------------------------------------------------------------------
-    data = np.maximum(shape1, shape2)
+    data = np.maximum(shape1, shape2, order=ORDER_TYPE)
 
     #---------------------------------------------------------------------------
     # Warn the user if there is no sign change on the grid
     #  (ie there will be no implicit surface to visualize).
-    if(np.all(data.flatten() < 0) or (np.all(data.flatten() > 0))):
+    if(np.all(data.flatten(order=ORDER_TYPE) < 0) or (np.all(data.flatten(order=ORDER_TYPE) > 0))):
         logger.warn(f'Implicit surface not visible because function has '
                 'single sign on grid')
     return data
@@ -106,12 +107,12 @@ def shapeDifference(shape1, shape2):
     """
 
     #---------------------------------------------------------------------------
-    data = np.maximum(shape1, -shape2)
+    data = np.maximum(shape1, -shape2, order=ORDER_TYPE)
 
     #---------------------------------------------------------------------------
     # Warn the user if there is no sign change on the grid
     #  (ie there will be no implicit surface to visualize).
-    if(np.all(data.flatten() < 0) or (np.all(data.flatten() > 0))):
+    if(np.all(data.flatten(order=ORDER_TYPE) < 0) or (np.all(data.flatten(order=ORDER_TYPE) > 0))):
         logger.warn(f'Implicit surface not visible because function has '
                 'single sign on grid')
     return data
@@ -152,7 +153,7 @@ def shapeComplement(shape):
     #---------------------------------------------------------------------------
     # Warn the user if there is no sign change on the grid
     #  (ie there will be no implicit surface to visualize).
-    if(np.all(data.flatten() < 0) or (np.all(data.flatten() > 0))):
+    if(np.all(data.flatten(order=ORDER_TYPE) < 0) or (np.all(data.flatten(order=ORDER_TYPE) > 0))):
         logger.warn(f'Implicit surface not visible because function has '
                 'single sign on grid')
     return data

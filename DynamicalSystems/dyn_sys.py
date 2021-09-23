@@ -20,6 +20,7 @@ class DynSys(object):
         self.pdim = pdim       # position dimensions
         self.vdim = vdim       # velocity dimensions
         self.hdim = hdim       # heading dimensions
+        self.d = None       # RK45 disturbance dimensions
 
         self.hpxpy = hpxpy          # Position
         self.hpxpyhist = hpxpyhist      # Position history

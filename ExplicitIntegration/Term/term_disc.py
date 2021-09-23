@@ -79,15 +79,15 @@ def termDiscount(t, y, schemeData):
 
     #---------------------------------------------------------------------------
     if(iscell(y)):
-        data = y[0].reshape(grid.shape, order='F')
+        data = y[0].reshape(grid.shape, order=ORDER_TYPE)
     else:
-        data = y.reshape(grid.shape, order='F')
+        data = y.reshape(grid.shape, order=ORDER_TYPE)
 
     # Get discount factor.
     if isfloat(thisSchemeData.lambder):
         lambder = thisSchemeData.lambder
     elif(callable(thisSchemeData.lambder)):
-        data = y.reshape(thisSchemeData.grid.shape, order='F')
+        data = y.reshape(thisSchemeData.grid.shape, order=ORDER_TYPE)
         lambder = thisSchemeData.lambder(t, data, thisSchemeData)
     else:
         error('schemeData.lambder must be a scalar, array or function handle')
@@ -95,7 +95,7 @@ def termDiscount(t, y, schemeData):
     #---------------------------------------------------------------------------
     # Compute the update (including negation for RHS of ODE).
     delta = lambder * data
-    ydot = expand(-delta.flatten(order='F'), 1)
+    ydot = expand(-delta.flatten(order=ORDER_TYPE), 1)
 
     # No derivative, so no timestep limit.
     stepBound = np.inf

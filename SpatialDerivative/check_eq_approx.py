@@ -35,18 +35,18 @@ def checkEquivalentApprox(approx1, approx2,bound):
     """
 
     # Approximate magnitude of the solution
-    magnitude = 0.5 * np.abs(approx1 + approx2)
+    magnitude = 0.5 * np.abs(approx1 + approx2, order=ORDER_TYPE)
 
     # Which nodes deserve relative treatment, and which absolute treatment?
     useRelative = np.nonzero(magnitude > bound)
     useAbsolute = np.nonzero(magnitude <= bound)
 
-    absError = np.abs(approx1 - approx2)
+    absError = np.abs(approx1 - approx2, order=ORDER_TYPE)
 
     # Be careful not to divide by too small a number.
-    relError = ones(size(absError))
+    relError = ones(size(absError), order=ORDER_TYPE)
     relError.fill(np.nan)
-    relError[useRelative] = np.divide(absError[useRelative], magnitude[useRelative])
+    relError[useRelative] = np.divide(absError[useRelative], magnitude[useRelative], order=ORDER_TYPE)
 
     # Check that bounds are respected.
     if(max(relError[useRelative]) > bound):

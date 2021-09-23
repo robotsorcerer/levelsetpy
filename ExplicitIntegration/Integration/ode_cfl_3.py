@@ -116,7 +116,7 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
         t = tspan[0]
         steps = 0
         startTime = cputime()
-        stepBound = zeros(numY, 1, dtype=np.float64)
+        stepBound = zeros(numY, 1, dtype=np.float64, order=ORDER_TYPE)
         ydot = [np.nan for i in range(numY)] #ell(numY, 1)
         y = y0
 
@@ -150,15 +150,12 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
 
             # Take the first substep.
             t1 = t + deltaT
-            # print('y first substep: ', y.shape)
             if(iscell(y)):
                 y1 = [np.nan for _ in range(numY)] #cell(numY, 1)
                 for i in range(numY):
                     y1[i] +=(deltaT * ydot[i])
             else:
-                # print('y b4 y1: ', y.shape, ': ydot[0] ', ydot, ydot[0].shape)
                 y1 = y + deltaT * ydot[0]
-            # print('y1 first substep: ', y1.shape)
 
 
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

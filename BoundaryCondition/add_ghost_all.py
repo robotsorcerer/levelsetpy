@@ -1,3 +1,5 @@
+import copy
+
 def   addGhostAllDims(grid, dataIn, width):
     """
      addGhostAllDims: Create ghost cells along all grid boundaries.
@@ -30,7 +32,7 @@ def   addGhostAllDims(grid, dataIn, width):
 
      Lekan Aug 21, 2021
     """
-    dataOut = dataIn
+    dataOut = copy.copy(dataIn)
 
     # add ghost cells
     for i in range(grid.dim):

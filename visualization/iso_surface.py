@@ -1,4 +1,5 @@
 import numpy as np
+from Utilities import ORDER_TYPE
 
 def isosurface(my_array, my_value, zs, interp_order=6, power_parameter=0.5):
     #https://stackoverflow.com/questions/13627104/using-numpy-scipy-to-calculate-iso-surface-from-3d-array
@@ -8,7 +9,7 @@ def isosurface(my_array, my_value, zs, interp_order=6, power_parameter=0.5):
     arg = np.argsort(dist,axis=2)
     dist.sort(axis=2)
     w_total = 0.
-    z = np.zeros(my_array.shape[:2], dtype=float)
+    z = np.zeros(my_array.shape[:2], dtype=float, order=ORDER_TYPE)
     for i in range(int(interp_order)):
         zi = np.take(zs, arg[:,:,i])
         valuei = dist[:,:,i]

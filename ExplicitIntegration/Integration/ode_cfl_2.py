@@ -118,7 +118,7 @@ def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
         t = tspan[0]
         steps = 0
         startTime = cputime()
-        stepBound = zeros(numY, 1)
+        stepBound = zeros(numY, 1, order=ORDER_TYPE)
         ydot = cell(numY, 1)
         y = y0
 

@@ -1,3 +1,4 @@
+from Utilities import *
 def termReinit(t, y, schemeData):
     """
      termReinit: a Godunov solver for the reinitialization HJ PDE.
@@ -136,9 +137,9 @@ def termReinit(t, y, schemeData):
     grid = thisSchemeData.grid
 
     if iscell(y):
-        data = y[0].reshape(grid.shape, order='F')
+        data = y[0].reshape(grid.shape, order=ORDER_TYPE)
     else:
-        data = y.reshape(grid.shape, order='F')
+        data = y.reshape(grid.shape, order=ORDER_TYPE)
 
     if isfield(thisSchemeData, 'subcell_fix_order'):
         if thisSchemeData.subcell_fix_order==0:

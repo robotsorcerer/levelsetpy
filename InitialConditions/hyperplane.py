@@ -1,4 +1,4 @@
-from Utilities import zeros, ones, numel, logger, np
+from Utilities import *
 from Helper.Math import cellMatrixMultiply, cellMatrixAdd
 
 
@@ -55,7 +55,7 @@ def shapeHyperplane(grid, normal, point):
     #---------------------------------------------------------------------------
     # Warn the user if there is no sign change on the grid
     #  (ie there will be no implicit surface to visualize).
-    if(np.all(data.flatten() < 0) or (np.all(data.flatten() > 0))):
+    if(np.all(data.flatten(order=ORDER_TYPE) < 0) or (np.all(data.flatten(order=ORDER_TYPE) > 0))):
         logger.warn(f'Implicit surface not visible because function has '
                 'single sign on grid')
 

@@ -113,7 +113,7 @@ def artificialDissipationLLF(t, data, derivL, derivR, schemeData):
         derivMax[i] = derivMaxCopy[i]
 
         diss += (0.5 * derivDiff[i] * alpha)
-        stepBoundInv += np.divide(np.max(alpha), grid.dx[i])
+        stepBoundInv += np.divide(np.max(alpha), grid.dx[i], order=ORDER_TYPE)
 
     stepBound = 1 / stepBoundInv
 
