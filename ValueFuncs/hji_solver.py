@@ -12,6 +12,10 @@ from Visualization import *
 from ValueFuncs import *
 import matplotlib.pyplot as plt
 
+from absl import flags
+FLAGS = flags.FLAGS
+
+
 def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 	"""
 	 data, tau, extraOuts = \
@@ -320,7 +324,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 			del extraArgs.obstacles
 
 	if isfield(extraArgs, 'quiet') and extraArgs.quiet:
-		print('HJIPDE_solve running in quiet mode')
+		debug('HJIPDE_solve running in quiet mode')
 		quiet = True
 
 	# Low memory mode
@@ -357,7 +361,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 		# note that obstacles are negated.  That's because if you define the
 		# obstacles using something like ShapeSphere, it sets it up as a
 		# target. To make it an obstacle we just negate that.
-		data0 = np.maximum(data0, -obstacle_i, order=ORDER_TYPEobstacle_i)
+		data0 = np.maximum(data0, -obstacle_i, order=FLAGS.order_typeobstacle_i)
 
 	#---Extract the information about targets----------------------------------
 	targMode = 'none'
@@ -501,9 +505,9 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 					[_, targPlot] = proj(g, target_i, np.logical_not(plotDims), projpt)
 		# Initialize the figure for visualization
 		winsize = (16,9)
-		# fig = plt.figure(figsize=winsize)
-		# fig.tight_layout()
-		# plt.ion()
+		fig = plt.figure(figsize=winsize)
+		fig.tight_layout()
+		plt.ion()
 		# ax = fig.add_subplot(1, 1, 1)
 		# ax.grid('on')
 
@@ -511,18 +515,19 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 		eAT_visSetIm = Bundle(dict(sliceDim = gPlot.dim,
 									savedict = {"save": True, "savename": 'val_func.jpg',\
 													"savepath": join("..", "jpeg_dumps")},
-									applyLight = False, disp=True))
+									disp=False))
 		if isfield(extraArgs.visualize, 'lineWidth'):
 			eAT_visSetIm.LineWidth = extraArgs.visualize.lineWidth
 		else:
 			eAO_visSetIm = Bundle(dict(LineWidth = 2,savedict = {"save": True, "savename": 'val_func.jpg',\
 										"savepath": join("..", "jpeg_dumps")},
-										disp=True))
+										disp=False))
 
 
 		# If we're stopping once we hit an initial condition requirement, plot
 		# said requirement
 		if isfield(extraArgs, 'stopInit'):
+			ax = plt.gca()
 			projectedInit = extraArgs.stopInit(plotDims.astype(bool))
 			if np.nonzero(plotDims) == 2:
 				ax.plot(projectedInit[0], projectedInit[1], 'b*')
@@ -535,8 +540,9 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 			if not isfield(extraArgs.visualize,'plotColorVS0'):
 				extraArgs.visualize.plotColorVS0 = 'g'
 
-
-			visSetIm(dataPlot, gPlot, extraArgs.visualize.plotColorVS0, sliceLevel, eAT_visSetIm)
+			# ax = plt.gca()
+			axVisSetIm = visSetIm(dataPlot, gPlot, level=sliceLevel, extraArgs=eAT_visSetIm)
+			plt.pause(FLAGS.pause_time)
 
 			if isfield(extraArgs.visualize,'plotAlphaVS0'):
 				extraOuts.hVS0.FaceAlpha = extraArgs.visualize.plotAlphaVS0
@@ -546,7 +552,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 				extraArgs.visualize.initialValueFunction:
 
 			# Visualize Initial Value function (hVF0)
-			show3D(gPlot,dataPlot,(16,9), disp=ORDER_TYPEalse)
+			show3D(gPlot,dataPlot,ax=ax, disp=False)
 
 
 		## Visualize Target Function/Set
@@ -555,8 +561,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 				extraArgs.visualize.plotColorTS = 'g'
 
 
-			visSetIm(targPlot, gPlot, \
-				extraArgs.visualize.plotColorTS, sliceLevel, eAT_visSetIm)
+			axVisSetIm = visSetIm(targPlot, gPlot, axVisSetIm, extraArgs.visualize.plotColorTS, sliceLevel, eAT_visSetIm)
+			plt.pause(FLAGS.pause_time)
 
 		#---Visualize Target Function------------------------------------------
 		if isfield(extraArgs.visualize, 'targetFunction') and \
@@ -576,9 +582,9 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
 			# Visualize Target function (hTF)
-			show3D(gPlot,targPlot,\
-				extraArgs.visualize.plotColorTF,\
-				extraArgs.visualize.plotAlphaTF, disp=0)
+			show3D(gPlot,targPlot, ax=ax,
+				fc=extraArgs.visualize.plotColorTF,
+				ec=extraArgs.visualize.plotAlphaTF, disp=False)
 
 
 		## Visualize Obstacle Function/Set
@@ -591,8 +597,9 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 				extraArgs.visualize.plotColorOS = 'r'
 
 			# Visualize obstacle set (hOS)
-			visSetIm(gPlot, obsPlot, \
+			axVisSetIm = visSetIm(gPlot, obsPlot, axVisSetIm, \
 				extraArgs.visualize.plotColorOS, sliceLevel, eAO_visSetIm)
+			plt.pause(FLAGS.pause_time)
 
 
 		#---Visualize Obstacle Function----------------------------------------
@@ -611,7 +618,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 				extraArgs.visualize.plotAlphaOF = .5
 
 			# Visualize function
-			visFuncIm(gPlot,-obsPlot, extraArgs.visualize.plotColorOF, extraArgs.visualize.plotAlphaOF)
+			visFuncIm(gPlot,-obsPlot, ax, extraArgs.visualize.plotColorOF, extraArgs.visualize.plotAlphaOF)
 
 		## Visualize Value Function/Set
 		# if isfield(extraArgs.visualize, 'valueSetHeatMap') and extraArgs.visualize.valueSetHeatMap:
@@ -630,7 +637,8 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 			if not isfield(extraArgs.visualize,'plotColorVS'):
 				extraArgs.visualize.plotColorVS = 'b'
 
-			visSetIm(dataPlot, gPlot, extraArgs.visualize.plotColorVS, sliceLevel, eAT_visSetIm)
+			axVisSetIm = visSetIm(dataPlot, gPlot, axVisSetIm, extraArgs.visualize.plotColorVS, sliceLevel, eAT_visSetIm)
+			plt.pause(FLAGS.pause_time)
 
 
 		#---Visualize Value Function-------------------------------------------
@@ -649,7 +657,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
 			# Visualize Value function (hVF)
-			visFuncIm(gPlot,dataPlot, extraArgs.visualize.plotColorVF, extraArgs.visualize.plotAlphaVF)
+			visFuncIm(gPlot,dataPlot, ax, extraArgs.visualize.plotColorVF, extraArgs.visualize.plotAlphaVF)
 
 	## Extract dynamical system if needed
 	if isfield(schemeData, 'dynSys'):
@@ -726,7 +734,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 		elif lowMemory:
 			data = data0.astype(np.float32)
 		else:
-			data = np.zeros((data0size[0:gDim] +(len(tau), )), dtype=np.float64, order=ORDER_TYPE)
+			data = np.zeros((data0size[0:gDim] +(len(tau), )), dtype=np.float64, order=FLAGS.order_type)
 			# data[:,:,:,0] = data0
 			data[0, ...] = data0
 
@@ -739,7 +747,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 		elif lowMemory:
 			data = data0[data0size[-1], ...].astype(np.float32)
 		else:
-			data = np.zeros((data0size[:gDim].shape+(len(tau),)), dtype=np.float64, order=ORDER_TYPE)
+			data = np.zeros((data0size[:gDim].shape+(len(tau),)), dtype=np.float64, order=FLAGS.order_type)
 			data[:data0size[-1], ...] = data0
 			# data[:,:,:,:data0size[-1]] = data0
 
@@ -757,7 +765,6 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 		_, dataTrimmed = truncateGrid(g, data0, g.min+4*g.dx, g.max-4*g.dx)
 
 
-	# print(f'len(tau): {len(tau)}')
 	for i in range(istart, len(tau)):
 		debug(f'tau[{i}]: {tau[i]}')
 
@@ -780,7 +787,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 		else:
 			y0 = data[i-1, ...]
 
-		y = expand(y0.flatten(order=ORDER_TYPE), 1)
+		y = expand(y0.flatten(order=FLAGS.order_type), 1)
 
 
 		tNow = tau[i-1]
@@ -790,14 +797,13 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 			# Save previous data if needed
 			if compMethod =='minVOverTime' or compMethod =='maxVOverTime':
 				yLast = y
-			if not quiet:
-				debug(f'Solving HJ Value at Time Step: {tNow:.4f}/{tau[i]:.2f}')
+			if FLAGS.hj_progress:
+				info(f'Solving HJ Value at Time Step: {tNow:.4f}/{tau[i]:.2f}')
 			# Solve hamiltonian and apply to value function (y) to get updated
 			# value function # integrator function is an odeCFL function
 			# integratorFunc is @OdeCFL3, derivFunc is upwindFirstWENO5,
 			# dissipator=artificialDissipationGLF, schemeFunc is termLaxFriedrichs
-			# print('y b4 int: ', y.shape)
-			# print(f'schemeData: {schemeData.derivFunc}')
+
 			tNow, y, _ = integratorFunc(schemeFunc, [tNow, tau[i]], y, integratorOptions, schemeData)
 
 			if np.any(np.isnan(y)):
@@ -810,7 +816,6 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 			# 1. If not discounting at all OR not discounting using Kene's
 			#    method, do normal compMethod first
-			# print('compMethod: ', compMethod)
 			if not isfield(extraArgs, 'discountMode') or not strcmp(extraArgs.discountMode, 'Kene'):
 				#   compMethod
 				# - 'set' or 'none' to compute reachable set (not tube)
@@ -822,40 +827,37 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 				# - 'minVWithV0' to do min with original data (default)
 				# - 'maxVWithV0' to do max with original data
 
-				# print('y: comp None', y.shape)
 				if strcmp(compMethod, 'zero') or strcmp(compMethod, 'set') or compMethod is None:
 					# note: compMethod 'zero' is handled at the beginning of
 					# the code. compMethod 'set' and 'none' require no
 					# computation.
 					pass
 				elif strcmp(compMethod, 'minVOverTime'):  #Min over Time
-					# print(f'y minOverTime: {y.shape}, {yLast.shape}')
-					y = np.minimum(y, yLast, order=ORDER_TYPE)
-					# print(f'y minOverTime aft: {y}, {yLast.shape}')
+					y = np.minimum(y, yLast, order=FLAGS.order_type)
 				elif strcmp(compMethod, 'maxVOverTime'):
-					y = np.maximum(y, yLast, order=ORDER_TYPE)
+					y = np.maximum(y, yLast, order=FLAGS.order_type)
 				elif strcmp(compMethod, 'minVWithV0'): #Min with data0
-					y = np.minimum(y,data0, order=ORDER_TYPE)
+					y = np.minimum(y,data0, order=FLAGS.order_type)
 				elif strcmp(compMethod, 'maxVWithV0'):
-					y = np.maximum(y,data0, order=ORDER_TYPE)
+					y = np.maximum(y,data0, order=FLAGS.order_type)
 				elif strcmp(compMethod, 'maxVWithL')  or strcmp(compMethod, 'maxVwithL') or strcmp(compMethod, 'maxVWithTarget'):
 					if not isfield(extraArgs, 'targetFunction'):
 						error('Need to define target function l(x)!')
 
 					if numDims(targets) == gDim:
-						y = np.maximum(y, targets, order=ORDER_TYPE)
+						y = np.maximum(y, targets, order=FLAGS.order_type)
 					else:
 						target_i = targets[i, ...]
-						y = np.maximum(y, target_i, order=ORDER_TYPE)
+						y = np.maximum(y, target_i, order=FLAGS.order_type)
 				elif strcmp(compMethod, 'minVWithL') or  strcmp(compMethod, 'minVwithL') or  strcmp(compMethod, 'minVWithTarget'):
 					if not isfield(extraArgs, 'targetFunction'):
 						error('Need to define target function l(x)!')
 
 					if numDims(targets) == gDim:
-						y = np.minimum(y, targets, order=ORDER_TYPE)
+						y = np.minimum(y, targets, order=FLAGS.order_type)
 					else:
 						target_i = targets[i,...]
-						y = np.minimum(y, target_i, order=ORDER_TYPE)
+						y = np.minimum(y, target_i, order=FLAGS.order_type)
 				else:
 					error('Check which compMethod you are using')
 
@@ -865,9 +867,9 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 					y *=extraArgs.discountFactor
 
 					if isfield(extraArgs, 'targetFunction'):
-						y +=(1-extraArgs.discountFactor)*extraArgs.targets.flatten(order=ORDER_TYPE)
+						y +=(1-extraArgs.discountFactor)*extraArgs.targets.flatten(order=FLAGS.order_type)
 					else:
-						y +=(1-extraArgs.discountFactor)*data0.flatten(order=ORDER_TYPE)
+						y +=(1-extraArgs.discountFactor)*data0.flatten(order=FLAGS.order_type)
 
 				# 3. If we are doing Kene's discounting from minimum discounted
 				#    rewards paper, do that now and do compmethod with it
@@ -915,14 +917,14 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 					target_i = targets[i,...]
 
 		# Reshape value function
-		data_i = y.reshape(g.shape, order=ORDER_TYPE)
+		data_i = y.reshape(g.shape, order=FLAGS.order_type)
 		if keepLast:
 			data = data_i
 		elif lowMemory:
 			if flipOutput:
-				data = np.concatenate((y.reshape(g.shape, order=ORDER_TYPE), data), g.dim+1)
+				data = np.concatenate((y.reshape(g.shape, order=FLAGS.order_type), data), g.dim+1)
 			else:
-				data = np.concatenate((data, y.reshape(g.shape, order=ORDER_TYPE)), g.dim+1)
+				data = np.concatenate((data, y.reshape(g.shape, order=FLAGS.order_type)), g.dim+1)
 		else:
 			data[i,...] = data_i
 
@@ -932,15 +934,15 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 		if stopConverge:
 			if  isfield(extraArgs,'ignoreBoundary')  and extraArgs.ignoreBoundary:
 				_ , dataNew = truncateGrid(g, data_i, g.min+4*g.dx, g.max-4*g.dx)
-				change = np.max(np.abs(dataNew.flatten(order=ORDER_TYPE)-\
-								dataTrimmed.flatten(order=ORDER_TYPE), order=ORDER_TYPE))
+				change = np.max(np.abs(dataNew.flatten(order=FLAGS.order_type)-\
+								dataTrimmed.flatten(order=FLAGS.order_type), order=FLAGS.order_type))
 				dataTrimmed = dataNew
 				if not quiet:
 					info(f'Max change since last iteration: {change}')
 
 			else:
 				# check this
-				change = np.max(np.abs(y - expand(y0.flatten(order=ORDER_TYPE), 1)))
+				change = np.max(np.abs(y - expand(y0.flatten(order=FLAGS.order_type), 1)))
 				if not quiet:
 					info(f'Max change since last iteration: {change}')
 
@@ -987,7 +989,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 				if strcmp(extraArgs.discountAnneal, 'soft'):
 					extraArgs.discountFactor = 1-((1-extraArgs.discountFactor)/2)
 
-					if np.abs(1-extraArgs.discountFactor, order=ORDER_TYPE) < .00005:
+					if np.abs(1-extraArgs.discountFactor, order=FLAGS.order_type) < .00005:
 						extraArgs.discountFactor = 1
 
 					info(f'Discount factor: {extraArgs.discountFactor}')
@@ -1010,7 +1012,6 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 			# Number of dimensions to be plotted and to be projected
 			pDims = np.count_nonzero(plotDims)
-			# print(f'projpt: {projpt}, {len(projpt)}')
 			if isnumeric(projpt):
 				projDims = len(projpt)
 			else:
@@ -1019,7 +1020,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 			# Basic Checks
 			#---Perform Projections--------------------------------------------
 			if projDims == 0:
-				gPlot = g
+				gPlot = copy.deepcopy(g)
 				dataPlot = copy.copy(data_i)
 
 				if strcmp(obsMode, 'time-varying'):
@@ -1034,22 +1035,23 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 				# and to project at a particular slice through other dimensions.
 				if iscell(projpt) and len(projpt)>1:
 					idx = np.nonzero(plotDims==0)
-					plotDimsTemp = np.ones((plotDims), order=ORDER_TYPE)
-					gPlot = g
-					dataPlot = data_i
+					plotDimsTemp = np.ones((plotDims), order=FLAGS.order_type)
+
+					gPlot = copy.deepcopy(g)
+					dataPlot = copy.copy(data_i)
+
 					if strcmp(obsMode, 'time-varying'):
 						obsPlot = obstacle_i
 
 
 					if strcmp(targMode, 'time-varying'):
-						targPlot = target_i
+						targPlot = copy.copy(target_i)
 
 
 					for ii in range(len(idx)-1, -1, -1):
 						plotDimsTemp[idx[ii]] = 0
 						if strcmp(obsMode, 'time-varying'):
-							_ , obsPlot = proj(gPlot, obsPlot, np.logical_not(plotDimsTemp),\
-								projpt[ii])
+							_ , obsPlot = proj(gPlot, obsPlot, np.logical_not(plotDimsTemp), projpt[ii])
 
 
 						if strcmp(targMode, 'time-varying'):
@@ -1058,19 +1060,23 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 
 						gPlot, dataPlot = proj(gPlot, dataPlot, np.logical_not(plotDimsTemp), projpt[ii])
-						plotDimsTemp = ones(1,gPlot.dim, order=ORDER_TYPE)
+						plotDimsTemp = ones(1,gPlot.dim, order=FLAGS.order_type)
 
 
 				else:
 					# projpt='min'
-					gPlot, dataPlot = proj(g, data_i, np.logical_not(plotDims).astype(np.int64), projpt)
+					gTemp = copy.deepcopy(g)
+					dataTemp = copy.copy(data_i)
+					gPlot, dataPlot = proj(gTemp, dataTemp, np.logical_not(plotDims).astype(np.int64), projpt)
 
 					if strcmp(obsMode, 'time-varying'):
-						_ , obsPlot = proj(g, obstacle_i, np.logical_not(plotDims).astype(np.int64), projpt)
+						obsTemp =copy.copy(obstacle_i)
+						_ , obsPlot = proj(gtemp, obsTemp, np.logical_not(plotDims).astype(np.int64), projpt)
 
 
 					if strcmp(targMode, 'time-varying'):
-						_ , targPlot = proj(g, obstacle_i, np.logical_not(plotDims).astype(np.int64), projpt)
+						obsTemp =copy.copy(obstacle_i)
+						_ , targPlot = proj(gtemp, obsTemp, np.logical_not(plotDims).astype(np.int64), projpt)
 
 			## Visualize Target Function/Set
 
@@ -1080,8 +1086,9 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 					and extraArgs.visualize.targetSet:
 
 				# Visualize obstacle set (hOS)
-				visSetIm( targPlot, gPlot,\
+				axVisSetIm = visSetIm(targPlot, gPlot, axVisSetIm,
 					extraArgs.visualize.plotColorTS, sliceLevel, eAT_visSetIm)
+				plt.pause(FLAGS.pause_time)
 
 				if isfield(extraArgs.visualize,'plotAlphaTS'):
 					extraOuts.hTS.FaceAlpha = extraArgs.visualize.plotAlphaTS
@@ -1101,8 +1108,9 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 			#---Visualize Value Set--------------------------------------------
 			if isfield(extraArgs.visualize, 'valueSet') and extraArgs.visualize.valueSet:
 
-				visSetIm(gPlot, dataPlot, \
+				axVisSetIm = visSetIm(dataPlot, gPlot, axVisSetIm, \
 					extraArgs.visualize.plotColorVS, sliceLevel, eAT_visSetIm)
+				plt.pause(FLAGS.pause_time)
 
 			#---Visualize Value Function---------------------------------------
 			if isfield(extraArgs.visualize, 'valueFunction') and \

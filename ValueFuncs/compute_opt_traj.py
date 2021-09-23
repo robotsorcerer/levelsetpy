@@ -7,6 +7,9 @@ from ExplicitIntegration import dynamics_RK4
 from Visualization import visSetIm
 from ValueFuncs import eval_u
 
+from absl import flags
+FLAGS = flags.FLAGS
+
 def computeOptTraj(g, data, tau, dynSys, extraArgs=Bundle({})):
 	"""
 	 [traj, traj_tau] = computeOptTraj(g, data, tau, dynSys, extraArgs)
@@ -48,7 +51,6 @@ def computeOptTraj(g, data, tau, dynSys, extraArgs=Bundle({})):
 
 		showDims = np.nonzero(extraArgs.projDim)[0]
 		hideDims = np.logical_not(extraArgs.projDim).squeeze()
-		# print(f'showDims: {showDims}, hideDims: {hideDims}')
 		f = plt.figure(figsize=(12, 7))
 		ax = f.add_subplot(111)
 		fontdict = {'fontsize':12, 'fontweight':'bold'}
@@ -63,10 +65,9 @@ def computeOptTraj(g, data, tau, dynSys, extraArgs=Bundle({})):
 	iter = 0
 	tauLength = len(tau)
 	dtSmall = (tau[1]- tau[0])/subSamples
-	# print(f'dtSmall: {dtSmall}')
 
 	# Initialize trajectory
-	traj = np.empty((g.dim, tauLength), order=ORDER_TYPE)
+	traj = np.empty((g.dim, tauLength), order=FLAGS.order_type)
 	traj.fill(np.nan)
 	traj[:,0] = dynSys.x
 	tEarliest = 0
@@ -112,11 +113,12 @@ def computeOptTraj(g, data, tau, dynSys, extraArgs=Bundle({})):
 				visSetIm(data2D, g2D, ax)
 				# ax.contour(g2D.xs[0], g2D.xs[1], data2D, levels=0, colors='g')
 			except KeyboardInterrupt:
-					plt.close('all')
+				pass
+				# plt.close('all')
 			if isfield(extraArgs, 'fig_filename'):
 				f.savefig(f'{extraArgs.fig_filename}_{iter}.png', bbox_inches='tight', dpi=79.0)
-			plt.pause(.1)
-			plt.cla()
+			plt.pause(FLAGS.pause_time)
+			# plt.cla()
 
 		if tEarliest == tauLength:
 			# Trajectory has entered the target
@@ -134,8 +136,7 @@ def computeOptTraj(g, data, tau, dynSys, extraArgs=Bundle({})):
 				d = dynSys.get_opt_v(tau[tEarliest], deriv, None, dynSys.x)
 			# integrate the dynamics
 			dynSys.update_state(u, dtSmall, dynSys.x, d)
-		print(f'{iter}: dynSys.x.T : {dynSys.x.T.squeeze()}')
-		# print()
+		debug(f'{iter}: dynSys.x.T : {dynSys.x.T.squeeze()}')
 		# Record new point on nominal trajectory
 		iter += 1
 		if iter != tauLength:

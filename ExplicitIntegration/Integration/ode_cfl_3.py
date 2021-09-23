@@ -116,7 +116,7 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
         t = tspan[0]
         steps = 0
         startTime = cputime()
-        stepBound = zeros(numY, 1, dtype=np.float64, order=ORDER_TYPE)
+        stepBound = zeros(numY, 1, dtype=np.float64, order=FLAGS.order_type)
         ydot = [np.nan for i in range(numY)] #ell(numY, 1)
         y = y0
 

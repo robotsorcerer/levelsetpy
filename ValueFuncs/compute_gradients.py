@@ -20,7 +20,7 @@ def computeGradients(g, data, dims=None, derivFunc=None):
     Lekan Molu, August 11, 2021
     """
     if not dims:
-        dims = zeros(g.dim, 1, order=ORDER_TYPE)
+        dims = zeros(g.dim, 1, order=FLAGS.order_type)
         dims.fill(True)
 
     if not derivFunc:
@@ -49,7 +49,7 @@ def computeGradients(g, data, dims=None, derivFunc=None):
 
     for i in range(g.dim):
         if dims[i]:
-            derivC[i] = zeros(size(data), order=ORDER_TYPE)
+            derivC[i] = zeros(size(data), order=FLAGS.order_type)
 
             ## data at a single time stamp
             if tau_length == 1:

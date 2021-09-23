@@ -42,7 +42,6 @@ def genericPartial(t, data, derivMin, derivMax, schemeData, dim):
     dxLL = dynSys.dynamics(t, schemeData.grid.xs, uL, dL)
     dxLU = dynSys.dynamics(t, schemeData.grid.xs, uL, dU)
 
-    # print(f'dxUU : {dxUU[-1]}, dim {dim}, dxUL: {dxUL[-1]}')
     alpha = np.maximum(np.abs(dxUU[dim]), np.abs(dxUL[dim]))
     alpha = np.maximum(alpha, np.abs(dxLL[dim]))
     alpha = np.maximum(alpha, np.abs(dxLU[dim]))

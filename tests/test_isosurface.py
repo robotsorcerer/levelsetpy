@@ -6,7 +6,7 @@ import sys, os
 sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )
 from Visualization.iso_surface import isosurface
 from Grids import createGrid
-from InitialORDER_TYPEonditions import shapeORDER_TYPEylinder
+from InitialFLAGS.order_typeonditions import shapeFLAGS.order_typeylinder
 import pyvista as pv
 # def main():
 #     dx = 100; dy =  50; dz = 25
@@ -40,10 +40,10 @@ g3max = +2*np.ones((3, 1),dtype=np.float64)
 # print(g3min, g3min.shape)
 g3N = 51*np.ones((3, 1),dtype=np.int64)
 g3 = createGrid(g3min, g3max, g3N, process=True)
-cylinder = shapeORDER_TYPEylinder(g3, 2, .5*np.ones((3, 1), np.float64), 0.5);
+cylinder = shapeFLAGS.order_typeylinder(g3, 2, .5*np.ones((3, 1), np.float64), 0.5);
 
 mesh = pv.ExplicitStructureGrid(g3.xs[0], g3.xs[1], g3.xs[2])
-mesh.point_arrays['values'] = cylinder.ravel(order='ORDER_TYPE')  # also the active scalars
+mesh.point_arrays['values'] = cylinder.ravel(order='FLAGS.order_type')  # also the active scalars
 
 # compute 3 isosurfaces
 isos = mesh.contour(isosurfaces=3, rng=[10, 40])

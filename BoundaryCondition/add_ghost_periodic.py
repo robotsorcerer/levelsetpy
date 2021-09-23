@@ -64,7 +64,7 @@ def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
     # create appropriately sized output array
     sizeOut = copy.copy(list(sizeIn))
     sizeOut[dim] = sizeOut[dim] + 2 * width
-    dataOut = zeros(tuple(sizeOut), dtype=np.float64, order=ORDER_TYPE)
+    dataOut = zeros(tuple(sizeOut), dtype=np.float64, order=FLAGS.order_type)
 
     # fill output array with input data
     indicesOut[dim] = np.arange(width + 0, sizeOut[dim] - width, dtype=np.intp)

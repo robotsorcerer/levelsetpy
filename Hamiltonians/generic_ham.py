@@ -40,7 +40,6 @@ def genericHam(t, data, deriv, schemeData):
             error('Side of an MIE function must be upper or lower!')
 
     ## Plug optimal control into dynamics to compute Hamiltonian
-    # print(f' u in hamFunc: {u.shape}')
     dx = dynSys.dynamics(t, schemeData.grid.xs, u, d)
     for i in range(dynSys.nx):
         hamValue += deriv[i]*dx[i]

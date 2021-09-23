@@ -59,7 +59,7 @@ def odeCFLmultipleSteps(intFunc, schemeFunc, tspan, y0, options, schemeData):
     # If we were asked for the solution at multiple timesteps,
     #   call back for each pair of timesteps.
     if(numT > 2):
-        t = tspan.reshape(numT, 1, order=ORDER_TYPE)
+        t = tspan.reshape(numT, 1, order=FLAGS.order_type)
 
         if(iscell(y)):
             numY = len(y)
@@ -68,7 +68,7 @@ def odeCFLmultipleSteps(intFunc, schemeFunc, tspan, y0, options, schemeData):
                 y[i] = np.zeros((numT, len(y0[i])), dtype=np.float64)
                 y[i][0,:] = y0[i].T
         else:
-            y = np.zeros((numT, len(y0)), dtype=np.float64, order=ORDER_TYPE)
+            y = np.zeros((numT, len(y0)), dtype=np.float64, order=FLAGS.order_type)
             y[0,:] = y0.T
 
         yout = y

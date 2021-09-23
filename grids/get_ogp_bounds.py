@@ -16,7 +16,7 @@ def  getOGPBounds(gBase, gMinIn, gMaxIn, padding):
     if isfield(gBase, 'dx'):
         dx = gBase.dx
     else:
-        dx = np.divide((gBase.max - gBase.min), (gBase.N), order=ORDER_TYPE)
+        dx = np.divide((gBase.max - gBase.min), (gBase.N), order=FLAGS.order_type)
 
     # Add padding to both sides
     #print(f'gMinIn: {gMinIn.shape} padding {padding.shape}')
@@ -24,19 +24,19 @@ def  getOGPBounds(gBase, gMinIn, gMaxIn, padding):
     gMaxIn += padding
 
     # Initialize
-    gMaxOut = zeros(gBase.dim, 1, dtype=np.float64, order=ORDER_TYPE)
-    gMinOut = zeros(gBase.dim, 1, dtype=np.float64, order=ORDER_TYPE)
-    NOut = zeros(gBase.dim, 1, order=ORDER_TYPE)
+    gMaxOut = zeros(gBase.dim, 1, dtype=np.float64, order=FLAGS.order_type)
+    gMinOut = zeros(gBase.dim, 1, dtype=np.float64, order=FLAGS.order_type)
+    NOut = zeros(gBase.dim, 1, order=FLAGS.order_type)
 
     for dim  in range(gBase.dim):
         # Arbitrary reference point
         refGridPt = gBase.min[dim]
 
         # Get minimum and maximum bounds for this dimension
-        ptrMax = np.floor((gMaxIn[dim] - refGridPt) / dx[dim], order=ORDER_TYPE)
+        ptrMax = np.floor((gMaxIn[dim] - refGridPt) / dx[dim], order=FLAGS.order_type)
         gMaxOut[dim] = refGridPt + ptrMax*dx[dim]
 
-        ptrMin = np.ceil((gMinIn[dim] - refGridPt) / dx[dim], order=ORDER_TYPE)
+        ptrMin = np.ceil((gMinIn[dim] - refGridPt) / dx[dim], order=FLAGS.order_type)
         gMinOut[dim] = refGridPt + ptrMin*dx[dim]
 
         # Get number of grid points

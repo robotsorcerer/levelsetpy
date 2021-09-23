@@ -137,9 +137,9 @@ def termReinit(t, y, schemeData):
     grid = thisSchemeData.grid
 
     if iscell(y):
-        data = y[0].reshape(grid.shape, order=ORDER_TYPE)
+        data = y[0].reshape(grid.shape, order=FLAGS.order_type)
     else:
-        data = y.reshape(grid.shape, order=ORDER_TYPE)
+        data = y.reshape(grid.shape, order=FLAGS.order_type)
 
     if isfield(thisSchemeData, 'subcell_fix_order'):
         if thisSchemeData.subcell_fix_order==0:

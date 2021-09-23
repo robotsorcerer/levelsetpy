@@ -55,16 +55,16 @@ def shapeCylinder(grid, axis_align=[], center=None, radius=1):
 
     #---------------------------------------------------------------------------
     # Signed distance function calculation.
-    data = np.zeros((grid.shape), order=ORDER_TYPE)
+    data = np.zeros((grid.shape), order=FLAGS.order_type)
     for i in range(grid.dim):
         if(i != axis_align):
             data += (grid.xs[i] - center[i])**2
-    data = np.sqrt(data, order=ORDER_TYPE) - radius;
+    data = np.sqrt(data, order=FLAGS.order_type) - radius;
 
     #---------------------------------------------------------------------------
     # Warn the user if there is no sign change on the grid
     #  (ie there will be no implicit surface to visualize).
-    if(np.all(data.flatten(order=ORDER_TYPE) < 0) or (np.all(data.flatten(order=ORDER_TYPE) > 0))):
+    if(np.all(data.flatten(order=FLAGS.order_type) < 0) or (np.all(data.flatten(order=FLAGS.order_type) > 0))):
         logger.warn(f'Implicit surface not visible because function has '
                 'single sign on grid');
     return data

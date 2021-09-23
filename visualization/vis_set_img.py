@@ -18,8 +18,8 @@ def visSetIm(data, g=None, ax=None, color='r', level=0, extraArgs=None):
     """
     ## Default parameters and input check
     if g is None:
-        N = np.asarray(size(data), order=ORDER_TYPE).T
-        g = createGrid(np.ones(data.ndim, 1, order=ORDER_TYPE), N, N)
+        N = np.asarray(size(data), order=FLAGS.order_type).T
+        g = createGrid(np.ones(data.ndim, 1, order=FLAGS.order_type), N, N)
 
     if ax is None:
         fig = plt.figure(figsize=(12,7))
@@ -45,11 +45,11 @@ def visSetIm(data, g=None, ax=None, color='r', level=0, extraArgs=None):
         title = f'2D level set'
         extraArgs.title = title
 
-    ax.contour(g.xs[0], g.xs[1], data, levels=levels, colors=color)
-    ax.set_xlabel('X', fontdict=fontdict)
-    ax.set_ylabel('Y', fontdict=fontdict)
-    ax.grid('on')
-    ax.set_title(title)
+    # ax.contour(g.xs[0], g.xs[1], data, levels=levels, colors=color)
+    # ax.set_xlabel('X', fontdict=fontdict)
+    # ax.set_ylabel('Y', fontdict=fontdict)
+    # ax.grid('on')
+    # ax.set_title(title)
 
     # save_png = False
     # if isfield(extraArgs, 'fig_filename'):
@@ -68,11 +68,10 @@ def visSetIm(data, g=None, ax=None, color='r', level=0, extraArgs=None):
       # extraArgs.ax = ax
 
       for i in range(numSets):
-        if i>1:
-            ax.cla()
-            visSetIm_single(g, data[i,...], ax, color, level, extraArgs)
-        elif i == 1:
-            visSetIm_single(g, data[i,...], ax, color, level, extraArgs)
+        visSetIm_single(g, data[i,...], ax, color, level, extraArgs)
+        plt.pause(.5)
+
+    return ax
 
 ## Visualize a single set
 def visSetIm_single(g, data, ax, color, level, extraArgs):
@@ -98,11 +97,11 @@ def visSetIm_single(g, data, ax, color, level, extraArgs):
         visSetIm4D(g, data, color, level, sliceDim, applyLight)
 
 ## 3D Visualization
-def visSetIm3D( ax, g, data, color, level=0., disp=True):
+def visSetIm3D( ax, g, data, color, level=0., disp=False):
     show3D(g, data, fc=color, level=level, disp=disp)
 
 ## 4D Visualization
-def visSetIm4D(g, data, color, level, sliceDim, disp=True):
+def visSetIm4D(g, data, color, level, sliceDim, disp=False):
     # Takes 6 slices in the dimension sliceDim and shows the 3D projections
     N = 6
     spC = 3
@@ -112,10 +111,11 @@ def visSetIm4D(g, data, color, level, sliceDim, disp=True):
         ax = fig.add_subplot(spR, spC, i, projection='3d')
         xs = g.min[sliceDim] + i/(N+1) * (g.max[sliceDim] - g.min[sliceDim])
 
-        dim = np.zeros(([4,1]), order=ORDER_TYPE)
+        dim = np.zeros(([4,1]), order=FLAGS.order_type)
         dim[sliceDim, 0] = 1
         g3D, data3D = proj(g, data, dim, xs)
 
         # Visualize 3D slices
         show3D(g3D, data3D, color, ax=ax, level=level, disp=disp)
-    plt.show()
+    if disp:
+        plt.show()

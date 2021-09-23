@@ -1,5 +1,5 @@
 import numpy as np
-from Utilities import expand, ones, ORDER_TYPE
+from Utilities import expand, ones #, FLAGS.order_type
 from .create_grid import createGrid
 from ValueFuncs import proj
 
@@ -22,7 +22,7 @@ def sepGrid(g, dims, data=np.empty((0, 0))):
     gs, ds = [], []
     #dims = [[0, 2], [1, 3]]
     for i in range(len(dims)):
-        dims_i = ones(g.dim, 1, order=ORDER_TYPE).astype(np.int64);
+        dims_i = ones(g.dim, 1, order=FLAGS.order_type).astype(np.int64);
         for j in dims[i]:
             dims_i[j, 0] = 0
         projection, dout = proj(g, data, dims_i);

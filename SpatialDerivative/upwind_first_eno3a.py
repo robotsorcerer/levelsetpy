@@ -94,7 +94,7 @@ def upwindFirstENO3a(grid, data, dim, generateAll=False):
         #   difference entries, not to left and right approximations.
 
         # Pick out minimum modulus neighboring D2 term.
-        D2abs = np.abs(DD.D2, order=ORDER_TYPE)
+        D2abs = np.abs(DD.D2, order=FLAGS.order_type)
         indices1[dim] = np.arange(size(D2abs, dim)-1, dtype=np.intp)
         indices2[dim] = indices1[dim] + 1
         # print(f'indices1[dim]: {len(indices1[dim])} indices2[dim]: {len(indices2[dim])}')
@@ -106,7 +106,7 @@ def upwindFirstENO3a(grid, data, dim, generateAll=False):
         #---------------------------------------------------------------------------
         # Figure out smallest modulus D3 terms,
         #   given choice of smallest modulus D2 terms above.
-        D3abs = np.abs(DD.D3, order=ORDER_TYPE)
+        D3abs = np.abs(DD.D3, order=FLAGS.order_type)
         indices1[dim] = index_array(1,size(D3abs, dim)-1)
         indices2[dim] = indices1[dim] + 1
         smallerTemp = (D3abs[np.ix_(*indices1)] < D3abs[np.ix_(*indices2)])

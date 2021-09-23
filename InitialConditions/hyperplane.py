@@ -55,7 +55,7 @@ def shapeHyperplane(grid, normal, point):
     #---------------------------------------------------------------------------
     # Warn the user if there is no sign change on the grid
     #  (ie there will be no implicit surface to visualize).
-    if(np.all(data.flatten(order=ORDER_TYPE) < 0) or (np.all(data.flatten(order=ORDER_TYPE) > 0))):
+    if(np.all(data.flatten(order=FLAGS.order_type) < 0) or (np.all(data.flatten(order=FLAGS.order_type) > 0))):
         logger.warn(f'Implicit surface not visible because function has '
                 'single sign on grid')
 

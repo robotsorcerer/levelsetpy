@@ -106,27 +106,27 @@ def  termForcing(t, y, schemeData):
                 data = cell(numY, 1)
                 for i in range(numY):
                     if(iscell(schemeData)):
-                        data[i] = y[i].reshape(schemeData[i].grid.shape, order=ORDER_TYPE)
+                        data[i] = y[i].reshape(schemeData[i].grid.shape, order=FLAGS.order_type)
                     else:
-                        data[i] = y[i].reshape(schemeData.grid.shape, order=ORDER_TYPE)
+                        data[i] = y[i].reshape(schemeData.grid.shape, order=FLAGS.order_type)
 
                 forcing = thisSchemeData.forcing(t, data, schemeData)
 
             else:
                 # Ignore any vector level set.
-                data = y[0].reshape(thisSchemeData.grid.shape, order=ORDER_TYPE)
+                data = y[0].reshape(thisSchemeData.grid.shape, order=FLAGS.order_type)
                 forcing = thisSchemeData.forcing(t, data, thisSchemeData)
 
         else:
             # There is no vector level set.
-            data = y.reshape(thisSchemeData.grid.shape, order=ORDER_TYPE)
+            data = y.reshape(thisSchemeData.grid.shape, order=FLAGS.order_type)
             forcing = thisSchemeData.forcing(t, data, thisSchemeData)
 
     else:
         error('schemeData.forcing must be a scalar, array or function handle')
     #---------------------------------------------------------------------------
     # Compute the update (including negation for RHS of ODE).
-    ydot = expand(-forcing.flatten(order=ORDER_TYPE), 1)
+    ydot = expand(-forcing.flatten(order=FLAGS.order_type), 1)
 
     # No derivative, so no timestep limit.
     stepBound = np.inf

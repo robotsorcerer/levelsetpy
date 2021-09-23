@@ -33,7 +33,6 @@ def proj(g, data, dimsToRemove, xs=None, NOut=None, process=True):
                             gOut    - grid corresponding to projected data
                             dataOut - projected data
     """
-    # print(f'dimsToRemove: {dimsToRemove} {dimsToRemove.shape}')
     # Input checking
     if len(dimsToRemove) != g.dim:
         logger.fatal('Dimensions are inconsistent!')
@@ -57,7 +56,6 @@ def proj(g, data, dimsToRemove, xs=None, NOut=None, process=True):
         NOut = g.N[np.logical_not(dimsToRemove)]
         if NOut.ndim < 2:
             NOut = expand(NOut, 1)
-    # print(f'NOut: {NOut} {NOut.shape}')
     dataDims = data.ndim
     if np.any(data) and np.logical_not(dataDims == g.dim or dataDims == g.dim+1) \
         and not isinstance(data, list):
@@ -140,20 +138,19 @@ def projSingle(g, data, dims, xs, NOut, process):
         ming = g.min[np.logical_not(dims)]
         maxg = g.max[np.logical_not(dims)]
         bdrg = np.asarray(g.bdry)[np.logical_not(dims)]
-        # print('bdrg: ', bdrg)
+
         gOut.min = ming if ming.ndim==2 else expand(ming, 1)
         gOut.max = maxg if maxg.ndim==2 else expand(maxg, 1)
         gOut.bdry = bdrg if bdrg.ndim==2 else expand(bdrg, 1)
 
         if numel(NOut) == 1:
-            gOut.N = NOut*ones(gOut.dim, 1, order=ORDER_TYPE).astype(np.int64)
+            gOut.N = NOut*ones(gOut.dim, 1, order=FLAGS.order_type).astype(np.int64)
         else:
             gOut.N = NOut
 
 
         if process:
             gOut = processGrid(gOut)
-        # print( 'g.vs aft proc', [x.shape for x in gOut.vs])
 
         # Only compute the grid if value function is not requested
         if not np.any(data) or data is None:
@@ -164,7 +161,6 @@ def projSingle(g, data, dims, xs, NOut, process):
         dimsToProj = np.nonzero(dims)[0]
 
         for i in range(len(dimsToProj)-1, -1, -1):
-            # print('dara: ', data.shape, dimsToProj, xs)
             if xs=='min':
                 data = np.amin(data, axis=dimsToProj[i])
             elif xs=='max':
@@ -180,7 +176,7 @@ def projSingle(g, data, dims, xs, NOut, process):
 
     eval_pt = cell(g.dim, 1)
     xsi = 0
-    # print(f'xs: {xs}')
+
     for i in range(g.dim):
         if dims[i]:
             # If this dimension is periodic, wrap the input point to the correct period
@@ -190,7 +186,7 @@ def projSingle(g, data, dims, xs, NOut, process):
                     xs[xsi] -= period
                 while xs[xsi] < min(g.vs[i]):
                     xs[xsi] += period
-            eval_pt[i] = np.asarray([xs[xsi]], order=ORDER_TYPE)
+            eval_pt[i] = np.asarray([xs[xsi]], order=FLAGS.order_type)
             xsi += 1
         else:
             eval_pt[i] = g.vs[i].squeeze()
@@ -199,15 +195,15 @@ def projSingle(g, data, dims, xs, NOut, process):
     data_coords = tuple([x.squeeze() for x in g.vs])
     interp_func = RegularGridInterpolator(data_coords, data)
     points = np.meshgrid(*eval_pt, indexing='ij')
-    flat = np.array([m.flatten(order='f') for m in points], order=ORDER_TYPE)
-    temp = interp_func(flat.T).reshape(*points[0].shape, order=ORDER_TYPE)
+    flat = np.array([m.flatten(order='f') for m in points], order=FLAGS.order_type)
+    temp = interp_func(flat.T).reshape(*points[0].shape, order=FLAGS.order_type)
 
     dataOut = copy.copy(temp.squeeze())
     temp = np.asarray(g.vs, dtype=np.object)[np.logical_not(dims)]
     data_coords = tuple([x.squeeze() for x in temp])
     interp_func = RegularGridInterpolator(data_coords, dataOut)
 
-    flat = np.array([m.flatten(order=ORDER_TYPE) for m in gOut.xs])
-    dataOut = interp_func(flat.T).reshape(*gOut.xs[0].shape, order=ORDER_TYPE)
+    flat = np.array([m.flatten(order=FLAGS.order_type) for m in gOut.xs])
+    dataOut = interp_func(flat.T).reshape(*gOut.xs[0].shape, order=FLAGS.order_type)
 
     return gOut, dataOut

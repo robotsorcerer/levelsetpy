@@ -38,7 +38,7 @@ def HJI_PDE_Solver(data0, tau, schemeData, extraArgs):
     g = schemeData.grid
     # print(f'data0size: {data0size}, g.dim: {g.dim}')
     if data0.ndim == g.dim:
-        data = np.zeros((data0size[0:g.dim] +(len(tau), )), dtype=np.float64, order=ORDER_TYPE)
+        data = np.zeros((data0size[0:g.dim] +(len(tau), )), dtype=np.float64, order=FLAGS.order_type)
         # print(f'data: {data.shape}, tau: {len(tau)}, datao: {data0.shape}')
         data[:,:,:, 0] = data0
 
@@ -78,7 +78,7 @@ def HJI_PDE_Solver(data0, tau, schemeData, extraArgs):
             y0 = data[:,:,:,i-1]
         # print(f'data: {data.shape}, data[:,:,:,{i-1}]: {data[:,:,:,i-1].shape}, y0: {y0.shape}')
 
-        y = expand(y0.flatten(order=ORDER_TYPE), 1)
+        y = expand(y0.flatten(order=FLAGS.order_type), 1)
         # print(f'y: {y.shape},  y0: {y0.shape}')
 
         tNow = tau[i-1]
@@ -112,14 +112,14 @@ def HJI_PDE_Solver(data0, tau, schemeData, extraArgs):
                     target_i = targets[i,...]
 
         # Reshape value function
-        data_i = y.reshape(g.shape, order=ORDER_TYPE))
+        data_i = y.reshape(g.shape, order=FLAGS.order_type))
         if keepLast:
             data = data_i
         elif lowMemory:
             if flipOutput:
-                data = np.concatenate((y.reshape(g.shape, order=ORDER_TYPE), data), g.dim+1)
+                data = np.concatenate((y.reshape(g.shape, order=FLAGS.order_type), data), g.dim+1)
             else:
-                data = np.concatenate((data, y.reshape(g.shape, order=ORDER_TYPE)), g.dim+1)
+                data = np.concatenate((data, y.reshape(g.shape, order=FLAGS.order_type)), g.dim+1)
         else:
             # print(f'data_i: {data_i.shape}, data: {data.shape}')
             # I = [slice(None)]*data.ndim; I[-1] = i
@@ -131,15 +131,15 @@ def HJI_PDE_Solver(data0, tau, schemeData, extraArgs):
         if stopConverge:
             if  isfield(extraArgs,'ignoreBoundary')  and extraArgs.ignoreBoundary:
                 _ , dataNew = truncateGrid(g, data_i, g.min+4*g.dx, g.max-4*g.dx)
-                change = np.max(np.abs(dataNew.flatten(order=ORDER_TYPE)- \
-                            dataTrimmed.flatten(order=ORDER_TYPE), order=ORDER_TYPE))
+                change = np.max(np.abs(dataNew.flatten(order=FLAGS.order_type)- \
+                            dataTrimmed.flatten(order=FLAGS.order_type), order=FLAGS.order_type))
                 dataTrimmed = dataNew
                 if not quiet:
                     info(f'Max change since last iteration: {change}')
 
             else:
                 # check this
-                change = np.max(np.abs(y - expand(y0.flatten(order=ORDER_TYPE)), 1)))
+                change = np.max(np.abs(y - expand(y0.flatten(order=FLAGS.order_type)), 1)))
                 if not quiet:
                     info(f'Max change since last iteration: {change}')
 

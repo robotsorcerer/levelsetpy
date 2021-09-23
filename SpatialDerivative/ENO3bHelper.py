@@ -45,7 +45,7 @@ def upwindFirstENO3bHelper(grid, gdata, dim, direction):
      Ian Mitchell, 1/23/03
      Lekan on August 16, 2021
     """
-    dxInv = np.divide(1, grid.dx(dim), order=ORDER_TYPE)
+    dxInv = np.divide(1, grid.dx(dim), order=FLAGS.order_type)
 
     # How big is the stencil?
     stencil = 3

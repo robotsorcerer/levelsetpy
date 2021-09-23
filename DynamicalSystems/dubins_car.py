@@ -16,7 +16,7 @@ class DubinsCar(DynSys):
         self.x = x
         # Angle bounds
         if wRange is None:
-            self.wRange = np.array([[-1, 1]], order=ORDER_TYPE).T
+            self.wRange = np.array([[-1, 1]], order=FLAGS.order_type).T
         elif numel(wRange) == 2:
             self.wRange = wRange
         else:
@@ -26,7 +26,7 @@ class DubinsCar(DynSys):
 
         # Disturbance
         if dRange is None:
-            self.dRange = np.zeros((2, 3), order=ORDER_TYPE)
+            self.dRange = np.zeros((2, 3), order=FLAGS.order_type)
         elif np.any(dRange.shape)==1:
             # make it 2 x 3 by stacking
             self.dRange = np.vstack([-dRange, dRange])
@@ -52,18 +52,16 @@ class DubinsCar(DynSys):
         # time.sleep(5)
         # debug(f'x: {x}')
         if not d:
-            d = np.zeros((3,1), order=ORDER_TYPE)
+            d = np.zeros((3,1), order=FLAGS.order_type)
         if iscell(x):
             dx = cell(len(self.dims), 1)
             for i in range(len(self.dims)):
                 dx[i] = self.dynamics_helper(x, u, d, self.dims, self.dims[i])
         else:
-            dx = np.zeros((self.nx, 1), dtype=np.float64, order=ORDER_TYPE)
-            # print(f'dx in dyna: {dx.shape}, x: {x.shape}, d: {d.shape}')
+            dx = np.zeros((self.nx, 1), dtype=np.float64, order=FLAGS.order_type)
             dx[0] = self.speed * np.cos(x[2]) + d[0]
             dx[1] = self.speed * np.sin(x[2]) + d[1]
             dx[2] = u + d[2]
-            # info(f'dx in dynamics return: {[x.shape for x in dx]}')
         return dx
 
     def dynamics_RK45(self, t, x):
@@ -75,13 +73,13 @@ class DubinsCar(DynSys):
         #   Control: u = w;
         """
         if not self.d:
-            self.d = np.zeros((3,1), order=ORDER_TYPE)
+            self.d = np.zeros((3,1), order=FLAGS.order_type)
         if iscell(x):
             dx = cell(len(self.dims), 1)
             for i in range(len(self.dims)):
                 dx[i] = self.dynamics_helper(x, self.u, self.d, self.dims, self.dims[i])
         else:
-            dx = np.zeros((self.nx, 1), dtype=np.float64, order=ORDER_TYPE)
+            dx = np.zeros((self.nx, 1), dtype=np.float64, order=FLAGS.order_type)
             # print(f'x: {x.shape}, d: {self.d}')
             if x.ndim>1 and x.shape[-1]==3:
                 x = expand(x[-1, ...], 1)
@@ -185,13 +183,13 @@ class DubinsCar(DynSys):
             x = self.integrate_dynamics([0, T], x0, u, [])
         else:
             x = self.integrate_dynamics([0, T], x0, u, d)
-        x1 = np.asarray(x, order=ORDER_TYPE)
+        x1 = np.asarray(x, order=FLAGS.order_type)
         """
         self.u, self.d = u, d
         x = solve_ivp(self.dynamics_RK45, [0, T], x0, method='RK45') #, , u, [])
         # x = RK45(self.dynamics_RK45, 0, x0.squeeze(), T, vectorized=True) #, , u, [])
         print('x.t.shape, x.y.shape ', x.t.shape, x.y.shape)
-        x1 = np.asarray(expand(x.y[...,-1], 1), order=ORDER_TYPE)
+        x1 = np.asarray(expand(x.y[...,-1], 1), order=FLAGS.order_type)
         """
         self.x = x1
         self.u = u
@@ -203,12 +201,12 @@ class DubinsCar(DynSys):
 
         M = 40 # RK4 steps per interval
         h = tspan[1]/100/M # time step very important
-        X = np.asarray(x, order=ORDER_TYPE)
-        U = np.asarray(u, order=ORDER_TYPE)
-        V = np.asarray(v, order=ORDER_TYPE)
+        X = np.asarray(x, order=FLAGS.order_type)
+        U = np.asarray(u, order=FLAGS.order_type)
+        V = np.asarray(v, order=FLAGS.order_type)
 
         num= (tspan[1] - tspan[0])*M
-        
+
         for _ in range(M):
             k1 = self.dynamics(None, X, U, V)
             k2 = self.dynamics(None, X + h/2 * k1, U, V)

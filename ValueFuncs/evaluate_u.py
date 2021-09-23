@@ -42,16 +42,14 @@ def eval_u(gs, datas, xs, interp_method='linear'):
 		# Option 2
 		v = [np.nan for i in range(len(datas))]
 		for i in range(len(datas)):
-			# print(f'gs[{i}]: {gs.shape}')
 			v[i] = eval_u_single(gs, datas[i], xs, interp_method)
-			# print(f'gs[{i}] aft: {gs.shape}')
-		v = np.asarray(v, order=ORDER_TYPE)
+		v = np.asarray(v, order=FLAGS.order_type)
 	elif iscell(gs) and iscell(datas) and iscell(xs):
 		# Option 3
 		v = cell(len(gs), 1)
 		for i in range(len(gs)):
 			v[i] = eval_u_single(gs[i], datas[i], xs[i], interp_method)
-		v = np.asarray(v, order=ORDER_TYPE)
+		v = np.asarray(v, order=FLAGS.order_type)
 	else:
 		error('Unrecognized combination of input data types!')
 
@@ -99,16 +97,12 @@ def  eval_u_single(g, data, x, interp_method):
 
 	# Interpolate
 	data_tup = [x.squeeze() for x in g.vs]
-	# print(f'in eval data_tup: {[x.shape for x in data_tup]} data: {data.shape} dataOld: {dataOld.shape}')
-	# print(f'in eval geval: {[x.shape for x in geval.vs]}')
 	interp_func = RegularGridInterpolator(data_tup, data)
 	if len(x)==len(g.vs):
 		eval_pts = x.squeeze()
 	else:
 		eval_pts = [xx.squeeze() for xx in [x]*len(g.vs)]
 
-	# print(f'eval_pts: {[x.shape for x in eval_pts]}')
 	v = interp_func(eval_pts)
 
-	# print(f'v: {v}')
 	return v.take(0)

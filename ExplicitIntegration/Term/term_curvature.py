@@ -98,9 +98,9 @@ def termCurvature(t, y, schemeData):
     grid = thisSchemeData.grid
 
     if(iscell(y)):
-        data = y[0].reshape(grid.shape, order=ORDER_TYPE)
+        data = y[0].reshape(grid.shape, order=FLAGS.order_type)
     else:
-        data = y.reshape(grid.shape, order=ORDER_TYPE)
+        data = y.reshape(grid.shape, order=FLAGS.order_type)
 
     # Get multiplier
     if(isfloat(thisSchemeData.b, 'double')):
@@ -115,9 +115,9 @@ def termCurvature(t, y, schemeData):
                 dataV = cell(numY, 1)
                 for i in range(numY):
                     if(iscell(schemeData)):
-                        dataV[i] = y[i].reshape(schemeData[i].grid.shape, order=ORDER_TYPE)
+                        dataV[i] = y[i].reshape(schemeData[i].grid.shape, order=FLAGS.order_type)
                     else:
-                        dataV[i] = y[i].reshape(schemeData.grid.shape, order=ORDER_TYPE)
+                        dataV[i] = y[i].reshape(schemeData.grid.shape, order=FLAGS.order_type)
 
                 b = thisSchemeData.b(t, dataV, schemeData)
 
@@ -140,6 +140,6 @@ def termCurvature(t, y, schemeData):
     stepBound = 1 / (2 * np.max(b) * np.sum(grid.dx ** -2))
 
     # Reshape output into vector format and negate for RHS of ODE.
-    ydot = expand(-delta.flatten(order=ORDER_TYPE), 1)
+    ydot = expand(-delta.flatten(order=FLAGS.order_type), 1)
 
     return ydot, stepBound, schemeData

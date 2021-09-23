@@ -136,20 +136,20 @@ def processGrid(gridIn, data=None, sparse_flag=False):
     if(isfield(gridOut, 'min')):
         if(not isColumnLength(gridOut.min, gridOut.dim)):
             if(isscalar(gridOut.min)):
-                gridOut.min = gridOut.min * np.ones((gridOut.dim, 1), order=ORDER_TYPE)
+                gridOut.min = gridOut.min * np.ones((gridOut.dim, 1), order=FLAGS.order_type)
             else:
                 error('min field is not column vector of length dim or a scalar');
     else:
-        gridOut.min = defaultMin * np.ones((gridOut.dim, 1), order=ORDER_TYPE)
+        gridOut.min = defaultMin * np.ones((gridOut.dim, 1), order=FLAGS.order_type)
 
     if(isfield(gridOut, 'max')):
         if(not isColumnLength(gridOut.max, gridOut.dim)):
             if(isscalar(gridOut.max)):
-                gridOut.max = gridOut.max * np.ones((gridOut.dim, 1), order=ORDER_TYPE)
+                gridOut.max = gridOut.max * np.ones((gridOut.dim, 1), order=FLAGS.order_type)
             else:
                 error('max field is not column vector of length dim or a scalar');
     else:
-        gridOut.max = defaultMin * np.ones((gridOut.dim, 1), order=ORDER_TYPE)
+        gridOut.max = defaultMin * np.ones((gridOut.dim, 1), order=FLAGS.order_type)
 
     if(np.any(gridOut.max <= gridOut.min)):
         error('max bound must be strictly greater than min bound in all dimensions');
@@ -161,7 +161,7 @@ def processGrid(gridIn, data=None, sparse_flag=False):
             error('number of grid cells must be strictly positive');
         if(not isColumnLength(gridOut.N, gridOut.dim)):
             if(isscalar(gridOut.N)):
-                gridOut.N *= np.ones((gridOut.dim, 1), order=ORDER_TYPE).astype(np.int64);
+                gridOut.N *= np.ones((gridOut.dim, 1), order=FLAGS.order_type).astype(np.int64);
             else:
                 error('N field is not column vector of length dim or a scalar');
 
@@ -173,7 +173,7 @@ def processGrid(gridIn, data=None, sparse_flag=False):
             error('grid cell size dx must be strictly positive');
         if(not isColumnLength(gridOut.dx, gridOut.dim)):
             if(isscalar(gridOut.dx)):
-                gridOut.dx *= ones(gridOut.dim, 1, order=ORDER_TYPE)
+                gridOut.dx *= ones(gridOut.dim, 1, order=FLAGS.order_type)
         else:
             error('dx field is not column vector of length dim or a scalar');
     elif isfield(gridOut, 'N'):
@@ -182,7 +182,7 @@ def processGrid(gridIn, data=None, sparse_flag=False):
     else:
         logger.warn('Neither fields dx nor dN is present, so use default N and infer dx')
         gridOut.N = defaultN * ones(gridOut.dim, 1).astype(np.int64);
-        gridOut.dx = np.divide((gridOut.max - gridOut.min), (gridOut.N), order=ORDER_TYPE)
+        gridOut.dx = np.divide((gridOut.max - gridOut.min), (gridOut.N), order=FLAGS.order_type)
 
     if isfield(gridOut, 'vs'):
         if(iscell(gridOut.vs)):
@@ -207,7 +207,7 @@ def processGrid(gridIn, data=None, sparse_flag=False):
             if(gridOut.N[i] != len(gridOut.vs[i])):
                 error(f'Inconsistent grid size in dimension {i}');
     else:
-        gridOut.N = zeros(gridOut.dim, 1, order=ORDER_TYPE)
+        gridOut.N = zeros(gridOut.dim, 1, order=FLAGS.order_type)
 
     for i in range(gridOut.dim):
         gridOut.N[i] = len(gridOut.vs[i])
@@ -242,7 +242,7 @@ def processGrid(gridIn, data=None, sparse_flag=False):
             else:
                 error('bdry field is not a cell vector or a scalar');
     else:
-        gridOut.bdry = np.zeros((gridOut.dim, 1), order=ORDER_TYPE).fill(defaultBdry)
+        gridOut.bdry = np.zeros((gridOut.dim, 1), order=FLAGS.order_type).fill(defaultBdry)
 
     if(isfield(gridOut,'bdryData')):
         if(iscell(gridOut.bdryData)):

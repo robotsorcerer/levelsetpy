@@ -91,9 +91,9 @@ def termTraceHessian(t, y, schemeData):
     grid = thisSchemeData.grid
 
     if(iscell(y)):
-        data = y[0].reshape(grid.shape, order=ORDER_TYPE)
+        data = y[0].reshape(grid.shape, order=FLAGS.order_type)
     else:
-        data = y.reshape(grid.shape, order=ORDER_TYPE)
+        data = y.reshape(grid.shape, order=FLAGS.order_type)
 
     # Get matrices.
     L = getMatrix(t, data, thisSchemeData, thisSchemeData.L)
@@ -115,12 +115,12 @@ def termTraceHessian(t, y, schemeData):
     D = [1 / (grid.dx * grid.dx.T)]
     timeStepMatrix = cellMatrixMultiply(cellMatrixMultiply(L, D), R)
     timeStepTrace = cellMatrixTrace(timeStepMatrix)
-    stepBound = 1 / (2 * np.max(np.abs(timeStepTrace.flatten(order=ORDER_TYPE))))
+    stepBound = 1 / (2 * np.max(np.abs(timeStepTrace.flatten(order=FLAGS.order_type))))
 
     # Reshape output into vector format.
     #   We do not need to negate for RHS of ODE: since we skipped the
     #   negation in the trace step above.
-    ydot = update.flatten(order=ORDER_TYPE)
+    ydot = update.flatten(order=FLAGS.order_type)
 
     return ydot, stepBound, schemeData
 

@@ -46,3 +46,5 @@ def show3D(g=None, mesh=None, winsize=(16, 9), title='Zero Level Set', ax=None, 
                     bbox_inches='tight',facecolor='None')
     if disp:
         plt.show()
+
+    return ax

@@ -8,6 +8,21 @@ The [Tests](/Tests) folder contains examples of running basic tests. For example
 
 `python Tests/test_grids.py`
 
+### Tutorial
+
+```
+python .\tutorial.py --verbose
+```
+
+CMD argument options can be passed as
+
+```
++ verbose: False/True. How much debug info to print?
++ visualize: True, 'Show plots?'
++ pause_time: .1, 'Time to pause between updating the plots during HJ Optimization'
++ order_type: 'F', 'Use Fortran-order ('F')  or C-order ('C') for array indexing and memory storage.'
++ hj_progress, False, 'Display optimization progress'
+```
 
 ### TODO's
 

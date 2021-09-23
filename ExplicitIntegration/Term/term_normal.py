@@ -95,9 +95,9 @@ def termNormal(t, y, schemeData):
 
     #For most cases, we are interested in the first implicit surface function.
     if(iscell(y)):
-        data = y[0].reshape(grid.shape, order=ORDER_TYPE)
+        data = y[0].reshape(grid.shape, order=FLAGS.order_type)
     else:
-        data = y.reshape(grid.shape, order=ORDER_TYPE)
+        data = y.reshape(grid.shape, order=FLAGS.order_type)
 
     #Get speed field.
     if(isfloat(thisSchemeData.forcing)):
@@ -112,9 +112,9 @@ def termNormal(t, y, schemeData):
                 data = cell(numY, 1)
                 for i in range(numY):
                     if(iscell(schemeData)):
-                        data[i] = y[i].reshape(schemeData[i].grid.shape, order=ORDER_TYPE)
+                        data[i] = y[i].reshape(schemeData[i].grid.shape, order=FLAGS.order_type)
                     else:
-                        data[i] = y[i].reshape(schemeData.grid.shape, order=ORDER_TYPE)
+                        data[i] = y[i].reshape(schemeData.grid.shape, order=FLAGS.order_type)
 
                 speed = thisSchemeData.speed(t, dataV, schemeData)
 
@@ -174,6 +174,6 @@ def termNormal(t, y, schemeData):
     stepBound = 1 / np.max(stepBoundInvNonZero)
 
     # Reshape output into vector format and negate for RHS of ODE.
-    ydot = expand(-delta.flatten(order=ORDER_TYPE), 1)
+    ydot = expand(-delta.flatten(order=FLAGS.order_type), 1)
 
     return ydot, stepBound, schemeData

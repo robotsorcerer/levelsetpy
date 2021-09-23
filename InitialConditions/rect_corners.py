@@ -60,13 +60,13 @@ def shapeRectangleByCorners(grid, lower=None, upper=None):
     #   the resulting intersection is not quite a signed distance function.
     data = np.maximum(grid.xs[0] - upper[0], lower[0] - grid.xs[0]);
     for i in range(1, grid.dim):
-        data = np.maximum(data, grid.xs[i] - upper[i], order=ORDER_TYPE)
-        data = np.maximum(data, lower[i] - grid.xs[i], order=ORDER_TYPE)
+        data = np.maximum(data, grid.xs[i] - upper[i], order=FLAGS.order_type)
+        data = np.maximum(data, lower[i] - grid.xs[i], order=FLAGS.order_type)
 
     #---------------------------------------------------------------------------
     # Warn the user if there is no sign change on the grid
     #  (ie there will be no implicit surface to visualize).
-    if(np.all(data.flatten(order=ORDER_TYPE) < 0) or (np.all(data.flatten(order=ORDER_TYPE) > 0))):
+    if(np.all(data.flatten(order=FLAGS.order_type) < 0) or (np.all(data.flatten(order=FLAGS.order_type) > 0))):
         logger.warn(f'Implicit surface not visible because function has '
                 'single sign on grid')
 

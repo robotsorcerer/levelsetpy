@@ -3,13 +3,16 @@ import logging
 import time
 import sys, copy
 
+from absl import flags
+FLAGS = flags.FLAGS
+
 logger = logging.getLogger(__name__)
 
 # DEFAULT TYPES
 ZEROS_TYPE = np.int64
 ONES_TYPE = np.int64
 eps = sys.float_info.epsilon
-ORDER_TYPE = 'C' # Use C for default C order
+# FLAGS.order_type = FLAGS.order #'F' or C for default C order
 
 class Bundle(object):
     def __init__(self, dicko):
@@ -58,9 +61,9 @@ def omin(y, ylast):
         temp = np.vstack((y, ylast))
         return np.min(temp)
     else: #if numDims(ylast.ndim)>1:
-        ylast = expand(ylast.flatten(order=ORDER_TYPE), 1)
+        ylast = expand(ylast.flatten(order=FLAGS.order_type), 1)
         if y.shape[-1]!=1:
-            y = expand(y.flatten(order=ORDER_TYPE), 1)
+            y = expand(y.flatten(order=FLAGS.order_type), 1)
         temp = np.vstack((y, ylast))
     return np.min(temp) #min(np.insert(ylast, 0, y))
 
@@ -69,9 +72,9 @@ def omax(y, ylast):
         temp = np.vstack((y, ylast))
         return np.max(temp)
     else: # if numDims(ylast)>1:
-        ylast = expand(ylast.flatten(order=ORDER_TYPE), 1)
+        ylast = expand(ylast.flatten(order=FLAGS.order_type), 1)
         if y.shape[-1]!=1:
-            y = expand(y.flatten(order=ORDER_TYPE), 1)
+            y = expand(y.flatten(order=FLAGS.order_type), 1)
         temp = np.vstack((y, ylast))
     return np.max(temp) #max(np.insert(ylast, 0, y))
 
@@ -114,7 +117,7 @@ def length(A):
 
 def size(A, dim=None):
     if isinstance(A, list):
-        A = np.asarray(A, order=ORDER_TYPE)
+        A = np.asarray(A, order=FLAGS.order_type)
     if dim is not None:
         return A.shape[dim]
     return A.shape
@@ -128,25 +131,27 @@ def to_column_mat(A):
 
 def numel(A):
     if isinstance(A, list):
-        A = np.asarray(A, order=ORDER_TYPE)
+        A = np.asarray(A, order=FLAGS.order_type)
     return np.size(A)
 
 def numDims(A):
     if isinstance(A, list):
-        A = np.asarray(A, order=ORDER_TYPE)
+        A = np.asarray(A, order=FLAGS.order_type)
     return A.ndim
 
 def expand(x, ax):
     return np.expand_dims(x, ax)
 
-def ones(rows, cols=None, dtype=ONES_TYPE, order=ORDER_TYPE):
+def ones(rows, cols=None, dtype=ONES_TYPE, order=None):
     if cols is not None:
         shape = (rows, cols)
     else:
         shape = (rows, rows)
+    if order is None:
+        order = FLAGS.order_type
     return np.ones(shape, dtype=dtype, order=order)
 
-def zeros(rows, cols=None, dtype=ZEROS_TYPE, order=ORDER_TYPE):
+def zeros(rows, cols=None, dtype=ZEROS_TYPE, order=None):
     if cols is not None:
         shape = (rows, cols)
     else:
@@ -154,6 +159,8 @@ def zeros(rows, cols=None, dtype=ZEROS_TYPE, order=ORDER_TYPE):
             shape = rows
         else:
             shape = (rows, rows)
+        if order is None:
+            order = FLAGS.order_type
     return np.zeros(shape, dtype=dtype, order=order)
 
 def ndims(x):
@@ -169,7 +176,7 @@ def isvector(x):
 
 def isColumnLength(x1, x2):
     if isinstance(x1, list):
-        x1 = np.expand_dims(np.asarray(x1,order=ORDER_TYPE), 1)
+        x1 = np.expand_dims(np.asarray(x1,order=FLAGS.order_type), 1)
     return ((ndims(x1) == 2) and (x1.shape[0] == x2) and (x1.shape[1] == 1))
 
 def cell(grid_len, dim=1):
