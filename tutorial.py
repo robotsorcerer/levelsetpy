@@ -27,8 +27,6 @@ FLAGS(sys.argv) # we need to explicitly to tell flags library to parse argv befo
 
 import logging
 
-# print('order_type ', FLAGS.order_type)
-
 if FLAGS.verbose:
 	logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 else:

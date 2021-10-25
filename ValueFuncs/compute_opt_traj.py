@@ -73,6 +73,7 @@ def computeOptTraj(g, data, tau, dynSys, extraArgs=Bundle({})):
 	tEarliest = 0
 
 	if visualize:
+		# https://matplotlib.org/stable/users/interactive.html
 		f = plt.figure(figsize=(12, 7))
 		# ax = f.add_subplot(1, 2, 1)
 		# ax2 = f.add_subplot(1, 2, 2)

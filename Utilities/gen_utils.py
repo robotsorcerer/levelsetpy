@@ -174,9 +174,11 @@ def isvector(x):
     else:
         return False
 
-def isColumnLength(x1, x2):
+def isColumnLength(x1, x2, order=None):
+    if order is None:
+        order = FLAGS.order_type
     if isinstance(x1, list):
-        x1 = np.expand_dims(np.asarray(x1,order=FLAGS.order_type), 1)
+        x1 = np.expand_dims(np.asarray(x1,order=order), 1)
     return ((ndims(x1) == 2) and (x1.shape[0] == x2) and (x1.shape[1] == 1))
 
 def cell(grid_len, dim=1):

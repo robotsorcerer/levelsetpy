@@ -25,7 +25,7 @@ def HJIPDE_solve(data0, tau, schemeData, compMethod, extraArgs):
 
 		Note: Real action starts on line 693
 
-	 ----- How to use this function -----
+	 + How to use this function
 
 	 Inputs:
 	   data0           - initial value function
