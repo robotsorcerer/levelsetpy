@@ -17,7 +17,7 @@ function initialConditionsTest1D()
 %
 % Ian Mitchell, 6/23/04
 
-run('../addPathToKernel');
+%run('../addPathToKernel');
 
 %---------------------------------------------------------------------------
 % Standard output file id.

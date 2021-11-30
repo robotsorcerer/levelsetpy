@@ -3,14 +3,14 @@ function data = shapeRectangleByCorners(grid, lower, upper)
 %
 %   data = shapeRectangleByCorners(grid, lower, upper)
 %
-% Creates an implicit surface function (close to signed distance) 
+% Creates an implicit surface function (close to signed distance)
 %   for a coordinate axis aligned (hyper)rectangle specified by its
 %   lower and upper corners.
 %
-% Can be used to create intervals, slabs and other unbounded shapes 
+% Can be used to create intervals, slabs and other unbounded shapes
 %   by choosing components of the corners as +-Inf.
 %
-% The default parameters for shapeRectangleByCenter and 
+% The default parameters for shapeRectangleByCenter and
 %   shapeRectangleByCorners produce different rectangles.
 %
 % Input Parameters:
@@ -32,8 +32,8 @@ function data = shapeRectangleByCorners(grid, lower, upper)
 %   surface function.
 
 % Copyright 2004 Ian M. Mitchell (mitchell@cs.ubc.ca).
-% This software is used, copied and distributed under the licensing 
-%   agreement contained in the file LICENSE in the top directory of 
+% This software is used, copied and distributed under the licensing
+%   agreement contained in the file LICENSE in the top directory of
 %   the distribution.
 %
 % Ian Mitchell, 6/23/04

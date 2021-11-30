@@ -10,14 +10,14 @@
 %
 % Ian Mitchell, 1/13/04
 
-run('../addPathToKernel');
+%run('../addPathToKernel');
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 % Which one of the routines would you like to test? (comment out the rest)
-which = 'periodic';
-%which = 'extrapolate';
-%which = 'dirichlet';
-%which = 'neumann';
+% which = 'periodic';
+% which = 'extrapolate';
+% which = 'dirichlet';
+% which = 'neumann';
 
 % In how many dimensions?
 dims = 2;

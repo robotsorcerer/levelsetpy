@@ -58,8 +58,8 @@ function options = odeCFLset(varargin)
 %                 Defaults to [], which calls no function.
 
 % Copyright 2005-2008 Ian M. Mitchell (mitchell@cs.ubc.ca).
-% This software is used, copied and distributed under the licensing 
-%   agreement contained in the file LICENSE in the top directory of 
+% This software is used, copied and distributed under the licensing
+%   agreement contained in the file LICENSE in the top directory of
 %   the distribution.
 %
 % Created by Ian Mitchell, 2/6/04
@@ -79,7 +79,7 @@ function options = odeCFLset(varargin)
       fprintf('\n');
       return;
   end
-  
+
   %---------------------------------------------------------------------------
   % First input argument is an old options structure
   if((nargin > 0) && isstruct(varargin{1}))
@@ -95,7 +95,7 @@ function options = odeCFLset(varargin)
     options.terminalEvent = [];
     startArg = 1;
   end
-  
+
   %---------------------------------------------------------------------------
   % Loop through remaining name value pairs
   for i = startArg : 2 : nargin

@@ -59,7 +59,7 @@ function [ mttr, attr, data, gridOut, data0 ] = ...
 
 %---------------------------------------------------------------------------
 % Make sure we can see the kernel m-files.
-run('../addPathToKernel');
+run('helperOC\setup.m');
 
 %---------------------------------------------------------------------------
 % Integration parameters.

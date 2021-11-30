@@ -83,6 +83,8 @@ function [ diss, stepBound ] = ...
     derivMaxR = max(derivR{i}(:));
     derivMax{i} = max(derivMaxL, derivMaxR);
     
+    %fprintf("\ni: %g, derivMinL: %.8f derivMaxL: %.8f, derivMinR: %.8f derivMaxR: %.8f\n",...
+    %    i,derivMinL, derivMaxL,derivMinR, derivMaxR);
     % Get derivative differences at each node.
     derivDiff{i} = derivR{i} - derivL{i};
   end

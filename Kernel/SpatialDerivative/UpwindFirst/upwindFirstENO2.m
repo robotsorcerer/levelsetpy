@@ -58,7 +58,6 @@ small = 100 * eps;             % a small number for "equivalence"
 
 % Add ghost cells.
 gdata = feval(grid.bdry{dim}, data, dim, stencil, grid.bdryData{dim});
-
 %---------------------------------------------------------------------------
 % Create cell array with array indices.
 sizeData = size(gdata);

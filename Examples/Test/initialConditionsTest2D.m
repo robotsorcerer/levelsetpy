@@ -1,4 +1,5 @@
 function initialConditionsTest2D()
+clc; clear all; close all
 % initialConditionsTest2D: test initial condition routines in 2 dimensions.
 %
 %   initialConditionsTest2D (no arguments)
@@ -16,7 +17,7 @@ function initialConditionsTest2D()
 %
 % Ian Mitchell, 6/23/04
 
-run('../addPathToKernel');
+%run('../addPathToKernel');
 
 %---------------------------------------------------------------------------
 % Standard output file id.
@@ -161,8 +162,9 @@ end
 
 %---------------------------------------------------------------------------
 % Contour plot of implicitly defined set.
-figure(f1);
+figure(1);
 contour(g.xs{1}, g.xs{2}, data, [ 0 0 ], 'b-');
+title('contour plot');
 grid on;
 axis equal;
 axis(g.axis);
@@ -170,7 +172,8 @@ xlabel('x');  ylabel('y');
 
 %---------------------------------------------------------------------------
 % Surface plot of implicit surface function.
-figure(f2);
+figure(2);
 surf(g.xs{1}, g.xs{2}, data);
 xlabel('x');  ylabel('y');  zlabel('\phi(x,y)');
+title('surface plot');
 grid on;

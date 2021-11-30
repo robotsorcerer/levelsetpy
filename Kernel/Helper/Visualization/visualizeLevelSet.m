@@ -175,7 +175,7 @@ function h = visualizeLevelSet(g, data, display_type, level, title_string)
       % grid and data.
       h = patch(isosurface(g.xs{:}, data, level));
       set(h, 'FaceColor', 'none', 'EdgeColor', 'black');
-      view(3)
+      view(3);
  
      otherwise
       error('Unknown display type %s for %d dimensional system', ...

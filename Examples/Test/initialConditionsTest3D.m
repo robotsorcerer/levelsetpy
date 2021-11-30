@@ -17,8 +17,8 @@ function initialConditionsTest3D()
 %   the distribution.
 %
 % Ian Mitchell, 6/23/04
-
-run('../addPathToKernel');
+close all;
+%run('../addPathToKernel');
 
 %---------------------------------------------------------------------------
 % Standard output file id.

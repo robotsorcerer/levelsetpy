@@ -97,7 +97,7 @@ for i = 1 : width
   indicesOut{dim} = i;
   indicesIn{dim} = 1;
   dataOut(indicesOut{:}) = (dataIn(indicesIn{:}) + (width - i + 1) * slopeBot);
-
+  
   indicesOut{dim} = sizeOut(dim) - i + 1;
   indicesIn{dim} = sizeIn(dim);
   dataOut(indicesOut{:}) = (dataIn(indicesIn{:}) + (width - i + 1) * slopeTop);
