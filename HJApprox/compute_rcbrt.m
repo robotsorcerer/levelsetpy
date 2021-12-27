@@ -128,6 +128,8 @@ function [ data, g, data0 ] = compute_rcbrt(model)
   % Loop through t_range (subject to a little roundoff).
   t_now = t_range(1);
   start_time = cputime;
+  tMax = t_range(end);
+  
   while(t_range(2) - t_now > small * t_range(2))
 
     % Reshape data array into column vector for ode solver call.
@@ -139,6 +141,7 @@ function [ data, g, data0 ] = compute_rcbrt(model)
     % Take a timestep.
     [ t, y ] = integratorFunc(schemeFunc, t_span, y0, integratorOptions, schemeData);
     t_now = t(end);
+    fprintf('{tNow/T}: {%.2f/%.2f} | Targ bnds: {%.4f/%.4f} | norm (y): %.4f\n', t_now, tMax, min(y), max(y), norm(y));
 
     % Get back the correctly shaped data array
     data = reshape(y, g.shape);

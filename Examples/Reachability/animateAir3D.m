@@ -81,7 +81,7 @@ function [ data, g, data0 ] = animateAir3D(filename, accuracy, compress)
 
 %---------------------------------------------------------------------------
 % Make sure we can see the kernel m-files.
-run('../addPathToKernel');
+run('setup.m');
 
 %---------------------------------------------------------------------------
 % You will see many executable lines that are commented out.
@@ -89,7 +89,7 @@ run('../addPathToKernel');
 %   the commenting to modify the behavior.
 
 % Optional input parameters.
-
+close all
 if(nargin < 2)
   accuracy = 'medium';
 end
@@ -278,10 +278,20 @@ daspect(aspectRatio);
 camva('manual');
 
 % Create the avi file (choose a smaller qualityValue to get smaller files).
-if compress
-  mov = avifile(filename, 'quality', qualityValue);
-else
-  mov = avifile(filename, 'compression', 'none');
+% if compress
+%   mov = avifile(filename, 'quality', qualityValue);
+% else
+%   mov = avifile(filename, 'compression', 'none');
+% end
+vout = VideoWriter('air3D_anim.mp4', 'MPEG-4');
+vout.Quality = 100;
+
+vout.FrameRate = 30;
+
+try
+  vout.open;
+catch
+   error('cannot open file for writing')
 end
 
 %---------------------------------------------------------------------------
@@ -292,7 +302,8 @@ view(az(frame), el(frame));
 l = camlight('right');
 drawnow;
 f = getframe(gcf);
-mov = addframe(mov, f);
+% mov = addframe(mov, f);
+writeVideo(vout,f);
 delete(l);
 
 %---------------------------------------------------------------------------
@@ -328,7 +339,8 @@ while(tMax - tNow > small * tMax)
   l = camlight('right');
   drawnow;
   f = getframe(gcf);
-  mov = addframe(mov, f);
+  %mov = addframe(mov, f);
+  writeVideo(vout,f);
   delete(l);
 
 end
@@ -337,7 +349,7 @@ endTime = cputime;
 fprintf('Total execution time %g seconds', endTime - startTime);
 
 % We're finished with the movie.
-mov = close(mov); %#ok<NASGU>
+vout.close; %#ok<NASGU>
 
 
 

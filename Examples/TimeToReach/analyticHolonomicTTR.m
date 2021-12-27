@@ -35,7 +35,7 @@ function mttr = analyticHolonomicTTR(whichNorm, gridIn)
 %
 % Ian Mitchell, 12/06/04
 
-
+run('setup.m');
 switch(whichNorm)
 
  case { '1'; 1; 'sum' }

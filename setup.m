@@ -1,0 +1,7 @@
+addpath(genpath('Kernel'))
+addpath(genpath('visualization'))
+addpath(genpath('valFuncs'))
+addpath(genpath('misc'))
+addpath(genpath('Hamiltonians'))
+addpath(genpath('grids'))
+addpath(genpath('dynSys'))

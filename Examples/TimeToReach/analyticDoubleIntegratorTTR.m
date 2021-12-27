@@ -35,6 +35,11 @@ right = (grid.xs{1} > switchCurve);
 left  = (grid.xs{1} < switchCurve);
 on = (grid.xs{1} == switchCurve);
 
-mttr = ((grid.xs{2} + sqrt(4 * grid.xs{1} + 2 * grid.xs{2}.^2)) .* right ...
-        + (-grid.xs{2} + sqrt(-4 * grid.xs{1} + 2 * grid.xs{2}.^2)) .* left ...
-        + abs(grid.xs{2}) .* on);
+t1 = (grid.xs{2} + sqrt(4 * grid.xs{1} + 2 * grid.xs{2}.^2)) .* right;
+t2 = (-grid.xs{2} + sqrt(-4 * grid.xs{1} + 2 * grid.xs{2}.^2)) .* left;
+t3 = abs(grid.xs{2}) .* on;
+mttr = t1+t2+t3;
+
+% mttr = ((grid.xs{2} + sqrt(4 * grid.xs{1} + 2 * grid.xs{2}.^2)) .* right ...
+%         + (-grid.xs{2} + sqrt(-4 * grid.xs{1} + 2 * grid.xs{2}.^2)) .* left ...
+%         + abs(grid.xs{2}) .* on);

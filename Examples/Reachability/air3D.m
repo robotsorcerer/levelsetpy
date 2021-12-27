@@ -58,7 +58,7 @@ function [ data, g, data0 ] = air3D(accuracy)
   
 %---------------------------------------------------------------------------
 % Make sure we can see the kernel m-files.
-run('../addPathToKernel');
+run('setup.m');
 
 %---------------------------------------------------------------------------
 % Integration parameters.

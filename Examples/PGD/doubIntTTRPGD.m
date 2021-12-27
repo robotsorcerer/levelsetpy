@@ -57,9 +57,14 @@ function [ mttr, attr, data, gridOut, data0 ] = ...
 %   These are included to show some of the options available; modify
 %   the commenting to modify the behavior.
 
+clc; close all; clear all
+cd('C:\Users\lekanmolu\Documents\ML-Control-Rob\Reachability\LevelSetMat');
 %---------------------------------------------------------------------------
 % Make sure we can see the kernel m-files.
-run('setup.m');
+%run('helperOC/setup.m');
+addpath(genpath('Kernel'))
+addpath(genpath('Examples'))
+addpath(genpath('Examples/PGD'))
 
 %---------------------------------------------------------------------------
 % Integration parameters.
@@ -94,9 +99,9 @@ smallTarget = 1.0;
 reinitialize = 0;
 
 % What type of initial conditions to use?
-whichIC = 'analytic';
-whichIC = 'square';
 whichIC = 'circle';
+whichIC = 'square';
+whichIC = 'analytic';
 
 % File where signed distance version of IC is stored.
 fileIC = 'doubleIntSignedDist';
@@ -242,6 +247,9 @@ schemeData.innerFunc = innerFunc;
 schemeData.innerData = innerData;
 schemeData.positive = 0;
 
+% save the scheme data for the ROM
+schemeData_r = schemeData; 
+
 %---------------------------------------------------------------------------
 % Set up minimum time to reach recording using postTimestepFunc.
 integratorOptions = odeCFLset(integratorOptions, ...
@@ -253,8 +261,75 @@ y = data(:);
 [ y, schemeData ] = feval(@postTimestepTTR, t0, y, schemeData);
 data = reshape(y, g.shape);
 
+%% Figure out what reduced order cardinality best fits the payoff functional data
+%{
+    Given an error tolerance \epsilon = || X - V_r V_r^T X ||
+                                        ---------------------
+                                               ||X||_F
+%}
+
+%{
+% uncomment this if you want to use an svd decomp
+% [V, S, ~] = svd(data);
+% ranks = min_proj_error(data, V, 1e-5, false);
+
+% use reduced basis
+Vr = V(:,1:ranks);
+
+% convert red basis to tensor
+Vr_tensor = tensor(Vr);
+
+% calculate the partial core and orthonormal matrices using the best
+% rank(2,2,) approximation
+Vr_tuck = tucker_als(Vr_tensor, 2);
+Vr_core = Vr_tuck.core;   % this is my partial core
+U = Vr_tuck.u(:);
+
+
+% evaluate the mass of the original value function on the respective
+% subspaces we found from tucker decompoisition
+Vcore = ttm(tensor(data), {U{1}', U{2}'})
+%}
+
+% visualize the zero level set of the reduced value func
+
+
+% if hosvd decomp:
+[data_core, Un,  V, opt_rank] = hosvd(data, 1e-5);
+dc_shape = size(data_core);
+
+
+% project the grid g onto the subspace that we have found for the value
+% func; this is for ease of visualization
+g_rom = g;
+g_rom.N = opt_rank;
+for i =1:g.dim
+    % Get gram matrix
+    S = g.vs{i} * g.vs{i}';
+    
+    % do eigen decomposition of Gram matrix
+    [Vtemp, ~] = eig(S);
+    
+    % update state dimensions
+    g_rom.vs{i} = sort(squeeze(g.vs{1}' * Vtemp(:,1:opt_rank))');
+end
+
+% update reduced state space
+[g_rom.xs{:} ] = ndgrid(g_rom.vs{:});
+g_rom.min = [min(g_rom.vs{1}); min(g_rom.vs{2})];
+g_rom.max = [max(g_rom.vs{1}); max(g_rom.vs{2})];
+g_rom.dx  = g_rom.max - g_rom.min;
+g_rom.shape = [opt_rank, opt_rank];
+schemeData_r.grid = g_rom;
+
+
+% Initialize the minimum time to reach function by calling
+%   the postTimestepFunc once with initial data.
+y_r = data_core(:);
+[ y_r, schemeData_r ] = feval(@postTimestepTTR, t0, y_r, schemeData_r);
+data = reshape(y, g.shape);
 %---------------------------------------------------------------------------
-if(reinitialize)
+ if(reinitialize)
 
   % We need some more parameters to drive the reinitialization.
   %   But most can just be the defaults.
@@ -280,7 +355,10 @@ if(useSubplots)
   subplot(rows, cols, plotNum);
 end
 
+figure(1)
 h = visualizeLevelSet(g, data, displayType, level, [ 't = ' num2str(t0) ]);
+figure(2)
+h1 = visualizeLevelSet(g_rom, data_core, displayType, level, [ 't = ' num2str(t0) ]);
 
 hold on;
 
@@ -296,18 +374,23 @@ while(tMax - tNow > small * tMax)
 
   % Reshape data array into column vector for ode solver call.
   y0 = data(:);
+  y0_r = data_core(:);
 
   % How far to step?
   tSpan = [ tNow, min(tMax, tNow + tPlot) ];
   
-  % Take a timestep.
+  % Take a timestep on orig value func.
   [ t, y, schemeData ] = feval(integratorFunc, schemeFunc, tSpan, y0,...
                                integratorOptions, schemeData);
+
+  % Take a timestep on reduced value func.
+  [ tr, yr, schemeDatar ] = feval(integratorFunc, schemeFunc, tSpan, y0_r,...
+                               integratorOptions, schemeDatar);                           
   tNow = t(end);
 
-  fprintf('{tNow/T}: {%.2f/%.2f} | Targ bnds: {%.4f/%.4f} | norm (y): %.4f\n', tNow, tMax, min(y), max(y), norm(y));
   % Get back the correctly shaped data array
   data = reshape(y, g.shape);
+  data_core = reshape(yr, dc_shape);
 
   if(pauseAfterPlot)
     % Wait for last plot to be digested.
@@ -321,7 +404,7 @@ while(tMax - tNow > small * tMax)
   if(deleteLastPlot)
     delete(h);
   end
-   
+
   % Move to next subplot if necessary.
   if(useSubplots)
     plotNum = plotNum + 1;
@@ -345,9 +428,9 @@ fprintf('Total execution time %g seconds\n', endTime - startTime);
 % Extract the minimum time to reach function from the schemeData structure.
 %   Reshape it into an array, and replace the +inf entries with NaN to
 %   make the visualization more pleasant.
-% mttr = reshape(schemeData.ttr, g.shape);
-% unreached = find(isinf(mttr));
-% mttr(unreached) = NaN;
+mttr = reshape(schemeData.ttr, g.shape);;
+unreached = find(isinf(mttr));
+mttr(unreached) = NaN;
 
 
 
