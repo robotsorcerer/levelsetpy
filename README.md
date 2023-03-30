@@ -146,14 +146,14 @@ A point $(x_1, x_2)$ on the state grid belongs to the set of states $S(t^\star)$
 + <center><b>Left to right: L-R: (a) Isochrones for states above the switching curve, (b) states below the switching curve, (c) all states that constitute the analytic isochrones.</b></center>
 
 <div align="center">
-<img src="Figures/Dint/dint_0.jpeg" height="350px" width="512px"/>
+<img src="Figures/Dint/dint_0.jpeg" height="350px" width="712px"/>
 </div>
 
 + <center><b>Time to reach the origin at different integration steps. Left: Closed-form Solution to the time to reach the origin problem. Right: Lax-Friedrichs Approximation to Time to Reach the Origin.</b></center>
 
 <div align="center">
-<img src="Figures/Dint/dint_02.jpeg" height="330px" width="400px"/>
-<img src="Figures/Dint/dint_03.jpeg" height="330px" width="400px"/>
+<img src="Figures/Dint/dint_02.jpeg" height="300px" width="400px"/>
+<img src="Figures/Dint/dint_03.jpeg" height="300px" width="400px"/>
 </div>
 + <center><b>Time to reach the origin at different integration steps. Left: Stacked numerical BRS at $t=0.25$ secs. Right: Stacked numerical BRS at $t=0.75$ secs. </b></center>
 
