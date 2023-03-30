@@ -16,43 +16,108 @@ year    = {2023},
 }
 ```
 
-#### Geometry of Implicit Surfaces
 
-+ Implicit representation of 2D geometric primitives on a [grid](/Grids) in 2 dimensions are herewith put forward. We construct surfaces implicitly on 2D grid nodes by performing elementary geometric operations between the representation of specific geometric primitives and grid nodal points. All the codes for reproducing these geometries are available in [test_mesh_2d_only.py](Tests/test_mesh_2d_only.py). Jupyter notebook files are available in [init_conds.ipynb](Notes/init_conds.ipynb).
+### Barrier Surface of the Target Set/Tube of a Differential Game (Problem of [Mayer](https://encyclopediaofmath.org/wiki/Mayer_problem)).
 
-+ <center><b>Left to right: A cylinder, a rectangle, and a sphere.</b></center>
+We adopt the rocket launch problem of [Dreyfus](https://apps.dtic.mil/sti/citations/AD0644592). The goal is to launch a rocket in fixed time to a desired altitude, given a final vertical velocity component and a maximum final horizontal component as constraints. The  rocket's motion is dictated by the following differential equations (under Dreyfus' assumptions):
 
-<div align="center">
-<img src="Figures/Shapes2D/cylinder_2d.jpeg" height="330px" width="260px"/>
-<img src="Figures/Shapes2D/rect4_2d.jpeg" height="330px" width="260px"/>
-<img src="Figures/Shapes2D/sphere2_2d.jpeg" height="330px" width="260px"/>
-</div>
+```math
+	\begin{align}
+	\dot{x}_{1} &= x_{3}; \,\, &x_{1}(t_0) = 0;
+	\\
+	\dot{x}_{2} &= x_{4},\,\, &x_{2}(t_0)= 0;   
+	\\
+	\dot{x}_{3} &= a \cos u,\, &x_{3}(t_0)= 0;
+	\\
+	\dot{x}_{4} &= a \sin u - g,\,\, &x_{4}(t_0)= 0
+	\label{eq:dreyfus_mitter}
+	\end{align}
+```
 
+where, $(x_1, x_2)$ are respectively the horizontal and vertical range of the rockets (in feet), $(x_3, x_4)$ are respectively the horizontal and vertical velocities of the rockets (in feet per second), while $a$ and $g$ are respectively the acceleration and gravitational accelerations (in feet per square second).
 
-+ <center><b>Left to right: Union of two spatially separated rectangles on a grid; union of two spheres; and union of a sphere and a rectangle.</b></center>
+Being a free endpoint problem, we transform it into a game between two players  without the terminal time constraints  defined in Jacobson and Mayne's DDP Book. Let the states of $P$ and $E$ be now denoted as $(x_p, x_e)$ respectively which are driven by their thrusts $(u_p, u_e)$ respectively in the $xz$-plane. The relevant kinematic equations are given above.
 
-<div align="center">
-<img src="Figures/Shapes2D/rect_union_2d.jpeg" height="330px" width="260px"/>
-<img src="Figures/Shapes2D/sphere_union_2d.jpeg" height="330px" width="260px"/>
-<img src="Figures/Shapes2D/sph_rect_diff_2d.jpeg" height="330px" width="260px"/>
-</div>
-
-+ Implicit representation of 3D geometric primitives on a [grid](/Grids) in 3 dimensions are herewith put forward. We construct surfaces implicitly on 3D grid nodes by performing elementary geometric operations between the representation of specific geometric primitives and grid nodal points. All the codes for reproducing these geometries are available in [test_mesh_3d.py](Tests/test_mesh_3d_only.py).
-
-- <center><b>Left to right: A cylinder, and a sphere.</b></center>
-
-<div align="center">
-<img src="Figures/Shapes3D/cylinder.jpeg" height="330px" width="330px"/>
-<img src="Figures/Shapes3D/sphere.jpeg" height="330px" width="330px"/>
-</div>
-
-- <center><b>Left to right: Union of a sphere and cylinder, and intersection of a sphere and cylinder.</b></center>
+We now make the problem amenable to a two-player differential game analysis so that every max and min operations are in the interior and no sudden changes from extremes are too aggravating in cost.
 
 <div align="center">
-<img src="Figures/Shapes3D/sphere_cyl_union.jpeg" height="350px" width="330px"/>
-<img src="Figures/Shapes3D/sphere_cyl_intersect.jpeg" height="350px" width="330px"/>
+<img src="Figures/rocket.jpg" height="465px" width="512px"/>
 </div>
 
+Motion of two rockets on a Cartesian $xz$-plane with a thrust inclination in relative coordinates given by $\theta:=u_p- u_e$.
+Therefore, we rewrite Dreyfus's equation with ${P}$'s motion relative to ${E}$'s  along  the $(x,z)$ plane so that the relative orientation as illustrated above is $\theta=u_p- u_e$. The coordinates of ${P}$ are freely chosen; however, the coordinates of ${E}$ are chosen a distance $r$ away from $(x,z)$ so that the ${E} {P}$ vector's inclination measured counterclockwise from the $x$ axis is $\theta$. Following the conventions in the figure above, the game's relative equations of motion in _*reduced space*_ is $\mathcal{X} = (x, z, \theta)$ where $\theta \in \left[-\frac{\pi}{2}, \frac{\pi}{2}\right)$ and $(x,z) \in \mathbb{R}^2$ are
+
+```math
+	\begin{align}
+	\dot{x} &= a_p \cos \theta + u_e x, \\
+	\dot{z} &=a_p \sin \theta + a_e + u_e x - g, \\
+	\dot{\theta} &= u_p -u_e.
+	\label{eq:rocket_me}
+	\end{align}
+```
+
+The payoff, $\Phi$, is the distance of $P$ from ${E}$ when capture occurs denoted as $\|{P} {E}\|_2$. Capture occurs when $\| {P} {E} \|_2 \le r$ for a pre-specified capture radius, $r>0$. In the equation above,  we say ${P}$ controls $u_p$ and is minimizing $\Phi$, and ${E}$ controls $u_e$ and is maximizing $P$. The boundary of the _usable part_ of the origin-centered circle of radius $r$ (we set $r=1.5$ feet in our evaluations) is $\|{P} {E}\|_2 $. In this sentiment, we find that
+
+```math
+	\begin{align}
+	r^2 &=  x^2 + z^2,
+	\label{eq:rocket_value_func}
+	\end{align}
+```
+
+and all capture points are specified by  useable part's interior is
+
+```math
+\begin{align}
+\dot{r}(x,t) + \min \left[0, H(x, \frac{\partial r(x, t)}{\partial x})\right] \le 0,
+\end{align}
+```
+
+with the corresponding Hamiltonian
+
+```math
+\begin{align}
+H(x, p) = -\max_{u_e \in \mathcal{U}_e} \min_{u_p \in \mathcal{U}_p
+} \begin{bmatrix}
+p_1 \\ p_2 \\ p_3
+\end{bmatrix}^T
+\begin{bmatrix}
+a_p \cos \theta + u_e x \\
+a_p \sin \theta + a_e + u_p x - g \\
+u_p -u_e
+\end{bmatrix}.
+\label{eq:ham_def}
+\end{align}
+```
+
+Suppose that ${E}$'s maximizing control i.e. $u_e$ is $\bar{u}_e$ and that ${P}$'s minimizing control i.e. $u_p$ is $\bar{u}_p$. We have at the point of slowest-quickest descent on the capture surface, that
+
+```math
+	\begin{align}
+	\bar{u}_e &= p_1 x - p_3, \\
+	\bar{u}_p &= p_3 - p_2 x.
+	\end{align}
+```
+
+<div align="center">
+<img src="Figures/rocket_zerolev.jpg" height="330px" width="330px"/>
+<img src="Figures/rocket_ls_final.jpg" height="330px" width="330px"/>
+</div>
+
+Initial and final backward reachable tubes for the rocket system computed using the method outlined in \cite{Crandall1984, OsherFronts}. We set $a_e = a_p = 64ft/sec^2$ and $g=32 ft/sec^2$ as in Dreyfus' original example. We compute the reachable set by optimizing for the paths of slowest-quickest descent in the equation above.
+
+
+We set the linear velocities and accelerations equal to one another i.e. $u_e = u_p$ and $a_e = a_p$ so that the Hamiltonian takes the form
+
+```math
+\begin{align}
+H(x, p) &= -\cos(u) |a p_1| + \cos(u) |a p_1| -\sin (u) |a p_2| - \\
+& \qquad \qquad \sin (u) | ap_2 | + u | p_3| - u |p_3|.
+\label{eq:rocket_hamfunc}
+\end{align}
+```
+
+Using our levelsetpy toolbox, we compute the backward reachable tube of the game over a time span of $[-2.5, 0]$ seconds by running a game between the two players over 11 global optimization time steps. The initial value function (left inset of the figure above) is represented as a dynamic implicit surface over all point sets in the state space (using a signed distance function) for a coordinate-aligned cylinder whose vertical axes runs parallel to the orientation of the rockets depicted. A three-dimensional grid with uniformly spaced dimensions over an interval $[-64, 64]$ and at a resolution of $100$ points per dimension was used in updating the values. The Hamiltonian was resolved with a second-order essentially non-oscillating (ENO) upwinding scheme. This is implemented as _*upwindFirstENO2*_ function under our _*SpatialDerivative*_ package. As with all matters involving the numerical discretization schemes employed for solving Hamilton-Jacobi equations, the stability of the ensuing solution to tthe HJ PDE is of eminence. we employed a global **Lax-Friedrichs** scheme together with a total variation diminishing Runge-Kutta discretization scheme based on fluxes are chosen. The final BRT at the end of the optimization run is shown in the right inset of the figure.
 
 ### Time to Reach Problems
 
@@ -158,108 +223,45 @@ A point $(x_1, x_2)$ on the state grid belongs to the set of states $S(t^\star)$
 + <center><b>Time to reach the origin at different integration steps. Left: Stacked numerical BRS at $t=0.25$ secs. Right: Stacked numerical BRS at $t=0.75$ secs. </b></center>
 
 
+#### Geometry of Implicit Surfaces
 
-### Barrier Surface of the Target Set/Tube of a Differential Game (Problem of [Mayer](https://encyclopediaofmath.org/wiki/Mayer_problem)).
++ Implicit representation of 2D geometric primitives on a [grid](/Grids) in 2 dimensions are herewith put forward. We construct surfaces implicitly on 2D grid nodes by performing elementary geometric operations between the representation of specific geometric primitives and grid nodal points. All the codes for reproducing these geometries are available in [test_mesh_2d_only.py](Tests/test_mesh_2d_only.py). Jupyter notebook files are available in [init_conds.ipynb](Notes/init_conds.ipynb).
 
-We adopt the rocket launch problem of [Dreyfus](https://apps.dtic.mil/sti/citations/AD0644592). The goal is to launch a rocket in fixed time to a desired altitude, given a final vertical velocity component and a maximum final horizontal component as constraints. The  rocket's motion is dictated by the following differential equations (under Dreyfus' assumptions):
-
-```math
-	\begin{align}
-	\dot{x}_{1} &= x_{3}; \,\, &x_{1}(t_0) = 0;
-	\\
-	\dot{x}_{2} &= x_{4},\,\, &x_{2}(t_0)= 0;   
-	\\
-	\dot{x}_{3} &= a \cos u,\, &x_{3}(t_0)= 0;
-	\\
-	\dot{x}_{4} &= a \sin u - g,\,\, &x_{4}(t_0)= 0
-	\label{eq:dreyfus_mitter}
-	\end{align}
-```
-
-where, $(x_1, x_2)$ are respectively the horizontal and vertical range of the rockets (in feet), $(x_3, x_4)$ are respectively the horizontal and vertical velocities of the rockets (in feet per second), while $a$ and $g$ are respectively the acceleration and gravitational accelerations (in feet per square second).
-
-Being a free endpoint problem, we transform it into a game between two players  without the terminal time constraints  defined in Jacobson and Mayne's DDP Book. Let the states of $P$ and $E$ be now denoted as $(x_p, x_e)$ respectively which are driven by their thrusts $(u_p, u_e)$ respectively in the $xz$-plane. The relevant kinematic equations are given above.
-
-We now make the problem amenable to a two-player differential game analysis so that every max and min operations are in the interior and no sudden changes from extremes are too aggravating in cost.
++ <center><b>Left to right: A cylinder, a rectangle, and a sphere.</b></center>
 
 <div align="center">
-<img src="Figures/rocket.jpg" height="465px" width="512px"/>
+<img src="Figures/Shapes2D/cylinder_2d.jpeg" height="330px" width="260px"/>
+<img src="Figures/Shapes2D/rect4_2d.jpeg" height="330px" width="260px"/>
+<img src="Figures/Shapes2D/sphere2_2d.jpeg" height="330px" width="260px"/>
 </div>
 
-Motion of two rockets on a Cartesian $xz$-plane with a thrust inclination in relative coordinates given by $\theta:=u_p- u_e$.
-Therefore, we rewrite Dreyfus's equation with ${P}$'s motion relative to ${E}$'s  along  the $(x,z)$ plane so that the relative orientation as illustrated above is $\theta=u_p- u_e$. The coordinates of ${P}$ are freely chosen; however, the coordinates of ${E}$ are chosen a distance $r$ away from $(x,z)$ so that the ${E} {P}$ vector's inclination measured counterclockwise from the $x$ axis is $\theta$. Following the conventions in the figure above, the game's relative equations of motion in _*reduced space*_ is $\mathcal{X} = (x, z, \theta)$ where $\theta \in \left[-\frac{\pi}{2}, \frac{\pi}{2}\right)$ and $(x,z) \in \mathbb{R}^2$ are
 
-```math
-	\begin{align}
-	\dot{x} &= a_p \cos \theta + u_e x, \\
-	\dot{z} &=a_p \sin \theta + a_e + u_e x - g, \\
-	\dot{\theta} &= u_p -u_e.
-	\label{eq:rocket_me}
-	\end{align}
-```
-
-The payoff, $\Phi$, is the distance of $P$ from ${E}$ when capture occurs denoted as $\|{P} {E}\|_2$. Capture occurs when $\| {P} {E} \|_2 \le r$ for a pre-specified capture radius, $r>0$. In the equation above,  we say ${P}$ controls $u_p$ and is minimizing $\Phi$, and ${E}$ controls $u_e$ and is maximizing $P$. The boundary of the _usable part_ of the origin-centered circle of radius $r$ (we set $r=1.5$ feet in our evaluations) is $\|{P} {E}\|_2 $. In this sentiment, we find that
-
-```math
-	\begin{align}
-	r^2 &=  x^2 + z^2,
-	\label{eq:rocket_value_func}
-	\end{align}
-```
-
-and all capture points are specified by  useable part's interior is
-
-```math
-\begin{align}
-\dot{r}(x,t) + \min \left[0, H(x, \frac{\partial r(x, t)}{\partial x})\right] \le 0,
-\end{align}
-```
-
-with the corresponding Hamiltonian
-
-```math
-\begin{align}
-H(x, p) = -\max_{u_e \in \mathcal{U}_e} \min_{u_p \in \mathcal{U}_p
-} \begin{bmatrix}
-p_1 \\ p_2 \\ p_3
-\end{bmatrix}^T
-\begin{bmatrix}
-a_p \cos \theta + u_e x \\
-a_p \sin \theta + a_e + u_p x - g \\
-u_p -u_e
-\end{bmatrix}.
-\label{eq:ham_def}
-\end{align}
-```
-
-Suppose that ${E}$'s maximizing control i.e. $u_e$ is $\bar{u}_e$ and that ${P}$'s minimizing control i.e. $u_p$ is $\bar{u}_p$. We have at the point of slowest-quickest descent on the capture surface, that
-
-```math
-	\begin{align}
-	\bar{u}_e &= p_1 x - p_3, \\
-	\bar{u}_p &= p_3 - p_2 x.
-	\end{align}
-```
++ <center><b>Left to right: Union of two spatially separated rectangles on a grid; union of two spheres; and union of a sphere and a rectangle.</b></center>
 
 <div align="center">
-<img src="Figures/rocket_zerolev.jpg" height="330px" width="330px"/>
-<img src="Figures/rocket_ls_final.jpg" height="330px" width="330px"/>
+<img src="Figures/Shapes2D/rect_union_2d.jpeg" height="330px" width="260px"/>
+<img src="Figures/Shapes2D/sphere_union_2d.jpeg" height="330px" width="260px"/>
+<img src="Figures/Shapes2D/sph_rect_diff_2d.jpeg" height="330px" width="260px"/>
 </div>
 
-Initial and final backward reachable tubes for the rocket system computed using the method outlined in \cite{Crandall1984, OsherFronts}. We set $a_e = a_p = 64ft/sec^2$ and $g=32 ft/sec^2$ as in Dreyfus' original example. We compute the reachable set by optimizing for the paths of slowest-quickest descent in the equation above.
++ Implicit representation of 3D geometric primitives on a [grid](/Grids) in 3 dimensions are herewith put forward. We construct surfaces implicitly on 3D grid nodes by performing elementary geometric operations between the representation of specific geometric primitives and grid nodal points. All the codes for reproducing these geometries are available in [test_mesh_3d.py](Tests/test_mesh_3d_only.py).
+
+- <center><b>Left to right: A cylinder, and a sphere.</b></center>
+
+<div align="center">
+<img src="Figures/Shapes3D/cylinder.jpeg" height="330px" width="330px"/>
+<img src="Figures/Shapes3D/sphere.jpeg" height="330px" width="330px"/>
+</div>
+
+- <center><b>Left to right: Union of a sphere and cylinder, and intersection of a sphere and cylinder.</b></center>
+
+<div align="center">
+<img src="Figures/Shapes3D/sphere_cyl_union.jpeg" height="350px" width="330px"/>
+<img src="Figures/Shapes3D/sphere_cyl_intersect.jpeg" height="350px" width="330px"/>
+</div>
 
 
-We set the linear velocities and accelerations equal to one another i.e. $u_e = u_p$ and $a_e = a_p$ so that the Hamiltonian takes the form
 
-```math
-\begin{align}
-H(x, p) &= -\cos(u) |a p_1| + \cos(u) |a p_1| -\sin (u) |a p_2| - \\
-& \qquad \qquad \sin (u) | ap_2 | + u | p_3| - u |p_3|.
-\label{eq:rocket_hamfunc}
-\end{align}
-```
-
-Using our levelsetpy toolbox, we compute the backward reachable tube of the game over a time span of $[-2.5, 0]$ seconds by running a game between the two players over 11 global optimization time steps. The initial value function (left inset of the figure above) is represented as a dynamic implicit surface over all point sets in the state space (using a signed distance function) for a coordinate-aligned cylinder whose vertical axes runs parallel to the orientation of the rockets depicted. A three-dimensional grid with uniformly spaced dimensions over an interval $[-64, 64]$ and at a resolution of $100$ points per dimension was used in updating the values. The Hamiltonian was resolved with a second-order essentially non-oscillating (ENO) upwinding scheme. This is implemented as _*upwindFirstENO2*_ function under our _*SpatialDerivative*_ package. As with all matters involving the numerical discretization schemes employed for solving Hamilton-Jacobi equations, the stability of the ensuing solution to tthe HJ PDE is of eminence. we employed a global **Lax-Friedrichs** scheme together with a total variation diminishing Runge-Kutta discretization scheme based on fluxes are chosen. The final BRT at the end of the optimization run is shown in the right inset of the figure.
 
 ### Citing this work
 
