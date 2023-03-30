@@ -164,7 +164,7 @@ We now make the problem amenable to a two-player differential game analysis so t
 
 Motion of two rockets on a Cartesian $xz$-plane with a thrust inclination in relative coordinates given by $\theta:=u_p- u_e$.
 
-Therefore, we rewrite \eqref{eq:dreyfus_mitter} with ${P}$'s motion relative to ${E}$'s  along  the $(x,z)$ plane so that the relative orientation as shown in \autoref{fig:rocket_relative} is $\theta=u_p- u_e$. The coordinates of ${P}$ are freely chosen; however, the coordinates of ${E}$ are chosen a distance $r$ away from $(x,z)$ so that the ${E} {P}$ vector's inclination measured counterclockwise from the $x$ axis is $\theta$. Following the conventions in \autoref{fig:rocket_relative}, the game's relative equations of motion in reduced space is $\mathcal{X} = (x, z, \theta)$ where $\theta \in \left[-\frac{\pi}{2}, \frac{\pi}{2}\right)$ and $(x,z) \in \bb{R}^2$ are
+Therefore, we rewrite \eqref{eq:dreyfus_mitter} with ${P}$'s motion relative to ${E}$'s  along  the $(x,z)$ plane so that the relative orientation as shown in \autoref{fig:rocket_relative} is $\theta=u_p- u_e$. The coordinates of ${P}$ are freely chosen; however, the coordinates of ${E}$ are chosen a distance $r$ away from $(x,z)$ so that the ${E} {P}$ vector's inclination measured counterclockwise from the $x$ axis is $\theta$. Following the conventions in \autoref{fig:rocket_relative}, the game's relative equations of motion in reduced space is $\mathcal{X} = (x, z, \theta)$ where $\theta \in \left[-\frac{\pi}{2}, \frac{\pi}{2}\right)$ and $(x,z) \in \mathbb{R}^2$ are
 
 ```math
 	\begin{align}
@@ -175,7 +175,7 @@ Therefore, we rewrite \eqref{eq:dreyfus_mitter} with ${P}$'s motion relative to 
 	\end{align}
 ```
 
-The payoff, $\Phi$, is the distance of $P$ from ${E}$ when capture occurs denoted as $\|{P} {E}\|_2$. Capture occurs when $\| {P} {E} \|_2 \le r$ for a pre-specified capture radius, $r>0$. In \eqref{eq:rocket_me},  we say ${P}$ controls $u_p$ and is minimizing $\payoff$, and ${E}$ controls $u_e$ and is maximizing $P$. The boundary of the \textit{usable part} of the origin-centered circle of radius $r$ (we set $r=1.5$ feet in our evaluations) is $\|{P} {E}\|_2 $. In this sentiment, we find that
+The payoff, $\Phi$, is the distance of $P$ from ${E}$ when capture occurs denoted as $\|{P} {E}\|_2$. Capture occurs when $\| {P} {E} \|_2 \le r$ for a pre-specified capture radius, $r>0$. In \eqref{eq:rocket_me},  we say ${P}$ controls $u_p$ and is minimizing $\Phi$, and ${E}$ controls $u_e$ and is maximizing $P$. The boundary of the \textit{usable part} of the origin-centered circle of radius $r$ (we set $r=1.5$ feet in our evaluations) is $\|{P} {E}\|_2 $. In this sentiment, we find that
 
 ```math
 	\begin{align}
@@ -223,7 +223,7 @@ Suppose that ${E}$'s maximizing control i.e. $u_e$ is $\bar{u}_e$ and that ${P}$
 <img src="Figures/rocket_ls_final.jpg" height="330px" width="330px"/>
 </div>
 
-Initial and final backward reachable tubes for the rocket system (\cf \autoref{fig:rocket_relative}) computed using the method outlined in \cite{Crandall1984, OsherFronts, MitchellLSToolbox}. We set $a_e = a_p = 64ft/sec^2$ and $g=32 ft/sec^2$ as in Dreyfus' original example. We compute the reachable set by optimizing for the paths of slowest-quickest descent in equation \eqref{eq:ham_def}.
+Initial and final backward reachable tubes for the rocket system computed using the method outlined in \cite{Crandall1984, OsherFronts}. We set $a_e = a_p = 64ft/sec^2$ and $g=32 ft/sec^2$ as in Dreyfus' original example. We compute the reachable set by optimizing for the paths of slowest-quickest descent in equation \eqref{eq:ham_def}.
 
 
 We set the linear velocities and accelerations equal to one another i.e. $u_e = u_p$ and $a_e = a_p$ so that the Hamiltonian takes the form
@@ -235,6 +235,8 @@ H(x, p) &= -\cos(u) |a p_1| + \cos(u) |a p_1| -\sin (u) |a p_2| - \\
 \label{eq:rocket_hamfunc}
 \end{align}
 ```
+
+Using our levelsetpy toolbox, we compute the backward reachable tube of the game over a time span of $[-2.5, 0]$ seconds by running a game between the two players over 11 global optimization time steps. The initial value function (left inset of the figure above) is represented as a dynamic implicit surface over all point sets in the state space (using a signed distance function) for a coordinate-aligned cylinder whose vertical axes runs parallel to the orientation of the rockets depicted. A three-dimensional grid with uniformly spaced dimensions over an interval $[-64, 64]$ and at a resolution of $100$ points per dimension was used in updating the values. The Hamiltonian was resolved with a second-order essentially non-oscillating (ENO) upwinding scheme. This is implemented as _*upwindFirstENO2*_ function under our _*SpatialDerivative*_ package. As with all matters involving the numerical discretization schemes employed for solving Hamilton-Jacobi equations, the stability of the ensuing solution to tthe HJ PDE is of eminence. we employed a global **Lax-Friedrichs** scheme together with a total variation diminishing Runge-Kutta discretization scheme based on fluxes are chosen. The final BRT at the end of the optimization run is shown in the right inset of the figure.
 
 ### Citing this work
 
