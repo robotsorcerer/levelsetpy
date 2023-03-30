@@ -1,6 +1,6 @@
-__all__ = ["shapeUnion", 
-            "shapeIntersection", 
-            "shapeDifference", 
+__all__ = ["shapeUnion",
+            "shapeIntersection",
+            "shapeDifference",
             "shapeComplement"
           ]
 
@@ -107,12 +107,7 @@ def shapeDifference(shape1, shape2):
        data	Output data array (same size as shape1 and shape2)
                      containing an implicit surface function of the difference.
 
-     Copyright 2004 Ian M. Mitchell (mitchell@cs.ubc.ca).
-     This software is used, copied and distributed under the licensing
-       agreement contained in the file LICENSE in the top directory of
-       the distribution.
-
-     Ian Mitchell, 6/23/04
+      Lekan Molu, September, 2021
     """
 
     #---------------------------------------------------------------------------
@@ -148,12 +143,7 @@ def shapeComplement(shape):
        data	Output data array (same size as shape1 and shape2)
                      containing an implicit surface function of the complement.
 
-     Copyright 2004 Ian M. Mitchell (mitchell@cs.ubc.ca).
-     This software is used, copied and distributed under the licensing
-       agreement contained in the file LICENSE in the top directory of
-       the distribution.
-
-     Ian Mitchell, 6/23/04
+      Lekan Molu, September, 2021
     """
 
     #---------------------------------------------------------------------------

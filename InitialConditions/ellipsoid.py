@@ -12,7 +12,7 @@ def shapeEllipsoid(grid, center=None, radius=1.0):
 
        data = shapeEllipsoid(grid, axis_align, center, radius)
 
-     Creates an implicit surface function (actually signed distance) for 
+     Creates an implicit surface function (actually signed distance) for
         an ellipsoid.
 
      Parameters:
@@ -20,7 +20,7 @@ def shapeEllipsoid(grid, center=None, radius=1.0):
 
        grid: Grid structure (see processGrid.py for details).
 
-       center: Vector specifyin`g a point at the center of the ellipsoid.
+       center: Vector specifying a point at the center of the ellipsoid.
        Entries in the ignored dimensions are ignored.  May be a scalar, in
        which case the scalar is multiplied by a vector of ones of the
        appropriate length.  Defaults to 0 (eg centered at the origin).
@@ -48,7 +48,7 @@ def shapeEllipsoid(grid, center=None, radius=1.0):
     data += 4.0*(grid.xs[1] - center[1])**2
     if grid.dim==3:
         data += 9.0*(grid.xs[2] - center[2])**2
-    data = data - radius   
+    data = data - radius
 
      #---------------------------------------------------------------------------
     # Warn the user if there is no sign change on the grid
@@ -56,4 +56,4 @@ def shapeEllipsoid(grid, center=None, radius=1.0):
     if(np.all(data.flatten() < 0) or (np.all(data.flatten() > 0))):
         warnings.warn(f'Implicit surface not visible because function has '
                 'single sign on grid')
-    return data     
+    return data

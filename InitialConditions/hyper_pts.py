@@ -45,6 +45,8 @@ def shapeHyperplaneByPoints(grid, points, positivePoint):
 
        data: Output data array (of size grid.size) containing the implicit
        surface function for the hyperplane.
+
+     Lekan Molu, March 2023.
     """
     #---------------------------------------------------------------------------
     # For the positivePoint parameter, what is "too close" to the interface?

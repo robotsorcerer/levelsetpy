@@ -37,15 +37,6 @@ def shapeRectangleByCenter(grid, center=None, widths=None):
        data: Output data array (of size grid.size) containing the implicit
        surface function.
 
-     Copyright 2004 Ian M. Mitchell (mitchell@cs.ubc.ca).
-     This software is used, copied and distributed under the licensing
-       agreement contained in the file LICENSE in the top directory of
-       the distribution.
-
-     Ian Mitchell, 6/23/04
-     $Date: 2009-09-03 16:34:07 -0700 (Thu, 03 Sep 2009) $
-     $Id: shapeRectangleByCenter.m 44 2009-09-03 23:34:07Z mitchell $
-
      Lekan Molu, Sept 07, 2021
     """
     #Default parameter values.
