@@ -154,7 +154,7 @@ We adopt the rocket launch problem of [Dreyfus](https://apps.dtic.mil/sti/citati
 
 where, $(x_1, x_2)$ are respectively the horizontal and vertical range of the rockets (in feet), $(x_3, x_4)$ are respectively the horizontal and vertical velocities of the rockets (in feet per second), while $a$ and $g$ are respectively the acceleration and gravitational accelerations (in feet per square second).
 
-Being a free endpoint problem, we transform it into a game between two players \eqref{eq:dreyfus_mitter} without the terminal time constraints  defined in Jacobson and Mayne's DDP Book. Let the states of $P$ and $E$ be now denoted as $(x_p, x_e)$ respectively which are driven by their thrusts $(u_p, u_e)$ respectively in the $xz$-plane. The relevant kinematic equations are given above.
+Being a free endpoint problem, we transform it into a game between two players  without the terminal time constraints  defined in Jacobson and Mayne's DDP Book. Let the states of $P$ and $E$ be now denoted as $(x_p, x_e)$ respectively which are driven by their thrusts $(u_p, u_e)$ respectively in the $xz$-plane. The relevant kinematic equations are given above.
 
 We now make the problem amenable to a two-player differential game analysis so that every max and min operations are in the interior and no sudden changes from extremes are too aggravating in cost.
 
