@@ -230,7 +230,7 @@ We set the linear velocities and accelerations equal to one another i.e. $u_e = 
 
 ```math
 \begin{align}
-H(x, p) &= -\cos(u) |a p_1| + \cos(u) |a p_1| -\sin (u) |a p_2| - \nonumber \\
+H(x, p) &= -\cos(u) |a p_1| + \cos(u) |a p_1| -\sin (u) |a p_2| - \\
 & \qquad \qquad \sin (u) | ap_2 | + u | p_3| - u |p_3|.
 \label{eq:rocket_hamfunc}
 \end{align}
