@@ -138,20 +138,24 @@ whereupon the switching curve is illustrated by the golden surface along the "ze
 A point $(x_1, x_2)$ on the state grid belongs to the set of states $S(t^\star)$ from which it can be forced to the origin $(0, 0)$ in the same minimum time $t^\star$. We call the set $S(t^\star)$ the minimum **isochrone**. These are the isochrones of the system -- akin to the isochrone map used in geography, hydrology, and transportation planning for depicting areas of equal travel time to a goal state. The level sets of the time optimal control equation correspond to the **isochrones** of the system as illustrated below
 
 <div align="center">
-<img src="Figures/Dint/isochoner_above.jpg" height="260px" width="260px"/>
-<img src="Figures/Dint/isochoner_below.jpg" height="260px" width="260px"/>
-<img src="Figures/Dint/isochoner_all.jpg" height="260px" width="260px"/>
+<img src="Figures/Dint/isochoner_above.jpg" height="220px" width="260px"/>
+<img src="Figures/Dint/isochoner_below.jpg" height="220px" width="260px"/>
+<img src="Figures/Dint/isochoner_all.jpg" height="220px" width="260px"/>
 </div>
 
 + <center><b>Left to right: L-R: (a) Isochrones for states above the switching curve, (b) states below the switching curve, (c) all states that constitute the analytic isochrones.</b></center>
 
 <div align="center">
-<img src="Figures/Dint/dint_0.jpeg" height="330px" width="260px"/>
-<img src="Figures/Dint/dint_02.jpeg" height="330px" width="260px"/>
-<img src="Figures/Dint/dint_03.jpeg" height="330px" width="260px"/>
+<img src="Figures/Dint/dint_0.jpeg" height="350px" width="512px"/>
 </div>
 
-+ <center><b>Left to right: L-R: Time to reach the origin at different integration steps. Left: Closed-form Solution to the time to reach the origin problem. Right: Lax-Friedrichs Approximation to Time to Reach the Origin.</b></center>
++ <center><b>Time to reach the origin at different integration steps. Left: Closed-form Solution to the time to reach the origin problem. Right: Lax-Friedrichs Approximation to Time to Reach the Origin.</b></center>
+
+<div align="center">
+<img src="Figures/Dint/dint_02.jpeg" height="330px" width="400px"/>
+<img src="Figures/Dint/dint_03.jpeg" height="330px" width="400px"/>
+</div>
++ <center><b>Time to reach the origin at different integration steps. Left: Stacked numerical BRS at $t=0.25$ secs. Right: Stacked numerical BRS at $t=0.75$ secs. </b></center>
 
 
 
