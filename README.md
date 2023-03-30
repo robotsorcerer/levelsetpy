@@ -154,7 +154,7 @@ We adopt the rocket launch problem of [Dreyfus](https://apps.dtic.mil/sti/citati
 
 where, $(x_1, x_2)$ are respectively the horizontal and vertical range of the rockets (in feet), $(x_3, x_4)$ are respectively the horizontal and vertical velocities of the rockets (in feet per second), while $a$ and $g$ are respectively the acceleration and gravitational accelerations (in feet per square second).
 
-Being a free endpoint problem, we transform it into a game between two players \eqref{eq:dreyfus_mitter} without the terminal time constraints  defined in~\cite{JacobsonMayne}. Let the states of $P$ and $E$ be now denoted as $(x_p, x_e)$ respectively which are driven by their thrusts $(u_p, u_e)$ respectively in the $xz$-plane (see Figure \ref{fig:rocket_relative}). The relevant kinematic equations are \eqref{eq:dreyfus_mitter_ii} and \eqref{eq:dreyfus_mitter_iv}.
+Being a free endpoint problem, we transform it into a game between two players \eqref{eq:dreyfus_mitter} without the terminal time constraints  defined in Jacobson and Mayne's DDP Book. Let the states of $P$ and $E$ be now denoted as $(x_p, x_e)$ respectively which are driven by their thrusts $(u_p, u_e)$ respectively in the $xz$-plane. The relevant kinematic equations are given above.
 
 We now make the problem amenable to a two-player differential game analysis so that every max and min operations are in the interior and no sudden changes from extremes are too aggravating in cost.
 
@@ -163,8 +163,7 @@ We now make the problem amenable to a two-player differential game analysis so t
 </div>
 
 Motion of two rockets on a Cartesian $xz$-plane with a thrust inclination in relative coordinates given by $\theta:=u_p- u_e$.
-
-Therefore, we rewrite \eqref{eq:dreyfus_mitter} with ${P}$'s motion relative to ${E}$'s  along  the $(x,z)$ plane so that the relative orientation as shown in \autoref{fig:rocket_relative} is $\theta=u_p- u_e$. The coordinates of ${P}$ are freely chosen; however, the coordinates of ${E}$ are chosen a distance $r$ away from $(x,z)$ so that the ${E} {P}$ vector's inclination measured counterclockwise from the $x$ axis is $\theta$. Following the conventions in \autoref{fig:rocket_relative}, the game's relative equations of motion in reduced space is $\mathcal{X} = (x, z, \theta)$ where $\theta \in \left[-\frac{\pi}{2}, \frac{\pi}{2}\right)$ and $(x,z) \in \mathbb{R}^2$ are
+Therefore, we rewrite Dreyfus's equation with ${P}$'s motion relative to ${E}$'s  along  the $(x,z)$ plane so that the relative orientation as illustrated above is $\theta=u_p- u_e$. The coordinates of ${P}$ are freely chosen; however, the coordinates of ${E}$ are chosen a distance $r$ away from $(x,z)$ so that the ${E} {P}$ vector's inclination measured counterclockwise from the $x$ axis is $\theta$. Following the conventions in the figure above, the game's relative equations of motion in _*reduced space*_ is $\mathcal{X} = (x, z, \theta)$ where $\theta \in \left[-\frac{\pi}{2}, \frac{\pi}{2}\right)$ and $(x,z) \in \mathbb{R}^2$ are
 
 ```math
 	\begin{align}
@@ -175,7 +174,7 @@ Therefore, we rewrite \eqref{eq:dreyfus_mitter} with ${P}$'s motion relative to 
 	\end{align}
 ```
 
-The payoff, $\Phi$, is the distance of $P$ from ${E}$ when capture occurs denoted as $\|{P} {E}\|_2$. Capture occurs when $\| {P} {E} \|_2 \le r$ for a pre-specified capture radius, $r>0$. In \eqref{eq:rocket_me},  we say ${P}$ controls $u_p$ and is minimizing $\Phi$, and ${E}$ controls $u_e$ and is maximizing $P$. The boundary of the \textit{usable part} of the origin-centered circle of radius $r$ (we set $r=1.5$ feet in our evaluations) is $\|{P} {E}\|_2 $. In this sentiment, we find that
+The payoff, $\Phi$, is the distance of $P$ from ${E}$ when capture occurs denoted as $\|{P} {E}\|_2$. Capture occurs when $\| {P} {E} \|_2 \le r$ for a pre-specified capture radius, $r>0$. In the equation above,  we say ${P}$ controls $u_p$ and is minimizing $\Phi$, and ${E}$ controls $u_e$ and is maximizing $P$. The boundary of the _usable part_ of the origin-centered circle of radius $r$ (we set $r=1.5$ feet in our evaluations) is $\|{P} {E}\|_2 $. In this sentiment, we find that
 
 ```math
 	\begin{align}
@@ -209,7 +208,7 @@ u_p -u_e
 \end{align}
 ```
 
-Suppose that ${E}$'s maximizing control i.e. $u_e$ is $\bar{u}_e$ and that ${P}$'s minimizing control \ie $u_p$ is $\bar{u}_p$. We have at the point of slowest-quickest descent on the capture surface, that
+Suppose that ${E}$'s maximizing control i.e. $u_e$ is $\bar{u}_e$ and that ${P}$'s minimizing control i.e. $u_p$ is $\bar{u}_p$. We have at the point of slowest-quickest descent on the capture surface, that
 
 ```math
 	\begin{align}
@@ -223,7 +222,7 @@ Suppose that ${E}$'s maximizing control i.e. $u_e$ is $\bar{u}_e$ and that ${P}$
 <img src="Figures/rocket_ls_final.jpg" height="330px" width="330px"/>
 </div>
 
-Initial and final backward reachable tubes for the rocket system computed using the method outlined in \cite{Crandall1984, OsherFronts}. We set $a_e = a_p = 64ft/sec^2$ and $g=32 ft/sec^2$ as in Dreyfus' original example. We compute the reachable set by optimizing for the paths of slowest-quickest descent in equation \eqref{eq:ham_def}.
+Initial and final backward reachable tubes for the rocket system computed using the method outlined in \cite{Crandall1984, OsherFronts}. We set $a_e = a_p = 64ft/sec^2$ and $g=32 ft/sec^2$ as in Dreyfus' original example. We compute the reachable set by optimizing for the paths of slowest-quickest descent in the equation above.
 
 
 We set the linear velocities and accelerations equal to one another i.e. $u_e = u_p$ and $a_e = a_p$ so that the Hamiltonian takes the form
