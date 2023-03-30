@@ -1,0 +1,9 @@
+./Visualization/__pycache__
+./DynamicalSystems/__pycache__
+./BoundaryCondition/__pycache__
+./InitialConditions/__pycache__
+./SpatialDerivative/Other/__pycache__
+./SpatialDerivative/__pycache__
+./Grids/__pycache__
+./Utilities/__pycache__
+./ExplicitIntegration/__pycache__
