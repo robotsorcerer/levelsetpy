@@ -135,7 +135,27 @@ The analytical time to reach the origin, after computation (please see the cited
 
 whereupon the switching curve is illustrated by the golden surface along the "zero-phase" of the phase plot above. We will like to use the level sets library to (over)-approximate this analytical time-to-reach the origin.
 
-### Barrier Surface of the Target Set/Tube of a Differential Game (Problem of Mayer).
+A point $(\state_1, \state_2)$ on the state grid belongs to the set of states $S(t^\star)$ from which it can be forced to the origin $(0, 0)$ in the same minimum time $t^\star$. We call the set $S(t^\star)$ the minimum **isochrone**. These are the isochrones of the system -- akin to the isochrone map used in geography, hydrology, and transportation planning for depicting areas of equal travel time to a goal state. The level sets of the time optimal control equation correspond to the **isochrones** of the system as illustrated below
+
+<div align="center">
+<img src="Figures/Dint/isochoner_above.jpg" height="330px" width="260px"/>
+<img src="Figures/Dint/isochoner_below.jpg" height="330px" width="260px"/>
+<img src="Figures/Dint/isochoner_all.jpg" height="330px" width="260px"/>
+</div>
+
++ <center><b>Left to right: L-R: (a) Isochrones for states above the switching curve, (b) states below the switching curve, (c) all states that constitute the analytic isochrones.</b></center>
+
+<div align="center">
+<img src="Figures/Dint/dint_0.jpeg" height="330px" width="260px"/>
+<img src="Figures/Dint/dint_02.jpeg" height="330px" width="260px"/>
+<img src="Figures/Dint/dint_03.jpeg" height="330px" width="260px"/>
+</div>
+
++ <center><b>Left to right: L-R: Time to reach the origin at different integration steps. Left: Closed-form Solution to the time to reach the origin problem. Right: Lax-Friedrichs Approximation to Time to Reach the Origin.</b></center>
+
+
+
+### Barrier Surface of the Target Set/Tube of a Differential Game (Problem of [Mayer](https://encyclopediaofmath.org/wiki/Mayer_problem)).
 
 We adopt the rocket launch problem of [Dreyfus](https://apps.dtic.mil/sti/citations/AD0644592). The goal is to launch a rocket in fixed time to a desired altitude, given a final vertical velocity component and a maximum final horizontal component as constraints. The  rocket's motion is dictated by the following differential equations (under Dreyfus' assumptions):
 
