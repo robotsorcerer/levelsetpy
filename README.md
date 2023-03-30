@@ -17,7 +17,7 @@ year    = {2023},
 ```
 
 
-### Barrier Surface of the Target Set/Tube of a Differential Game (Problem of [Mayer](https://encyclopediaofmath.org/wiki/Mayer_problem)).
+### Approximate Barrier Surface of the Target Tube of Two Rockets in a Differential Game (Problem of [Mayer](https://encyclopediaofmath.org/wiki/Mayer_problem)).
 
 We adopt the rocket launch problem of [Dreyfus](https://apps.dtic.mil/sti/citations/AD0644592). The goal is to launch a rocket in fixed time to a desired altitude, given a final vertical velocity component and a maximum final horizontal component as constraints. The  rocket's motion is dictated by the following differential equations (under Dreyfus' assumptions):
 
