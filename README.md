@@ -141,13 +141,13 @@ We adopt the rocket launch problem of [Dreyfus](https://apps.dtic.mil/sti/citati
 
 ```math
 	\begin{align}
-	\dot{x}_{1} &= x_{3}; \,\, &x_{1}(t_0) = 0; %& \dot{x}_{1p} &= x_{3p},\,\,x_{1p}(t_0) = 0,
+	\dot{x}_{1} &= x_{3}; \,\, &x_{1}(t_0) = 0;
 	\\
-	\dot{x}_{2} &= x_{4},\,\, &x_{2}(t_0)= 0; \label{eq:dreyfus_mitter_ii}  %&\dot{x}_{2p} &= x_{4p},  \,\,x_{2p}(t_0) = 0,
+	\dot{x}_{2} &= x_{4},\,\, &x_{2}(t_0)= 0;   
 	\\
-	\dot{x}_{3} &= a \cos u,\, &x_{3}(t_0)= 0; %&\dot{x}_{3p} &= a \cos u_p,\,\,x_{3p}(t_0) = 0,
+	\dot{x}_{3} &= a \cos u,\, &x_{3}(t_0)= 0;
 	\\
-	\dot{x}_{4} &= a \sin u - g,\,\, &x_{4}(t_0)= 0; \label{eq:dreyfus_mitter_iv} %&\dot{x}_{4p} &= a \sin u_p - g,\,\,x_{4p}(t_0) = 0, \nonumber
+	\dot{x}_{4} &= a \sin u - g,\,\, &x_{4}(t_0)= 0
 	\label{eq:dreyfus_mitter}
 	\end{align}
 ```
@@ -159,12 +159,12 @@ Being a free endpoint problem, we transform it into a game between two players \
 We now make the problem amenable to a two-player differential game analysis so that every max and min operations are in the interior and no sudden changes from extremes are too aggravating in cost.
 
 <div align="center">
-<img src="Figures/rocket/rocket.eps" height="350px" width="680px"/>
+<img src="Figures/rocket/rocket.jpg" height="350px" width="680px"/>
 </div>
 
 Motion of two rockets on a Cartesian $xz$-plane with a thrust inclination in relative coordinates given by $\theta:=u_p- u_e$.
 
-Therefore, we rewrite \eqref{eq:dreyfus_mitter} with $\bm{P}$'s motion relative to $\bm{E}$'s  along  the $(x,z)$ plane so that the relative orientation as shown in \autoref{fig:rocket_relative} is $\theta=u_p- u_e$. The coordinates of $\bm{P}$ are freely chosen; however, the coordinates of $\bm{E}$ are chosen a distance $r$ away from $(x,z)$ so that the $\bm{E} \bm{P}$ vector's inclination measured counterclockwise from the $x$ axis is $\theta$. Following the conventions in \autoref{fig:rocket_relative}, the game's relative equations of motion in reduced space is $\mc{X} = (x, z, \theta)$ where $\theta \in \left[-\frac{\pi}{2}, \frac{\pi}{2}\right)$ and $(x,z) \in \bb{R}^2$ are
+Therefore, we rewrite \eqref{eq:dreyfus_mitter} with ${P}$'s motion relative to ${E}$'s  along  the $(x,z)$ plane so that the relative orientation as shown in \autoref{fig:rocket_relative} is $\theta=u_p- u_e$. The coordinates of ${P}$ are freely chosen; however, the coordinates of ${E}$ are chosen a distance $r$ away from $(x,z)$ so that the ${E} {P}$ vector's inclination measured counterclockwise from the $x$ axis is $\theta$. Following the conventions in \autoref{fig:rocket_relative}, the game's relative equations of motion in reduced space is $\mathcal{X} = (x, z, \theta)$ where $\theta \in \left[-\frac{\pi}{2}, \frac{\pi}{2}\right)$ and $(x,z) \in \bb{R}^2$ are
 
 ```math
 	\begin{align}
@@ -175,7 +175,7 @@ Therefore, we rewrite \eqref{eq:dreyfus_mitter} with $\bm{P}$'s motion relative 
 	\end{align}
 ```
 
-The payoff, $\Phi$, is the distance of $P$ from $\bm{E}$ when capture occurs denoted as $\|\bm{P} \bm{E}\|_2$. Capture occurs when $\| \bm{P} \bm{E} \|_2 \le r$ for a pre-specified capture radius, $r>0$. In \eqref{eq:rocket_me},  we say $\bm{P}$ controls $u_p$ and is minimizing $\payoff$, and $\bm{E}$ controls $u_e$ and is maximizing $P$. The boundary of the \textit{usable part} of the origin-centered circle of radius $r$ (we set $r=1.5$ feet in our evaluations) is $\|\bm{P} \bm{E}\|_2 $. In this sentiment, we find that
+The payoff, $\Phi$, is the distance of $P$ from ${E}$ when capture occurs denoted as $\|{P} {E}\|_2$. Capture occurs when $\| {P} {E} \|_2 \le r$ for a pre-specified capture radius, $r>0$. In \eqref{eq:rocket_me},  we say ${P}$ controls $u_p$ and is minimizing $\payoff$, and ${E}$ controls $u_e$ and is maximizing $P$. The boundary of the \textit{usable part} of the origin-centered circle of radius $r$ (we set $r=1.5$ feet in our evaluations) is $\|{P} {E}\|_2 $. In this sentiment, we find that
 
 ```math
 	\begin{align}
@@ -188,7 +188,7 @@ and all capture points are specified by  useable part's interior is
 
 ```math
 \begin{align}
-\dot{r}(x,t) + \min \left[0, \hamfunc(\state, \frac{\partial r(x, t)}{\partial x})\right] \le 0,
+\dot{r}(x,t) + \min \left[0, H(x, \frac{\partial r(x, t)}{\partial x})\right] \le 0,
 \end{align}
 ```
 
@@ -196,7 +196,7 @@ with the corresponding Hamiltonian
 
 ```math
 \begin{align}
-\hamfunc(\state, p) = -\max_{u_e \in \mc{U}_e} \min_{u_p \in \mc{U}_p
+H(x, p) = -\max_{u_e \in \mathcal{U}_e} \min_{u_p \in \mathcal{U}_p
 } \begin{bmatrix}
 p_1 \\ p_2 \\ p_3
 \end{bmatrix}^T
@@ -209,7 +209,7 @@ u_p -u_e
 \end{align}
 ```
 
-Suppose that $\bm{E}$'s maximizing control i.e. $u_e$ is $\bar{u}_e$ and that $\bm{P}$'s minimizing control \ie $u_p$ is $\bar{u}_p$. We have at the point of slowest-quickest descent on the capture surface, that
+Suppose that ${E}$'s maximizing control i.e. $u_e$ is $\bar{u}_e$ and that ${P}$'s minimizing control \ie $u_p$ is $\bar{u}_p$. We have at the point of slowest-quickest descent on the capture surface, that
 
 ```math
 	\begin{align}
@@ -230,7 +230,7 @@ We set the linear velocities and accelerations equal to one another i.e. $u_e = 
 
 ```math
 \begin{align}
-\hamfunc(\state, p) &= -\cos(u) |a p_1| + \cos(u) |a p_1| -\sin (u) |a p_2| - \nonumber \\
+H(x, p) &= -\cos(u) |a p_1| + \cos(u) |a p_1| -\sin (u) |a p_2| - \nonumber \\
 & \qquad \qquad \sin (u) | ap_2 | + u | p_3| - u |p_3|.
 \label{eq:rocket_hamfunc}
 \end{align}
