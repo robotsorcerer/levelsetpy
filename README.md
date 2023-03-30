@@ -140,7 +140,6 @@ whereupon the switching curve is illustrated by the golden surface along the "ze
 We adopt the rocket launch problem of [Dreyfus](https://apps.dtic.mil/sti/citations/AD0644592). The goal is to launch a rocket in fixed time to a desired altitude, given a final vertical velocity component and a maximum final horizontal component as constraints. The  rocket's motion is dictated by the following differential equations (under Dreyfus' assumptions):
 
 ```math
-\begin{subequations}
 	\begin{align}
 	\dot{x}_{1} &= x_{3}; \,\, &x_{1}(t_0) = 0; %& \dot{x}_{1p} &= x_{3p},\,\,x_{1p}(t_0) = 0,
 	\\
@@ -149,9 +148,8 @@ We adopt the rocket launch problem of [Dreyfus](https://apps.dtic.mil/sti/citati
 	\dot{x}_{3} &= a \cos u,\, &x_{3}(t_0)= 0; %&\dot{x}_{3p} &= a \cos u_p,\,\,x_{3p}(t_0) = 0,
 	\\
 	\dot{x}_{4} &= a \sin u - g,\,\, &x_{4}(t_0)= 0; \label{eq:dreyfus_mitter_iv} %&\dot{x}_{4p} &= a \sin u_p - g,\,\,x_{4p}(t_0) = 0, \nonumber
-	\end{align}
 	\label{eq:dreyfus_mitter}
-\end{subequations}
+	\end{align}
 ```
 
 where, $(x_1, x_2)$ are respectively the horizontal and vertical range of the rockets (in feet), $(x_3, x_4)$ are respectively the horizontal and vertical velocities of the rockets (in feet per second), while $a$ and $g$ are respectively the acceleration and gravitational accelerations (in feet per square second).
@@ -169,14 +167,12 @@ Motion of two rockets on a Cartesian $xz$-plane with a thrust inclination in rel
 Therefore, we rewrite \eqref{eq:dreyfus_mitter} with $\bm{P}$'s motion relative to $\bm{E}$'s  along  the $(x,z)$ plane so that the relative orientation as shown in \autoref{fig:rocket_relative} is $\theta=u_p- u_e$. The coordinates of $\bm{P}$ are freely chosen; however, the coordinates of $\bm{E}$ are chosen a distance $r$ away from $(x,z)$ so that the $\bm{E} \bm{P}$ vector's inclination measured counterclockwise from the $x$ axis is $\theta$. Following the conventions in \autoref{fig:rocket_relative}, the game's relative equations of motion in reduced space is $\mc{X} = (x, z, \theta)$ where $\theta \in \left[-\frac{\pi}{2}, \frac{\pi}{2}\right)$ and $(x,z) \in \bb{R}^2$ are
 
 ```math
-\begin{subequations}
 	\begin{align}
 	\dot{x} &= a_p \cos \theta + u_e x, \\
 	\dot{z} &=a_p \sin \theta + a_e + u_e x - g, \\
 	\dot{\theta} &= u_p -u_e.
 	\label{eq:rocket_me}
 	\end{align}
-\end{subequations}
 ```
 
 The payoff, $\Phi$, is the distance of $P$ from $\bm{E}$ when capture occurs denoted as $\|\bm{P} \bm{E}\|_2$. Capture occurs when $\| \bm{P} \bm{E} \|_2 \le r$ for a pre-specified capture radius, $r>0$. In \eqref{eq:rocket_me},  we say $\bm{P}$ controls $u_p$ and is minimizing $\payoff$, and $\bm{E}$ controls $u_e$ and is maximizing $P$. The boundary of the \textit{usable part} of the origin-centered circle of radius $r$ (we set $r=1.5$ feet in our evaluations) is $\|\bm{P} \bm{E}\|_2 $. In this sentiment, we find that
@@ -216,12 +212,10 @@ u_p -u_e
 Suppose that $\bm{E}$'s maximizing control i.e. $u_e$ is $\bar{u}_e$ and that $\bm{P}$'s minimizing control \ie $u_p$ is $\bar{u}_p$. We have at the point of slowest-quickest descent on the capture surface, that
 
 ```math
-\begin{subequations}
 	\begin{align}
 	\bar{u}_e &= p_1 x - p_3, \\
 	\bar{u}_p &= p_3 - p_2 x.
 	\end{align}
-\end{subequations}
 ```
 
 <div align="center">
