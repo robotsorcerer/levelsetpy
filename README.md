@@ -135,7 +135,112 @@ The analytical time to reach the origin, after computation (please see the cited
 
 whereupon the switching curve is illustrated by the golden surface along the "zero-phase" of the phase plot above. We will like to use the level sets library to (over)-approximate this analytical time-to-reach the origin.
 
+### Barrier Surface of the Target Set/Tube of a Differential Game (Problem of Mayer).
 
+We adopt the rocket launch problem of [Dreyfus](https://apps.dtic.mil/sti/citations/AD0644592). The goal is to launch a rocket in fixed time to a desired altitude, given a final vertical velocity component and a maximum final horizontal component as constraints. The  rocket's motion is dictated by the following differential equations (under Dreyfus' assumptions):
+
+```math
+\begin{subequations}
+	\begin{align}
+	\dot{x}_{1} &= x_{3}; \,\, &x_{1}(t_0) = 0; %& \dot{x}_{1p} &= x_{3p},\,\,x_{1p}(t_0) = 0,
+	\\
+	\dot{x}_{2} &= x_{4},\,\, &x_{2}(t_0)= 0; \label{eq:dreyfus_mitter_ii}  %&\dot{x}_{2p} &= x_{4p},  \,\,x_{2p}(t_0) = 0,
+	\\
+	\dot{x}_{3} &= a \cos u,\, &x_{3}(t_0)= 0; %&\dot{x}_{3p} &= a \cos u_p,\,\,x_{3p}(t_0) = 0,
+	\\
+	\dot{x}_{4} &= a \sin u - g,\,\, &x_{4}(t_0)= 0; \label{eq:dreyfus_mitter_iv} %&\dot{x}_{4p} &= a \sin u_p - g,\,\,x_{4p}(t_0) = 0, \nonumber
+	\end{align}
+	\label{eq:dreyfus_mitter}
+\end{subequations}
+```
+
+where, $(x_1, x_2)$ are respectively the horizontal and vertical range of the rockets (in feet), $(x_3, x_4)$ are respectively the horizontal and vertical velocities of the rockets (in feet per second), while $a$ and $g$ are respectively the acceleration and gravitational accelerations (in feet per square second).
+
+Being a free endpoint problem, we transform it into a game between two players \eqref{eq:dreyfus_mitter} without the terminal time constraints  defined in~\cite{JacobsonMayne}. Let the states of $P$ and $E$ be now denoted as $(x_p, x_e)$ respectively which are driven by their thrusts $(u_p, u_e)$ respectively in the $xz$-plane (see Figure \ref{fig:rocket_relative}). The relevant kinematic equations are \eqref{eq:dreyfus_mitter_ii} and \eqref{eq:dreyfus_mitter_iv}.
+
+We now make the problem amenable to a two-player differential game analysis so that every max and min operations are in the interior and no sudden changes from extremes are too aggravating in cost.
+
+<div align="center">
+<img src="Figures/rocket/rocket.eps" height="350px" width="680px"/>
+</div>
+
+Motion of two rockets on a Cartesian $xz$-plane with a thrust inclination in relative coordinates given by $\theta:=u_p- u_e$.
+
+Therefore, we rewrite \eqref{eq:dreyfus_mitter} with $\bm{P}$'s motion relative to $\bm{E}$'s  along  the $(x,z)$ plane so that the relative orientation as shown in \autoref{fig:rocket_relative} is $\theta=u_p- u_e$. The coordinates of $\bm{P}$ are freely chosen; however, the coordinates of $\bm{E}$ are chosen a distance $r$ away from $(x,z)$ so that the $\bm{E} \bm{P}$ vector's inclination measured counterclockwise from the $x$ axis is $\theta$. Following the conventions in \autoref{fig:rocket_relative}, the game's relative equations of motion in reduced space is $\mc{X} = (x, z, \theta)$ where $\theta \in \left[-\frac{\pi}{2}, \frac{\pi}{2}\right)$ and $(x,z) \in \bb{R}^2$ are
+
+```math
+\begin{subequations}
+	\begin{align}
+	\dot{x} &= a_p \cos \theta + u_e x, \\
+	\dot{z} &=a_p \sin \theta + a_e + u_e x - g, \\
+	\dot{\theta} &= u_p -u_e.
+	\label{eq:rocket_me}
+	\end{align}
+\end{subequations}
+```
+
+The payoff, $\Phi$, is the distance of $P$ from $\bm{E}$ when capture occurs denoted as $\|\bm{P} \bm{E}\|_2$. Capture occurs when $\| \bm{P} \bm{E} \|_2 \le r$ for a pre-specified capture radius, $r>0$. In \eqref{eq:rocket_me},  we say $\bm{P}$ controls $u_p$ and is minimizing $\payoff$, and $\bm{E}$ controls $u_e$ and is maximizing $P$. The boundary of the \textit{usable part} of the origin-centered circle of radius $r$ (we set $r=1.5$ feet in our evaluations) is $\|\bm{P} \bm{E}\|_2 $. In this sentiment, we find that
+
+```math
+	\begin{align}
+	r^2 &=  x^2 + z^2,
+	\label{eq:rocket_value_func}
+	\end{align}
+```
+
+and all capture points are specified by  useable part's interior is
+
+```math
+\begin{align}
+\dot{r}(x,t) + \min \left[0, \hamfunc(\state, \frac{\partial r(x, t)}{\partial x})\right] \le 0,
+\end{align}
+```
+
+with the corresponding Hamiltonian
+
+```math
+\begin{align}
+\hamfunc(\state, p) = -\max_{u_e \in \mc{U}_e} \min_{u_p \in \mc{U}_p
+} \begin{bmatrix}
+p_1 \\ p_2 \\ p_3
+\end{bmatrix}^T
+\begin{bmatrix}
+a_p \cos \theta + u_e x \\
+a_p \sin \theta + a_e + u_p x - g \\
+u_p -u_e
+\end{bmatrix}.
+\label{eq:ham_def}
+\end{align}
+```
+
+Suppose that $\bm{E}$'s maximizing control i.e. $u_e$ is $\bar{u}_e$ and that $\bm{P}$'s minimizing control \ie $u_p$ is $\bar{u}_p$. We have at the point of slowest-quickest descent on the capture surface, that
+
+```math
+\begin{subequations}
+	\begin{align}
+	\bar{u}_e &= p_1 x - p_3, \\
+	\bar{u}_p &= p_3 - p_2 x.
+	\end{align}
+\end{subequations}
+```
+
+<div align="center">
+<img src="Figures/rocket_zerolev.jpg" height="330px" width="330px"/>
+<img src="Figures/rocket_ls_final.jpg" height="330px" width="330px"/>
+</div>
+
+Initial and final backward reachable tubes for the rocket system (\cf \autoref{fig:rocket_relative}) computed using the method outlined in \cite{Crandall1984, OsherFronts, MitchellLSToolbox}. We set $a_e = a_p = 64ft/sec^2$ and $g=32 ft/sec^2$ as in Dreyfus' original example. We compute the reachable set by optimizing for the paths of slowest-quickest descent in equation \eqref{eq:ham_def}.
+
+
+We set the linear velocities and accelerations equal to one another i.e. $u_e = u_p$ and $a_e = a_p$ so that the Hamiltonian takes the form
+
+```math
+\begin{align}
+\hamfunc(\state, p) &= -\cos(u) |a p_1| + \cos(u) |a p_1| -\sin (u) |a p_2| - \nonumber \\
+& \qquad \qquad \sin (u) | ap_2 | + u | p_3| - u |p_3|.
+\label{eq:rocket_hamfunc}
+\end{align}
+```
 
 ### Citing this work
 
