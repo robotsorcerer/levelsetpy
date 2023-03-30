@@ -159,7 +159,7 @@ Being a free endpoint problem, we transform it into a game between two players \
 We now make the problem amenable to a two-player differential game analysis so that every max and min operations are in the interior and no sudden changes from extremes are too aggravating in cost.
 
 <div align="center">
-<img src="Figures/rocket.jpg" height="350px" width="680px"/>
+<img src="Figures/rocket.jpg" height="465px" width="512px"/>
 </div>
 
 Motion of two rockets on a Cartesian $xz$-plane with a thrust inclination in relative coordinates given by $\theta:=u_p- u_e$.
