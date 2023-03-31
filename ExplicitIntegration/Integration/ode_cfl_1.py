@@ -59,7 +59,7 @@ def odeCFL1(schemeFunc, tspan, y0, options=None, schemeData=None):
        not be used in this case because of the excessive memory requirements
        for storing solutions at multiple timesteps.
 
-     The output version of schemeData will normally be identical to the inp.t
+     The output version of schemeData will normally be identical to the input
        version, and therefore can be ignored.  However, it is possible for
        schemeFunc or a PostTimestep routine (see odeCFLset) to modify the
        structure during integration, and the version of schemeData at tf is
