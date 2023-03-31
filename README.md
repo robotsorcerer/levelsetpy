@@ -30,7 +30,6 @@ We adopt the rocket launch problem of [Dreyfus](https://apps.dtic.mil/sti/citati
 	\dot{x}_{3} &= a \cos u,\, &x_{3}(t_0)= 0;
 	\\
 	\dot{x}_{4} &= a \sin u - g,\,\, &x_{4}(t_0)= 0
-	\label{eq:dreyfus_mitter}
 	\end{align}
 ```
 
@@ -47,7 +46,7 @@ We now make the problem amenable to a two-player differential game analysis so t
 Motion of two rockets on a Cartesian $xz$-plane with a thrust inclination in relative coordinates given by $\theta:=u_p- u_e$.
 Therefore, we rewrite Dreyfus's equation with ${P}$'s motion relative to ${E}$'s  along  the $(x,z)$ plane so that the relative orientation as illustrated above is $\theta=u_p- u_e$. The coordinates of ${P}$ are freely chosen; however, the coordinates of ${E}$ are chosen a distance $r$ away from $(x,z)$ so that the ${E} {P}$ vector's inclination measured counterclockwise from the $x$ axis is $\theta$. Following the conventions in the figure above, the game's relative equations of motion in _*reduced space*_ is $\mathcal{X} = (x, z, \theta)$ where $\theta \in \left[-\frac{\pi}{2}, \frac{\pi}{2}\right)$ and $(x,z) \in \mathbb{R}^2$ are
 
-```math
+```math`
 	\begin{align}
 	\dot{x} &= a_p \cos \theta + u_e x, \\
 	\dot{z} &=a_p \sin \theta + a_e + u_e x - g, \\
