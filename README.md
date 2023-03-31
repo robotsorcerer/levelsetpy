@@ -219,7 +219,7 @@ A point $(x_1, x_2)$ on the state grid belongs to the set of states $S(t^\star)$
 <img src="Figures/Dint/dint_03.jpeg" height="300px" width="400px"/>
 </div>
 
-Time to reach the origin at different integration steps. Left: Stacked numerical BRS at $t=0.25$ secs. Right: Stacked numerical BRS at $t=0.75$ secs. 
+Time to reach the origin at different integration steps. Left: Stacked numerical BRS at $t=0.25$ secs. Right: Stacked numerical BRS at $t=0.75$ secs.
 
 
 #### Geometry of Implicit Surfaces
@@ -264,11 +264,11 @@ Time to reach the origin at different integration steps. Left: Stacked numerical
 
 ### Citing this work
 
-If you have found this library of routines and packages useful for you, please cite it.
+If you have found this library of routines and packages useful, please cite it:
 
 ```
 @article{LevPy,
-title   = {A GPU-Accelerated Python Software Package for HJ Reachability Analysis and Level Set Evolutions.},
+title   = {LevelSetPy: A GPU-Accelerated Python Software Package for Resolving Hamilton-Jacobi PDEs and Level Set Evolutions},
 publisher={Molu, Lekan},
 author  = {Molu, Lekan},
 howpublished = {\url{https://github.com/robotsorcerer/LevelSetPy}},
