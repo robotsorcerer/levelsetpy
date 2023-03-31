@@ -50,7 +50,7 @@ def show3D(g=None, mesh=None, winsize=(16, 9), title='Zero Level Set', ax=None, 
     ax.set_xlim3d(*xlim)
     ax.set_ylim3d(*ylim)
     ax.set_zlim3d(*zlim)
-    
+
     ax.set_xlabel("X-axis", fontdict = fontdict)
     ax.set_ylabel("Y-axis", fontdict = fontdict)
     ax.set_zlabel("Z-axis", fontdict = fontdict)

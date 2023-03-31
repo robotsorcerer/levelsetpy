@@ -1,5 +1,13 @@
 __all__ = ["DoubleIntegratorVisualizer"]
 
+__author__ 		= "Lekan Molu"
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "patlekno@icloud.com"
+__status__ 		= "Completed"
+
 import os
 import time
 import numpy as np
@@ -199,7 +207,7 @@ class DoubleIntegratorVisualizer(object):
 			self._ax[1].set_ylabel(rf'$x_2$', fontdict=self.params.fontdict.__dict__)
 			self._ax[1].set_title(f'LF TTR@{time_step} secs.', fontdict=self.params.fontdict.__dict__)
 
-			
+
 			self._ax[1].set_xlim([-1.02, 1.02])
 			self._ax[1].set_ylim([-1.01, 1.01])
 			self._ax[1].set_xticks([-0.75, 0.0, 1.01])

@@ -1,5 +1,13 @@
 __all__ = ['upwindFirstENO3b']
 
+__author__ 		= "Lekan Molu"
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "patlekno@icloud.com"
+__status__ 		= "Completed"
+
 import copy
 import logging
 import cupy as cp
@@ -45,8 +53,6 @@ def  upwindFirstENO3b(grid, data, dim, generateAll=0):
        derivL      Left approximation of first derivative (same size as data).
        derivR      Right approximation of first derivative (same size as data).
 
-
-     Ian Mitchell, 1/26/04
     Lekan on August 16, 2021
     Added cupy impl on Nov 18, 21
     """

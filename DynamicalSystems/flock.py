@@ -1,8 +1,16 @@
 __all__ = ["Flock"]
 
-__author__ = "Lekan Molux"
-__date__ = "Dec. 21, 2021"
-__comment__ = "Two Dubins Vehicle in Relative Coordinates"
+
+__author__ 		= "Lekan Molu"
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "patlekno@icloud.com"
+__status__ 		= "Completed"
+
+__date__        = "Dec. 21, 2021"
+__comment__     = "Two Dubins Vehicle in Relative Coordinates"
 
 import random
 import hashlib
@@ -162,7 +170,7 @@ class Flock(Bird):
         # recursively update each agent's headings based on neighbors
         for idx, agent in enumerate(self.vehicles):
             self._update_headings(agent, idx)
-            
+
     def _compare_neighbor(self, agent1, agent2):
         "Check if agent1 is a neighbor of agent2."
         if np.abs(agent1.label - agent2.label) < agent1.neigh_rad:
@@ -217,7 +225,7 @@ class Flock(Bird):
 
         # update vehicles not under attack
         vehicles = [x for x in self.vehicles if x is not self.vehicles[self.attacked_idx]]
-        
+
         # get hamiltonian of non-attcked agents
         unattacked_hams  = []
         for vehicle in vehicles:
@@ -231,7 +239,7 @@ class Flock(Bird):
         # sum all the energies of the system
         ham = unattacked_hams + [attacked_ham.get() ]
         ham = shapeUnion(ham)
-        
+
         return cp.asarray(ham)
 
     def dissipation(self, t, data, derivMin, derivMax, \
@@ -243,7 +251,7 @@ class Flock(Bird):
 
         # update vehicles not under attack
         vehicles = [x for x in self.vehicles if x is not self.vehicles[self.attacked_idx]]
-        
+
         # get dissipation of non-attcked agents
         alphas  = []
         for vehicle in vehicles:

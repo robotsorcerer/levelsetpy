@@ -1,5 +1,13 @@
 __all__ = ["termLaxFriedrichs"]
 
+__author__ 		= "Lekan Molu"
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "patlekno@icloud.com"
+__status__ 		= "Completed"
+
 import copy
 import cupy as cp
 import numpy as np
@@ -101,7 +109,7 @@ def termLaxFriedrichs(t, y, schemeData):
     derivL = [cp.nan for i in range(grid.dim)]
     derivR = [cp.nan for i in range(grid.dim)]
     derivC = [cp.nan for i in range(grid.dim)]
-    
+
     # Calculate the co-states of value function
     for i in range(grid.dim):
         derivL[i], derivR[i] = thisSchemeData.CoStateCalc(grid, data, i)

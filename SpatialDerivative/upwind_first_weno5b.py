@@ -48,11 +48,6 @@ def upwindFirstWENO5b(grid, data, dim, generateAll=False):
        derivL      Left approximation of first derivative (same size as data).
        derivR      Right approximation of first derivative (same size as data).
 
-     Copyright 2004 Ian M. Mitchell (mitchell@cs.ubc.ca).
-     This software is used, copied and distributed under the licensing
-       agreement contained in the file LICENSE in the top directory of
-       the distribution.
-
      Copyright Lekan Molu, 8/21/2021.
     """
     if isinstance(data, cp.ndarray):

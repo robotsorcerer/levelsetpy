@@ -1,5 +1,14 @@
 __all__ = ["artificialDissipationGLF"]
 
+__author__ 		= "Lekan Molu"
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "patlekno@icloud.com"
+__status__ 		= "Completed"
+
+
 import cupy as cp
 import numpy as np
 from LevelSetPy.Utilities import *
@@ -58,10 +67,10 @@ def artificialDissipationGLF(t, data, derivL, derivR, schemeData):
        partialFunc	  \alpha^i (dimension i is an argument to partialFunc).
        diss	  all the terms in \hat H except the H term.
 
-    
 
-     Reference: Osher, S., & Shu, C.-W. (1991). High-Order Essentially Nonoscillatory 
-                Schemes for Hamilton-Jacobi Equations. Society for Industrial and 
+
+     Reference: Osher, S., & Shu, C.-W. (1991). High-Order Essentially Nonoscillatory
+                Schemes for Hamilton-Jacobi Equations. Society for Industrial and
                 Applied Mathematics, 28(4), 907–922. https://doi.org/10.2514/1.9320
 
      Lekan Molux, November 18, 2021
@@ -103,14 +112,14 @@ def artificialDissipationGLF(t, data, derivL, derivR, schemeData):
     for i in range(grid.dim):
         alpha = schemeData.partialFunc(t, data, derivMin, derivMax, \
                       schemeData, i)
-                      
+
         diss += (0.5 * derivDiff[i] * alpha)
         if isinstance(alpha, cp.ndarray):
-          #from Osher and Fedkiw, the coeffs are 
+          #from Osher and Fedkiw, the coeffs are
           # set to the max possible values of |H_{x|y}| respectively
-          alpha = cp.max(alpha.flatten())  
+          alpha = cp.max(alpha.flatten())
 
-        
+
         stepBoundInv += (alpha / grid.dx.item(i))
 
     stepBound = (1 / stepBoundInv).get().item()

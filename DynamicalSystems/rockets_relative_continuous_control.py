@@ -1,8 +1,16 @@
 __all__ = ["RocketSystemRelContinuous"]
 
-__author__ = "Lekan Molux"
-__date__ = "Dec. 21, 2021"
-__comment__ = "Two Rockets in Relative Coordinates"
+
+__author__ 		= "Lekan Molu"
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "patlekno@icloud.com"
+__status__ 		= "Completed"
+
+__date__        = "Dec. 21, 2021"
+__comment__     = "Two Rockets in Relative Coordinates"
 
 import cupy as cp
 import numpy as np
@@ -70,8 +78,8 @@ class RocketSystemRelContinuous():
 
     def update_controls(self, value_derivs):
         p1, p2, p3 = value_derivs[0], value_derivs[1], value_derivs[2]
-        self.u_e = p1*self.grid.xs[0]-p3 
-        self.u_p = p3 - p2*self.grid.xs[0] 
+        self.u_e = p1*self.grid.xs[0]-p3
+        self.u_p = p3 - p2*self.grid.xs[0]
 
 
     def hamiltonian(self, t, value, value_derivs, finite_diff_bundle):
@@ -94,14 +102,14 @@ class RocketSystemRelContinuous():
                     .derivFunc: Upwinding scheme (upwindFirstENO2).
                     .innerFunc: terminal Lax Friedrichs integration scheme.
         """
-        self.update_controls(value_derivs)        
-        self.value_derivs  = value_derivs 
+        self.update_controls(value_derivs)
+        self.value_derivs  = value_derivs
 
         p1, p2, p3 = value_derivs[0], value_derivs[1], value_derivs[2]
 
         p1_coeff = self.a*cp.cos(self.grid.xs[2]) + self.u_e*self.grid.xs[0]
         p2_coeff = self.a*cp.sin(self.grid.xs[2]) + self.u_p*self.grid.xs[0] + self.a - self.g
-        p3_coeff = self.u_p - self.u_e 
+        p3_coeff = self.u_p - self.u_e
 
         Hxp = -p1*p1_coeff - p2*p2_coeff + p3*p3_coeff
 
@@ -113,7 +121,7 @@ class RocketSystemRelContinuous():
             Parameters
             ==========
                 dim: The dissipation of the Hamiltonian on
-                the grid (see 5.11-5.12 of O&F). Also see 
+                the grid (see 5.11-5.12 of O&F). Also see
                 "High-Order Essentially Nonoscillatory Schemes for Hamilton-Jacobi Equations"
                     Osher, Stanley and Shu, Chi-Wang.
 

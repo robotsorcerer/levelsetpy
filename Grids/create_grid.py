@@ -1,5 +1,14 @@
 __all__ = ["createGrid"]
 
+__author__ 		= "Lekan Molu"
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "patlekno@icloud.com"
+__status__ 		= "Completed"
+
+
 import logging
 import numpy as np
 from LevelSetPy.Utilities import *
@@ -51,7 +60,7 @@ def  createGrid(grid_min, grid_max, N, pdDims=None, process=True, low_mem=False)
                     dim=len(grid_min), min=grid_min,
                     max=grid_max, N=N, bdry= cell(len(grid_min), 1)
                     ))
-    
+
     #axis to ignore for target set creation
     g.axis_align = pdDims
 

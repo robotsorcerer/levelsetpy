@@ -1,5 +1,14 @@
 __all__ = ['flockGrid']
 
+__author__ 		= "Lekan Molu"
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "patlekno@icloud.com"
+__status__ 		= "Completed"
+
+
 import numpy as np
 from .create_grid import createGrid
 
@@ -11,11 +20,11 @@ def flockGrid(grid_mins = [[-1, -1, -np.pi]], grid_maxs = [[1, 1, np.pi]],\
         Parameters:
         ==========
             .grid_mins: A list of lists containing the minimum dimensions of every subgrid for
-            every bird in this flock. This list must have as its first entry the min dims of 
+            every bird in this flock. This list must have as its first entry the min dims of
             the reference bird.
 
             .grid_maxs: A list of lists containing the maximum dimensions of every subgrid for
-            every bird in this flock. This list must have as its first entry the min dims of 
+            every bird in this flock. This list must have as its first entry the min dims of
             the reference bird.
 
             .dx: Equidistant spacing between leading flock's grid and every consecutive follower's
@@ -36,9 +45,9 @@ def flockGrid(grid_mins = [[-1, -1, -np.pi]], grid_maxs = [[1, 1, np.pi]],\
         agent_grid_maxs = [(x-dx) for x in grid_maxs[agent-1]]
         grid_maxs.append(agent_grid_maxs)
 
-        # create grids 
+        # create grids
         grids +=[createGrid(np.asarray(([grid_mins[agent-1]])), \
                             np.asarray(([grid_maxs[agent-1]])), \
                             N=N, pdDims=2)]
 
-    return grids                            
+    return grids
