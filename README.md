@@ -218,7 +218,8 @@ A point $(x_1, x_2)$ on the state grid belongs to the set of states $S(t^\star)$
 <img src="Figures/Dint/dint_02.jpeg" height="300px" width="400px"/>
 <img src="Figures/Dint/dint_03.jpeg" height="300px" width="400px"/>
 </div>
-+ Time to reach the origin at different integration steps. Left: Stacked numerical BRS at $t=0.25$ secs. Right: Stacked numerical BRS at $t=0.75$ secs. 
+
+Time to reach the origin at different integration steps. Left: Stacked numerical BRS at $t=0.25$ secs. Right: Stacked numerical BRS at $t=0.75$ secs. 
 
 
 #### Geometry of Implicit Surfaces
