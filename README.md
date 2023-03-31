@@ -51,7 +51,6 @@ Therefore, we rewrite Dreyfus's equation with ${P}$'s motion relative to ${E}$'s
 	\dot{x} &= a_p \cos \theta + u_e x, \\
 	\dot{z} &=a_p \sin \theta + a_e + u_e x - g, \\
 	\dot{\theta} &= u_p -u_e.
-	\label{eq:rocket_me}
 	\end{align}
 ```
 
@@ -60,7 +59,6 @@ The payoff, $\Phi$, is the distance of $P$ from ${E}$ when capture occurs denote
 ```math
 	\begin{align}
 	r^2 &=  x^2 + z^2,
-	\label{eq:rocket_value_func}
 	\end{align}
 ```
 
@@ -85,7 +83,6 @@ a_p \cos \theta + u_e x \\
 a_p \sin \theta + a_e + u_p x - g \\
 u_p -u_e
 \end{bmatrix}.
-\label{eq:ham_def}
 \end{align}
 ```
 
