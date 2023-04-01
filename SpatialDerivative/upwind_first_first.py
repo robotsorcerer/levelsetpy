@@ -1,5 +1,13 @@
 __all__ = ['upwindFirstFirst']
 
+__author__ 		= "Lekan Molu"
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "patlekno@icloud.com"
+__status__ 		= "Completed"
+
 import copy
 import logging
 import cupy as cp
@@ -35,10 +43,6 @@ def upwindFirstFirst(grid, data, dim, generateAll=False):
      This software is used, copied and distributed under the licensing
        agreement contained in the file LICENSE in the top directory of
        the distribution.
-
-     Ian Mitchell, 5/12/03
-     modified to avoid permuting, Ian Mitchell, 5/27/03
-     modified into upwind form, Ian Mitchell, 1/22/04
 
      Lekan Molu, 8/21/2021
          Added cupy impl on Nov 18, 21

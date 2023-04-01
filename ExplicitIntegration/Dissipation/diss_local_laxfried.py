@@ -1,5 +1,14 @@
 __all__ = ["artificialDissipationLLF"]
 
+__author__ 		= "Lekan Molu"
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "patlekno@icloud.com"
+__status__ 		= "Completed"
+
+
 import copy
 import cupy as cp
 import numpy as np
@@ -62,8 +71,8 @@ def artificialDissipationLLF(t, data, derivL, derivR, schemeData):
        diss	  all the terms in \hat H except the H term.
 
 
-     Reference: Osher, S., & Shu, C.-W. (1991). High-Order Essentially Nonoscillatory 
-                Schemes for Hamilton-Jacobi Equations. Society for Industrial and 
+     Reference: Osher, S., & Shu, C.-W. (1991). High-Order Essentially Nonoscillatory
+                Schemes for Hamilton-Jacobi Equations. Society for Industrial and
                 Applied Mathematics, 28(4), 907–922. https://doi.org/10.2514/1.9320
 
      Ian Mitchell 2/13/04

@@ -1,5 +1,6 @@
-__all__ = ["InteractiveVisualizer"]
-__author__ 	= "Lekan Molu"
+__all__ 		= ["InteractiveVisualizer"]
+
+__author__ 		= "Lekan Molu"
 __copyright__ 	= "2021, Decomposing Level Sets of PDEs"
 __license__ 	= "Lekan License"
 __maintainer__ 	= "Lekan Molu"

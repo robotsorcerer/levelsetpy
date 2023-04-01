@@ -1,8 +1,16 @@
 __all__ = ["RocketSystemRel"]
 
-__author__ = "Lekan Molux"
-__date__ = "Dec. 21, 2021"
-__comment__ = "Two Rockets in Relative Coordinates"
+
+__author__ 		= "Lekan Molu"
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "patlekno@icloud.com"
+__status__ 		= "Completed"
+
+__date__        = "Dec. 21, 2021"
+__comment__     = "Two Rockets in Relative Coordinates"
 
 import cupy as cp
 import numpy as np

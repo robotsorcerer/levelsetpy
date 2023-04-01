@@ -3,6 +3,12 @@ __all__ = ["Bird"]
 __author__ = "Lekan Molux"
 __date__ = "Dec. 25, 2021"
 __comment__ = "Single Dubins Vehicle under Leaderless Coordination."
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "patlekno@icloud.com"
+__status__ 		= "Completed"
 
 import time
 import random
@@ -34,7 +40,7 @@ class Bird():
             .label (int): The label of this BirdSingle drawn from the set {1,2,...,n}
             .payff_width: width of the sdf cylindrical shape.
 
-            
+
             Author: Lekan Molux.
             December 2021
         """
@@ -80,7 +86,7 @@ class Bird():
         self.u = None
         self.deltaT = 0.05 # use system eps for a rough small start due to in deltaT
         self.rand_walk_cov = random.random() if rw_cov is None else rw_cov
-        
+
         self.reset_neighbors()
         assert isinstance(init_xyw, np.ndarray), "initial state must either be a numpy or cupy array."
         r, c = init_xyw.shape
@@ -154,7 +160,7 @@ class Bird():
         assert isinstance(neigh, Bird), "Neighbor must be a BirdSingle member function."
 
         if neigh in self.neighbors or neigh==self:
-            return 
+            return
         self.neighbors.append(neigh)
 
     @property
@@ -177,7 +183,7 @@ class Bird():
             Computes the Dubins vehicular dynamics in relative
             coordinates (deterministic dynamics).
 
-            \dot{x}_1 = v cos x_3 
+            \dot{x}_1 = v cos x_3
             \dot{x}_2 = v sin x_3
             \dot{x}_3 = w * I[sizeof(x_3)]
         """
@@ -207,12 +213,12 @@ class Bird():
         xdot = [
                 self.v_e + self.v_p * np.cos(cur_state[2]) + cur_state[2],
                 self.v_p * np.sin(cur_state[2]) - self.w_e * cur_state[0],
-                self.w_p - self.w_e 
+                self.w_p - self.w_e
         ]
 
         # x = cur_state + xdot*self.deltaT
         # return np.asarray(x, dtype=cur_state.dtype)
-        
+
         x = cur_state + np.asarray([xdot], dtype=cur_state.dtype).T*self.deltaT
         return np.asarray(x, dtype=cur_state.dtype)
 
@@ -234,7 +240,7 @@ class Bird():
 
     def hamiltonian_abs(self, t, data, value_derivs, finite_diff_bundle):
         """
-            Uses the absolute coordinates of vehicles to compute the 
+            Uses the absolute coordinates of vehicles to compute the
             global Hamiltonian.
             H = p_1 [v_e cos(x_3)] + p_2 [v_e sin x_3] \
                    + p_3| + w |p_3|
@@ -262,7 +268,7 @@ class Bird():
         #     xdot      = self.dynamics_abs(self.cur_state)
         #     self.cur_state = self.runge_kutta4(xdot)
         # self.cur_state = self.dynamics_abs(self.cur_state)
-        
+
         cur_state = cp.asarray(self.cur_state)
 
         p1_coeff = -cp.cos(cur_state[2,0])
@@ -270,7 +276,7 @@ class Bird():
 
         θr  = -self.w_e
 
-        Hxp = (p1 * p1_coeff + p2 * p2_coeff  + p3 *  θr)      
+        Hxp = (p1 * p1_coeff + p2 * p2_coeff  + p3 *  θr)
 
         return  Hxp
 
@@ -313,7 +319,7 @@ class Bird():
 
         Hxp = (p1 * p1_coeff - p2 * p2_coeff ) + \
                w_e_upper_bound*cp.abs(p2 * cur_state[0,0] - p1*cur_state[1,0]+p3) +\
-               w_e_upper_bound * cp.abs(p3)    
+               w_e_upper_bound * cp.abs(p3)
 
         return  Hxp
 
@@ -322,7 +328,7 @@ class Bird():
             Parameters
             ==========
                 dim: The dissipation of the Hamiltonian on
-                the grid (see 5.11-5.12 of O&F). Robust cohesion is simulated 
+                the grid (see 5.11-5.12 of O&F). Robust cohesion is simulated
                 against a worst-possible attacker.
 
                 t, data, derivMin, derivMax, schemeData: other parameters
@@ -330,10 +336,10 @@ class Bird():
                 we use in the levelsetpy toolbox.
         """
         assert dim>=0 and dim <3, "Dubins vehicle dimension has to between 0 and 2 inclusive."
-        
+
         w_e_upper_bound = max([state.cur_state[2] for state in self.neighbors])
         w_e_lower_bound = min([state.cur_state[2] for state in self.neighbors])
-        
+
         cur_state = np.asarray(self.cur_state)
 
         if dim==0:
@@ -350,7 +356,7 @@ class Bird():
             Parameters
             ==========
                 dim: The dissipation of the Hamiltonian on
-                the grid (see 5.11-5.12 of O&F). Robust cohesion is simulated 
+                the grid (see 5.11-5.12 of O&F). Robust cohesion is simulated
                 against a worst-possible attacker.
 
                 t, data, derivMin, derivMax, schemeData: other parameters
@@ -358,10 +364,10 @@ class Bird():
                 we use in the levelsetpy toolbox.
         """
         assert dim>=0 and dim <3, "Dubins vehicle dimension has to between 0 and 2 inclusive."
-        
+
         w_e_upper_bound = max([state.cur_state[2,0] for state in self.neighbors])
         w_e_lower_bound = min([state.cur_state[2,0] for state in self.neighbors])
-        
+
         cur_state = np.asarray(self.cur_state)
 
         if dim==0:
@@ -370,7 +376,7 @@ class Bird():
             return  np.abs(self.v_p * np.sin(cur_state[2])) + np.abs(w_e_upper_bound * cur_state[0])
         elif dim==2:
             return self.w_p + w_e_upper_bound
-        
+
     def __hash__(self):
         # hash method to distinguish agents from one another
         return int(hashlib.md5(str(self.label).encode('utf-8')).hexdigest(),16)

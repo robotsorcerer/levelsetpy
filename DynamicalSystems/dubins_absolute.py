@@ -1,8 +1,14 @@
 __all__ = ["DubinsVehicleAbs"]
 
-__author__ = "Lekan Molux"
-__date__ = "Dec. 21, 2021"
-__comment__ = "Two Dubins Vehicle in Absolute Coordinates"
+__author__ 		= "Lekan Molu"
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "patlekno@icloud.com"
+__status__ 		= "Completed"
+__date__        = "Dec. 21, 2021"
+__comment__     = "Two Dubins Vehicle in Absolute Coordinates"
 
 import time
 import cupy as cp
@@ -77,10 +83,10 @@ class DubinsVehicleAbs():
             WWT = W@W.T*self.rand_walk_cov**2
             WWCov = np.tile(WWT, [len(init_state), 1, 1])
             rand_walker = init_state*WWCov
-            
+
             self.state = init_state + rand_walker
         else:
-            self.state = init_state 
+            self.state = init_state
 
         return self.state
 
@@ -89,7 +95,7 @@ class DubinsVehicleAbs():
             Computes the Dubins vehicular dynamics in relative
             coordinates (deterministic dynamics).
 
-            \dot{x}_1 = v cos x_3 
+            \dot{x}_1 = v cos x_3
             \dot{x}_2 = v sin x_3
             \dot{x}_3 = w * I[sizeof(x_3)]
         """

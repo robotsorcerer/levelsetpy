@@ -1,10 +1,11 @@
 __author__ 		= "Lekan Molu"
-__copyright__ 	= "2021, Decomposing Level Sets of PDEs"
-__credits__  	= "Sylvia Herbert, Ian Abraham"
-__license__ 	= "Lekan License"
+__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__credits__  	= "There are None."
+__license__ 	= "Molux Licence"
 __maintainer__ 	= "Lekan Molu"
 __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
+
 
 import time, os
 import numpy as np
