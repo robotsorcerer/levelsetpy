@@ -217,7 +217,7 @@ class DoubleIntegratorVisualizer(object):
 		time.sleep(self.params.pause_time)
 
 	def fmt(self, x):
-	    s = f"{x:.2f}"
+		s = f"{x:.2f}"
 		if s.endswith("0"):
 			s = f"{x:.0f}"
 		return rf"{s} \s" if plt.rcParams["text.usetex"] else f"{s}"
