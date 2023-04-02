@@ -57,7 +57,7 @@ def upwindFirstENO3aHelper(grid, data, dim, approx4, stripDD=False):
        DD:      List containing the divided difference tables
                      (optional).
 
-    Copyright Lekan Molu, 8/21/2021. Adopted from Ian M. Mitchell (mitchell@cs.ubc.ca).
+    Copyright Lekan Molu, 8/21/2021. 
     """
     #---------------------------------------------------------------------------
     if isinstance(data, np.ndarray):

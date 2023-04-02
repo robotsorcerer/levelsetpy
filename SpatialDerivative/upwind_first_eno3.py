@@ -44,11 +44,6 @@ def  upwindFirstENO3(grid, data, dim, generateAll=0):
        derivL      Left approximation of first derivative (same size as data).
        derivR      Right approximation of first derivative (same size as data).
 
-     Copyright 2004 Ian M. Mitchell (mitchell@cs.ubc.ca).
-     This software is used, copied and distributed under the licensing
-       agreement contained in the file LICENSE in the top directory of
-       the distribution.
-
     Lekan on August 16, 2021
     """
 

@@ -40,12 +40,6 @@ def checkEquivalentApprox(approx1, approx2,bound):
                      where the magnitude > bound (NaN otherwise).
        absError    The absolute error at each point in the array.
 
-     Copyright 2004 Ian M. Mitchell (mitchell@cs.ubc.ca).
-     This software is used, copied and distributed under the licensing
-       agreement contained in the file LICENSE in the top directory of
-       the distribution.
-
-     Ian Mitchell, 1/23/04
     """
 
     # Approximate magnitude of the solution

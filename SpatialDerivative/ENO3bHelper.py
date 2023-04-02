@@ -51,12 +51,6 @@ def upwindFirstENO3bHelper(grid, gdata, dim, direction):
                      guards against very small smoothness estimates.
                      (Optional, don't request it unless you need it)
 
-     Copyright 2004 Ian M. Mitchell (mitchell@cs.ubc.ca).
-     This software is used, copied and distributed under the licensing
-       agreement contained in the file LICENSE in the top directory of
-       the distribution.
-
-     Ian Mitchell, 1/23/03
      Lekan on August 16, 2021
     """
     #---------------------------------------------------------------------------
