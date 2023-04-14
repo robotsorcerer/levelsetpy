@@ -19,7 +19,7 @@ def shapeEllipsoid(grid, center=None, radius=1.0):
     """
      shapeEllipsoid: implicit surface function for an ellipsoid.
 
-       data = shapeEllipsoid(grid, axis_align, center, radius)
+       data = shapeEllipsoid(grid, center, radius)
 
      Creates an implicit surface function (actually signed distance) for
         an ellipsoid.

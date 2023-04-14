@@ -129,7 +129,7 @@ def isfield(bund, field):
 
 def cputime():
     "Ad-hoc current time function."
-    return time.time()
+    return time.perf_counter()
 
 def error(arg):
     "Pushes std errors out to screen."

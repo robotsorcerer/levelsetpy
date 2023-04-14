@@ -262,6 +262,9 @@ class Flock(Bird):
         attacked_alpha = self.vehicles[self.attacked_idx].dissipation(t, data, derivMin, derivMax, schemeData, dim)
         alphas.append(attacked_alpha)
 
+        #if isinstance(alphas, list) or isinstance(alphas, tuple):
+        #    alphas = np.maximum.reduce(*alphas)
+        #else:
         alphas = np.maximum.reduce(alphas, dtype=object)
         return cp.asarray(alphas)
 

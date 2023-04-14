@@ -58,6 +58,7 @@ class DubinsVehicleRel():
             self.v_p = self.v(-u_bound)
         else:
             self.v_p = self.v(u_bound)
+            self.v_e = self.v(u_bound)
 
         # set angular speeds
         if not np.isscalar(w_bound) and len(w_bound) > 1:
@@ -65,6 +66,7 @@ class DubinsVehicleRel():
             self.w_p = self.w(-u_bound)
         else:
             self.w_p = self.w(u_bound)
+            self.w_e = self.w(u_bound)
 
     def hamiltonian(self, t, data, value_derivs, finite_diff_bundle):
         """
@@ -86,9 +88,9 @@ class DubinsVehicleRel():
                     .derivFunc: Upwinding scheme (upwindFirstENO2).
                     .innerFunc: terminal Lax Friedrichs integration scheme.
         """
-        p1, p2, p3 = value_derivs[0], value_derivs[1], value_derivs[2]
-        p1_coeff = self.v_e - self.v_p * cp.cos(self.grid.xs[2])
-        p2_coeff = self.v_p * cp.sin(self.grid.xs[2])
+        p1, p2, p3  = value_derivs[0], value_derivs[1], value_derivs[2]
+        p1_coeff    = self.v_e - self.v_p * cp.cos(self.grid.xs[2])
+        p2_coeff    = self.v_p * cp.sin(self.grid.xs[2])
 
         Hxp = p1 * p1_coeff - p2 * p2_coeff - self.w(1)*cp.abs(p1*self.grid.xs[1] - \
                 p2*self.grid.xs[0] - p3) + self.w(1) * cp.abs(p3)
@@ -135,3 +137,4 @@ class DubinsVehicleRel():
         ]
 
         return xdot
+

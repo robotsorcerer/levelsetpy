@@ -115,7 +115,7 @@ def odeCFLset(kwargs=None):
         if (isinstance(options.postTimeStep, list)):
             for j in range(len(options.postTimeStep)):
                 if(not hasattr(options.postTimeStep[j], '__call__')):
-                    raise ValueError('Each element in a postTimeStep cell vector must '
+                    raise ValueError('Each element in a postTimeStep vector must '
                     'be a function handle.')
         else:
             raise ValueError('PostTimeStep parameter must be a function handle or '

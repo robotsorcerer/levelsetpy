@@ -77,73 +77,61 @@ def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
 
     Lekan 08/16/2021
     """
-    #---------------------------------------------------------------------------
-    # How close (relative) do we need to be to the final time?
+
+    "How close (relative) do we need to be to the final time?"
     small = 100 * eps
 
-    #---------------------------------------------------------------------------
-    # Make sure we have the default options settings
-    if not options:
-        options = odeCFLset()
-    #---------------------------------------------------------------------------
-    # This routine includes multiple substeps, and the CFL restricted timestep
-    #   size is chosen on the first substep.  Subsequent substeps may violate
-    #   CFL slightly how much should be allowed before generating a warning?
+    if not options: options = odeCFLset()
+    """
+        This routine includes multiple substeps, and the CFL restricted timestep
+        size is chosen on the first substep.  Subsequent substeps may violate
+        CFL slightly how much should be allowed before generating a warning?
 
-    # This choice allows 20% more than the user specified CFL number,
-    #   capped at a CFL number of unity.  The latter cap may cause
-    #   problems if the user is using a very aggressive CFL number.
-    safetyFactorCFL = min(1.0, 1.2 * options.factorCFL)
-    #---------------------------------------------------------------------------
-    # Number of timesteps to be returned.
+        This choice allows 20% more than the user specified CFL number,
+        capped at a CFL number of unity.  The latter cap may cause
+        problems if the user is using a very aggressive CFL number.
+
+        safetyFactorCFL = min(1.0, 1.2 * options.factorCFL)
+
+        Number of timesteps to be returned.
+    """
     numT = len(tspan)
 
-    #---------------------------------------------------------------------------
-    # If we were asked to integrate forward to a final time.
+    " If we were asked to integrate forward to a final time."
     if(numT == 2):
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        # Is this a vector level set integration?
         if(iscell(y0)):
             numY = len(y0)
 
-            # We need a cell vector form of schemeFunc.
             if(iscell(schemeFunc)):
                 schemeFuncCell = schemeFunc
             else:
                 schemeFuncCell = [schemeFunc for i in range(numY)]
         else:
-            # Set numY, but be careful: ((numY == 1) & iscell(y0)) is possible.
             numY = 1
 
-            # We need a cell vector form of schemeFunc.
             schemeFuncCell = [schemeFunc]
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        t = tspan[0]
-        steps = 0
+
+        t         = tspan[0]
+        steps     = 0
         startTime = cputime()
         stepBound = np.zeros((numY), dtype=np.float64)
-        ydot = cell(numY)
-        y = copy.copy(y0)
+        ydot      = cell(numY)
+        y         = copy.copy(y0)
 
         while(tspan[1] - t >= small * np.abs(tspan[1])):
-            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            # First substep: Forward Euler from t_n to t_{n+1}.
-
-            # Approximate the derivative and CFL restriction.
+            " First substep: Forward Euler from t_n to t_{n+1}. Approximate the derivative and CFL restriction."
             for i in range(numY):
-                # termRestrictUpdate->termLaxFriedrichs
                 ydot[i], stepBound[i], schemeData = schemeFuncCell[i](t, y, schemeData)
 
                 # If this is a vector level set, rotate the lists of vector arguments.
-                if(iscell(y)):
-                    y = y[1:]
+                if(iscell(y)): y = y[1:]
 
-                if(iscell(schemeData)):
-                    schemeData = schemeData[1:]
-            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            # Determine CFL bound on timestep, but not beyond the final time.
-            #   For vector level sets, use the most restrictive stepBound.
-            #   We'll use this fixed timestep for both substeps..
+                if(iscell(schemeData)): schemeData = schemeData[1:]
+
+            """
+             Determine CFL bound on timestep, but not beyond the final time.
+               For vector level sets, use the most restrictive stepBound. We'll use this fixed timestep for both substeps.
+            """
 
             deltaT = np.min(np.hstack((options.factorCFL*stepBound,  \
                                         tspan[1] - t, options.maxStep)))
@@ -157,31 +145,31 @@ def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
             else:
                 y1 = y + deltaT * ydot[0]
 
-            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            # Second substep: Forward Euler from t_{n+1} to t_{n+2}.
+            """
+                Second substep: Forward Euler from t_{n+1} to t_{n+2}.
 
-            # Approximate the derivative.
-            #   We will also check the CFL condition for gross violation.
+                Approximate the derivative.
+                  We will also check the CFL condition for gross violation.
+            """
             for i in range(numY):
                 ydot[i], stepBound[i], schemeData = schemeFuncCell[i](t1, y1, schemeData)
 
                 # If this is a vector level set, rotate the lists of vector arguments.
-                if(iscell(y1)):
-                    y1 = y1[1:]
+                if(iscell(y1)):  y1 = y1[1:]
 
-                if(iscell(schemeData)):
-                    schemeData = schemeData[1:]
+                if(iscell(schemeData)): schemeData = schemeData[1:]
 
-            # Check CFL bound on timestep:
-            #   If the timestep chosen on the first substep violates
-            #   the CFL condition by a significant amount, throw a warning.
-            #   For vector level sets, use the most restrictive stepBound.
-            # Occasional failure should not cause too many problems.
-            if(deltaT > np.min(safetyFactorCFL * stepBound)):
+            """
+              Check CFL bound on timestep: If the timestep chosen on the first substep violates
+              the CFL condition by a significant amount, throw a warning. For vector level sets,
+              use the most restrictive stepBound. Occasional failure should not cause too many problems.
+            """
+            # if(deltaT > np.min(safetyFactorCFL * stepBound)):
+            if(deltaT > np.min(options.factorCFL * stepBound)):
                 violation = deltaT / np.asarray(stepBound)
                 warn(f'Second substep violated CFL effective number {violation}')
 
-            # Take the second substep.
+            "Take the second substep."
             t2 = t1 + deltaT
             if(iscell(y1)):
                 y2 = cell(numY, 1)
@@ -190,13 +178,11 @@ def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
             else:
                 y2 = y1 + deltaT * ydot[0]
 
-            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            # If there is a terminal event function registered, we need
-            #   to maintain the info from the last timestep.
+            "If there is a terminal event function registered, we need to maintain the info from the last timestep."
             if (isfield(options, "terminalEvent") and np.logical_not(options.terminalEvent)):
                 yOld , tOld = y,  t
 
-            # Average t_n and t_{n+2} to get second order approximation of t_{n+1}.
+            "Average t_n and t_{n+2} to get second order approximation of t_{n+1}."
             t = 0.5 * (t + t2)
             if(iscell(y2)):
                 for i in range(numY):
@@ -206,17 +192,15 @@ def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
 
             steps += 1
 
-            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            # If there is one or more post-timestep routines, call them.
+            "If there is one or more post-timestep routines, call them."
             if isfield(options, 'postTimeStep') and options.postTimeStep:
                 y, schemeData = odeCFLcallPostTimestep(t, y, schemeData, options)
 
-            # If we are in single step mode, then do not repeat.
+            "If we are in single step mode, then do not repeat."
             if(strcmp(options.singleStep, 'on')):
                 break
 
-            # If there is a terminal event function, establish initial sign
-            #   of terminal event vector.
+            "If there is a terminal event function, establish initial sign of terminal event vector."
             if (isfield(options, 'terminalEvent') and options.terminalEvent):
                 eventValue, schemeData = options.terminalEvent(t, y, tOld, yOld, schemeData)
 
@@ -231,12 +215,10 @@ def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
             info(f'{steps} steps in {(endTime-startTime):.2} seconds from  {tspan[0]:.2f} to {t:.2f}.')
     #---------------------------------------------------------------------------
     elif(numT > 2):
-        # If we were asked for the solution at multiple timesteps.
         t, y, schemeData = odeCFLmultipleSteps(odeCFL2, schemeFunc, tspan, y0, options, schemeData)
 
     #---------------------------------------------------------------------------
     else:
-        # Malformed time span.
         ValueError('tspan must contain at least two entries')
 
     return t, y, schemeData

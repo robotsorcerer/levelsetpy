@@ -114,15 +114,15 @@ class RCBRTVisualizer(object):
 			if isfield(self.params,  "title"):
 				self._ax[0].set_title(self.params.title, fontdict=self.params.fontdict)
 			else:
-				self._ax[0].set_title(f'Initial {self.params.level} Tube.', fontdict=self.params.fontdict.__dict__)
+				self._ax[0].set_title(f'Initial {self.params.level} Tube.', fontdict=self.params.fontdict)
 
 		elif self.grid.dim==2:
 			self._ax[0].contourf(self.grid.xs[0], self.grid.xs[1], mesh.mesh, colors='cyan')
 			self._ax[0].set_title(f'BRT\'s {self.params.level}-LevelSet.', \
 									fontdict=self.params.fontdict)
-		self._ax[0].set_xlabel(rf'x$_1$ (m)', fontdict=self.params.fontdict.__dict__)
-		self._ax[0].set_ylabel(rf'x$_2$ (m)', fontdict=self.params.fontdict.__dict__)
-		self._ax[0].set_zlabel(rf'$\omega$ (deg)',fontdict=self.params.fontdict.__dict__)
+		self._ax[0].set_xlabel(rf'x$_1$ (m)', fontdict=self.params.fontdict)
+		self._ax[0].set_ylabel(rf'x$_2$ (m)', fontdict=self.params.fontdict)
+		self._ax[0].set_zlabel(rf'$\omega$ (deg)',fontdict=self.params.fontdict)
 
 	def update_tube(self, mesh_bundle, time_step, delete_last_plot=False):
 		"""
@@ -152,10 +152,10 @@ class RCBRTVisualizer(object):
 		elif len(self.grid.dim)==2:
 			self._ax[1].contourf(self.grid.xs[0], self.grid.xs[1], mesh_bundle, colors='cyan')
 
-		self._ax[1].set_xlabel(rf'x$_1$ (m)', fontdict=self.params.fontdict.__dict__)
-		self._ax[1].set_ylabel(rf'x$_2$ (m)', fontdict=self.params.fontdict.__dict__)
-		self._ax[1].set_zlabel(rf'$\omega$ (deg)',fontdict=self.params.fontdict.__dict__)
-		self._ax[1].set_title(f'BRT at {time_step} secs.', fontdict=self.params.fontdict.__dict__)
+		self._ax[1].set_xlabel(rf'x$_1$ (m)', fontdict=self.params.fontdict)
+		self._ax[1].set_ylabel(rf'x$_2$ (m)', fontdict=self.params.fontdict)
+		self._ax[1].set_zlabel(rf'$\omega$ (deg)',fontdict=self.params.fontdict)
+		self._ax[1].set_title(f'BRT at {time_step} secs.', fontdict=self.params.fontdict)
 
 		self.draw()
 		time.sleep(self.params.pause_time)
