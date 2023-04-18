@@ -21,9 +21,11 @@ import matplotlib.gridspec as gridspec
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from skimage import measure
 
-from os.path import abspath, join, expanduser
-sys.path.append(abspath(join('..')))
-sys.path.append(abspath(join('../..')))
+from os.path import dirname, abspath, join
+sys.path.append(dirname(dirname(abspath(__file__))))
+# from os.path import abspath, join, expanduser
+# sys.path.append(abspath(join('..')))
+# sys.path.append(abspath(join('../..')))
 
 from LevelSetPy.Utilities import *
 from LevelSetPy.Visualization import *
@@ -35,9 +37,8 @@ from LevelSetPy.ExplicitIntegration.Integration import odeCFL2, odeCFLset
 from LevelSetPy.ExplicitIntegration.Dissipation import artificialDissipationGLF
 from LevelSetPy.ExplicitIntegration.Term import termRestrictUpdate, termLaxFriedrichs
 
-from os.path import dirname, abspath, join
-sys.path.append(dirname(dirname(abspath(__file__))))
-from BRATVisualization.rcbrt_visu import RCBRTVisualizer
+
+from LevelSetPy.Visualization import RCBRTVisualizer
 
 parser = argparse.ArgumentParser(description='Hamilton-Jacobi Analysis')
 parser.add_argument('--silent', '-si', action='store_false', help='silent debug print outs' )
@@ -156,6 +157,7 @@ def main(args):
 		if os.path.exists("/opt/LevPy/Rockets/data/rocket.npz"):
 			os.remove("/opt/LevPy/Rockets/data/rocket.npz")
 
+		cpu_time_buffer = []
 		while(t_range[1] - t_now > small * t_range[1]):
 			itr_start.record()
 			cpu_start = cputime()
@@ -191,7 +193,8 @@ def main(args):
 			itr_end.synchronize()
 			cpu_end = cputime()
 
-			info(f't: {time_step} | GPU time: {(cp.cuda.get_elapsed_time(itr_start, itr_end)):.2f} | CPU Time: {(cpu_end-cpu_start):.2f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
+			cpu_time_buffer.append(cpu_end-cpu_start)
+			info(f't: {time_step} | GPU time: {(cp.cuda.get_elapsed_time(itr_start, itr_end)/1e3):.4f} | CPU Time: {(cpu_end-cpu_start):.2f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
 
 		if not args.load_brt:
 			os.makedirs("/opt/LevPy/Rockets/data/") if not os.path.exists("/opt/LevPy/Rockets/data/") else None
