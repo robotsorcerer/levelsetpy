@@ -328,7 +328,7 @@ def main(args):
 						| CPU Time: {(cpu_end-cpu_start):.2f}, | Targ bnds {min(y):.2f}/{max(y):.2f} \
 						| Norm: {norm_tracker[-1]:.2f}')
 				
-				if len(norm_tracker)>10 and cp.all(cp.diff(norm_tracker[:-5])<.01):
+				if len(norm_tracker)>20: # and cp.all(cp.diff(norm_tracker[:-5])<.01):
 					logger.info("Terminating the game!")
 					break
 			end_time = cputime()

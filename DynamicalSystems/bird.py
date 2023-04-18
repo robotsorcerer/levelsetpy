@@ -343,11 +343,11 @@ class Bird():
         cur_state = np.asarray(self.cur_state)
 
         if dim==0:
-            return np.abs(self.v_p * np.cos(cur_state[2,0]))#* self.grid.xs[0].get()
+            return np.abs(self.v_p * np.cos(cur_state[2,0]))
         elif dim==1:
-            return np.abs(self.v_e * np.sin(cur_state[2,0]))#* self.grid.xs[1].get()
+            return np.abs(self.v_e * np.sin(cur_state[2,0]))
         elif dim==2:
-            return w_e_lower_bound #* self.grid.xs[2].get()
+            return w_e_lower_bound
 
     def dissipation(self, t, data, derivMin, derivMax, schemeData, dim):
         """
