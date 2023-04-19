@@ -21,9 +21,8 @@ import matplotlib.gridspec as gridspec
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from skimage import measure
 
-from os.path import abspath, join, dirname, expanduser
-# sys.path.append(abspath(join('..')))
-# sys.path.append(abspath(join('../..')))
+from os.path import abspath, join, expanduser
+
 from LevelSetPy.Utilities import *
 from LevelSetPy.Visualization import *
 from LevelSetPy.Grids import createGrid
@@ -34,8 +33,7 @@ from LevelSetPy.ExplicitIntegration.Integration import odeCFL2, odeCFLset
 from LevelSetPy.ExplicitIntegration.Dissipation import artificialDissipationGLF
 from LevelSetPy.ExplicitIntegration.Term import termRestrictUpdate, termLaxFriedrichs
 
-from os.path import dirname, abspath, join
-# sys.path.append(dirname(dirname(abspath(__file__))))
+from os.path import abspath, join
 from LevelSetPy.Visualization import ROCKETSVisualizer
 
 parser = argparse.ArgumentParser(description='Hamilton-Jacobi Analysis')

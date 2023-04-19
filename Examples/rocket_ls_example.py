@@ -21,12 +21,6 @@ import matplotlib.gridspec as gridspec
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from skimage import measure
 
-# from os.path import dirname, abspath, join
-# sys.path.append(dirname(dirname(abspath(__file__))))
-# from os.path import abspath, join, expanduser
-# sys.path.append(abspath(join('..')))
-# sys.path.append(abspath(join('../..')))
-
 from LevelSetPy.Utilities import *
 from LevelSetPy.Visualization import *
 from LevelSetPy.Grids import createGrid

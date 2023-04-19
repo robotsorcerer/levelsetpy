@@ -15,9 +15,7 @@ import logging
 import numpy as np
 import matplotlib.pyplot as plt
 
-from os.path import abspath, join, dirname
-# sys.path.append(dirname(dirname(abspath(__file__))))
-# sys.path.append(abspath(join('..'))) # be sure LevelSetPy is in the same level of your folder structure as largeBRAT
+from os.path import abspath, join
 
 from LevelSetPy.DDPReach import *
 from LevelSetPy.Utilities import *
