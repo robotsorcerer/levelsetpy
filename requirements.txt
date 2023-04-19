@@ -1,6 +1,6 @@
 numpy
 scipy
-cupy>=11.0,<=11.3
+# cupy>=11.0,<=11.3
 absl-py
 matplotlib
 scikit-image  #  for implicit function of geometric primitives
