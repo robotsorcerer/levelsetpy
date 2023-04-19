@@ -22,9 +22,9 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from skimage import measure
 
 from os.path import abspath, join, dirname, expanduser
-sys.path.append(dirname(dirname(abspath(__file__))))
+# sys.path.append(dirname(dirname(abspath(__file__))))
 
-sys.path.append(abspath(join('..')))
+# sys.path.append(abspath(join('..')))
 from LevelSetPy.Utilities import *
 from LevelSetPy.Visualization import *
 from LevelSetPy.Grids import createGrid
@@ -36,8 +36,8 @@ from LevelSetPy.ExplicitIntegration.Dissipation import artificialDissipationGLF
 from LevelSetPy.ExplicitIntegration.Term import termRestrictUpdate, termLaxFriedrichs
 
 from os.path import dirname, abspath, join
-sys.path.append(dirname(dirname(abspath(__file__))))
-from BRATVisualization.rcbrt_visu import RCBRTVisualizer
+# sys.path.append(dirname(dirname(abspath(__file__))))
+from LevelSetPy.Visualization import RCBRTVisualizer
 
 parser = argparse.ArgumentParser(description='Hamilton-Jacobi Analysis')
 parser.add_argument('--silent', '-si', action='store_false', help='silent debug print outs' )

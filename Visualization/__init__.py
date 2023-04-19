@@ -12,3 +12,4 @@ from .mesh_implicit import implicit_mesh
 from .show_3d import show3D
 from .show_2d import show2D
 from .dint_viz import DoubleIntegratorVisualizer
+from .rocket_visu import ROCKETSVisualizer

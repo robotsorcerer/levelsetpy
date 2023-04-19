@@ -4,7 +4,7 @@ ver = {}
 try:
     with open('Utilities/_version.py') as fd:
         exec(fd.read(), ver)
-    version = ver.get('__version__', 'dev')
+    version = ver.get('__version__', '0.0.dev0')
 except IOError:
     version = 'dev'
 
@@ -28,18 +28,25 @@ Operating System :: Unix
 Operating System :: MacOS
 """
 
+
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+
 setup(
     name='levelsetpy',
     version=version,
     author='Lekan Molu',
     author_email='lekanmolu@microsoft.com',
-    url='http://scriptedonachip.com',
-    description='Level Set Methods in Python',
+    url='https://github.com/robotsorcerer/LevelSetPy',
+    description='GPU-Accelerated Level Set Methods in Python',
     long_description=long_description,
-    # packages=find_packages(exclude=['benchmarks']),
+    packages=find_packages(),
     classifiers=[f for f in CLASSIFIERS.split('\n') if f],
-    install_requires=['numpy',
-                      'scipy',
-                      'cupy',
-                      'matplotlib'],
+    # install_requires=['numpy',
+    #                   'scipy',
+    #                   'cupy==11.3',
+    #                   'absl-py',
+    #                   'scikit-image',
+    #                   'matplotlib'],
+    install_requires=required,
 )

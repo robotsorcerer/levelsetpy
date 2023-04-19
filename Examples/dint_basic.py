@@ -100,8 +100,8 @@ from os.path import abspath, join
 import matplotlib.pyplot as plt
 
 from os.path import abspath, join, expanduser
-sys.path.append(abspath(join('..'))) # in case user launches from root folder
-sys.path.append(abspath(join('../..'))) # in case user launches from examples folder
+# sys.path.append(abspath(join('..'))) # in case user launches from root folder
+# sys.path.append(abspath(join('../..'))) # in case user launches from examples folder
 
 # Pull Mister Molux's Libraries
 from LevelSetPy.Utilities import *

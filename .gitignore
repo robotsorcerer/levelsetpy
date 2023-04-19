@@ -7,3 +7,6 @@
 ./Grids/__pycache__
 ./Utilities/__pycache__
 ./ExplicitIntegration/__pycache__
+build/**
+dist/**
+levelsetpy.egg-info/**

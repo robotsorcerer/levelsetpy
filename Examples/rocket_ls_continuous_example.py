@@ -22,8 +22,8 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from skimage import measure
 
 from os.path import abspath, join, dirname, expanduser
-sys.path.append(abspath(join('..')))
-sys.path.append(abspath(join('../..')))
+# sys.path.append(abspath(join('..')))
+# sys.path.append(abspath(join('../..')))
 from LevelSetPy.Utilities import *
 from LevelSetPy.Visualization import *
 from LevelSetPy.Grids import createGrid
@@ -35,8 +35,8 @@ from LevelSetPy.ExplicitIntegration.Dissipation import artificialDissipationGLF
 from LevelSetPy.ExplicitIntegration.Term import termRestrictUpdate, termLaxFriedrichs
 
 from os.path import dirname, abspath, join
-sys.path.append(dirname(dirname(abspath(__file__))))
-from BRATVisualization.rocket_visu import ROCKETSVisualizer as RCBRTVisualizer
+# sys.path.append(dirname(dirname(abspath(__file__))))
+from LevelSetPy.Visualization import ROCKETSVisualizer
 
 parser = argparse.ArgumentParser(description='Hamilton-Jacobi Analysis')
 parser.add_argument('--silent', '-si', action='store_false', help='silent debug print outs' )
@@ -137,7 +137,7 @@ def main(args):
 		brt = np.load(join(params.savedict.savepath, "rcbrt_cont.npz"))
 	else:
 		if args.visualize:
-			viz = RCBRTVisualizer(params=args.params)
+			viz = ROCKETSVisualizer(params=args.params)
 		t_plot = (t_range[1] - t_range[0]) / 10
 		small = 100*eps
 		options = Bundle(dict(factorCFL=0.95, stats='on', singleStep='off'))

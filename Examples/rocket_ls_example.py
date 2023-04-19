@@ -21,8 +21,8 @@ import matplotlib.gridspec as gridspec
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from skimage import measure
 
-from os.path import dirname, abspath, join
-sys.path.append(dirname(dirname(abspath(__file__))))
+# from os.path import dirname, abspath, join
+# sys.path.append(dirname(dirname(abspath(__file__))))
 # from os.path import abspath, join, expanduser
 # sys.path.append(abspath(join('..')))
 # sys.path.append(abspath(join('../..')))
@@ -52,6 +52,7 @@ parser.add_argument('--elevation', '-el', type=float, default=30., help='elevati
 parser.add_argument('--direction', '-dr',  action='store_true',  help='direction to grow the level sets. Negative by default.' )
 parser.add_argument('--azimuth', '-az', type=float, default=30., help='azimuth angle for target set plot.' )
 parser.add_argument('--pause_time', '-pz', type=float, default=.3, help='pause time between successive updates of plots' )
+
 args = parser.parse_args()
 args.verbose = True if not args.silent else False
 
@@ -158,6 +159,7 @@ def main(args):
 			os.remove("/opt/LevPy/Rockets/data/rocket.npz")
 
 		cpu_time_buffer = []
+		gpu_time_buffer = []
 		while(t_range[1] - t_now > small * t_range[1]):
 			itr_start.record()
 			cpu_start = cputime()
@@ -189,17 +191,21 @@ def main(args):
 				fig = plt.gcf()
 				fig.savefig(join(params.savedict.savepath, rf"rocket_{t_now}.jpg"), bbox_inches='tight',facecolor='None')
 
-			itr_end.record()
-			itr_end.synchronize()
-			cpu_end = cputime()
+			itr_end.record(); itr_end.synchronize(); cpu_end = cputime()
 
 			cpu_time_buffer.append(cpu_end-cpu_start)
-			info(f't: {time_step} | GPU time: {(cp.cuda.get_elapsed_time(itr_start, itr_end)/1e3):.4f} | CPU Time: {(cpu_end-cpu_start):.2f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
+			gpu_time_buffer.append(cp.cuda.get_elapsed_time(itr_start, itr_end)/1e3)
+			info(f't: {time_step} | GPU time: {gpu_time_buffer[-1]:.4f} | CPU Time: {cpu_time_buffer[-1]:.4f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
 
 		if not args.load_brt:
 			os.makedirs("/opt/LevPy/Rockets/data/") if not os.path.exists("/opt/LevPy/Rockets/data/") else None
 			np.savez_compressed("/opt/LevPy/Rockets/data/rocket.npz", brt=np.asarray(brt), \
 				meshes=np.asarray(meshes), brt_time=np.asarray(brt_time))
+		
+		end_time = cputime()
+
+		info(f"Avg. local time: ({sum(gpu_time_buffer)/len(gpu_time_buffer)}):.4f secs")
+		info(f"Total Time: ({end_time-start_time}):.4f secs")
 
 	if args.verify:
 		x0 = np.array([[1.25, 0, pi]])

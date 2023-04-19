@@ -26,8 +26,8 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 
 from os.path import abspath, join, dirname, expanduser
-sys.path.append(dirname(dirname(abspath(__file__))))
-sys.path.append(abspath(join('..')))
+# sys.path.append(dirname(dirname(abspath(__file__))))
+# sys.path.append(abspath(join('..')))
 
 from LevelSetPy.Grids import *
 from LevelSetPy.Utilities import *

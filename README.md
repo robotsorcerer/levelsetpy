@@ -1,4 +1,4 @@
-### LevelSetsPy Library
+### **LevelSetsPy Library**
 
 This codebase implements GPU-accelerated software package for solving initial value  hyperbolic partial differential equations, particularly of the evolution form of Cauchy-type Hamilton-Jacobi (HJ) equations. These HJ equations are increasingly attracting attention in the control community for analyzing reachability problems in robotics, transport, biology and other problem domains of late.  We focus on safety-critical analysis of automated systems in optimal control and reachability settings. This software package allows easy portability and extensibility to modern libraries for the analyses of safety-critical algorithms for (reinforcement) learning, control, robotics, transport, and flow problems among others.
 
@@ -16,8 +16,24 @@ year    = {2023},
 }
 ```
 
+#### **Dependencies** 
 
-### Approximate Barrier Surface of the Target Tube of Two Rockets in a Differential Game (Problem of [Mayer](https://encyclopediaofmath.org/wiki/Mayer_problem)).
++ It's best to create a virtual or conda environment in python 3.7+ (I used Python 3.8/3.9).
+
++ All the dependencies listed below are installable via: `pip install -r requirements.txt`
+
+| Dependency      | Dependency      | Dependency      | 
+| :--:     | :---:               | :---:               | 
+| [Numpy](https://numpy.org/)  | [Scipy](https://scipy.org/)  | [Cupy](https://cupy.dev/) |
+| [absl-py](https://abseil.io/docs/python/quickstart)   | [Scikit-image](https://scikit-image.org/) | [Matplotlib](https://matplotlib.org/)     | 
+
+### **Build and Install**
+
++ BUILD: `python setup.py build --build-lib=/path/to/your-desired/build`
++ INSTALL `python setup.py install --install-lib=/path/to/your-desired/build`
+
+### Examples
+#### Approximate Barrier Surface of the Target Tube of Two Rockets on a Plane.
 
 We adopt the rocket launch problem of [Dreyfus](https://apps.dtic.mil/sti/citations/AD0644592). The goal is to launch a rocket in fixed time to a desired altitude, given a final vertical velocity component and a maximum final horizontal component as constraints. For all intents and purposes pertaining to a reachability problem, we shall amend the original problem, discard the constraints and turn the problem to a planar differential game between the two rockets -- with one serving as a pursuer, $P$ and the other as an evader, $E$. Ours is an instance of the problem of Mayer. A single rocket's motion is dictated by the following differential equations (under Dreyfus' assumptions):
 
@@ -114,7 +130,7 @@ H(x, p) &= -\cos(u) |a p_1| + \cos(u) |a p_1| -\sin (u) |a p_2| -  \sin (u) | ap
 
 Using our levelsetpy toolbox, we compute the backward reachable tube of the game over a time span of $[-2.5, 0]$ seconds by running a game between the two players over 11 global optimization time steps. The initial value function (left inset of the figure above) is represented as a dynamic implicit surface over all point sets in the state space (using a signed distance function) for a coordinate-aligned cylinder whose vertical axes runs parallel to the orientation of the rockets depicted. A three-dimensional grid with uniformly spaced dimensions over an interval $[-64, 64]$ and at a resolution of $100$ points per dimension was used in updating the values. The Hamiltonian was resolved with a second-order essentially non-oscillating (ENO) upwinding scheme. This is implemented as _*upwindFirstENO2*_ function under our _*SpatialDerivative*_ package. As with all matters involving the numerical discretization schemes employed for solving Hamilton-Jacobi equations, the stability of the ensuing solution to tthe HJ PDE is of eminence. we employed a global **Lax-Friedrichs** scheme together with a total variation diminishing Runge-Kutta discretization scheme based on fluxes are chosen. The final BRT at the end of the optimization run is shown in the right inset of the figure.
 
-### Time to Reach Problems
+#### Time to Reach Problems
 
 **The jupyter notebook file for reproducing the experiments in this section are available in [dint_basic.ipynb](Notes/dint_basic.ipynb).**
 
