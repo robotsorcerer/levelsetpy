@@ -16,7 +16,9 @@ year    = {2023},
 }
 ```
 
-#### **Dependencies** 
+### **Installation and Prerequisites**
+
+### **Dependencies** 
 
 + It's best to create a virtual or conda environment in python 3.7+ (I used Python 3.8/3.9).
 
@@ -29,11 +31,23 @@ year    = {2023},
 
 ### **Build and Install**
 
-+ BUILD: `python setup.py build --build-lib=/path/to/your-desired/build`
-+ INSTALL `python setup.py install --install-lib=/path/to/your-desired/build`
+Be sure to activate your `conda` or `virtualven` environment first e.g. if your environment is named `py39`:
 
-### Examples
-#### Approximate Barrier Surface of the Target Tube of Two Rockets on a Plane.
+```bash
+	conda activate py39
+```
+
+Then install to the activated environment as follows
+
++ BUILD: `python setup.py build --build-lib=/path/to/your-desired/build`
+
++ INSTALL: via setup.py: `python setup.py install`; or via pip: `pip install -e . `
+
+Some examples listed in the [Examples](/Examples) folder are listed below:
+
+### **Examples**
+
+#### **Approximate Barrier Surface of the Target Tube of Two Rockets on a Plane.**
 
 We adopt the rocket launch problem of [Dreyfus](https://apps.dtic.mil/sti/citations/AD0644592). The goal is to launch a rocket in fixed time to a desired altitude, given a final vertical velocity component and a maximum final horizontal component as constraints. For all intents and purposes pertaining to a reachability problem, we shall amend the original problem, discard the constraints and turn the problem to a planar differential game between the two rockets -- with one serving as a pursuer, $P$ and the other as an evader, $E$. Ours is an instance of the problem of Mayer. A single rocket's motion is dictated by the following differential equations (under Dreyfus' assumptions):
 
@@ -130,7 +144,7 @@ H(x, p) &= -\cos(u) |a p_1| + \cos(u) |a p_1| -\sin (u) |a p_2| -  \sin (u) | ap
 
 Using our levelsetpy toolbox, we compute the backward reachable tube of the game over a time span of $[-2.5, 0]$ seconds by running a game between the two players over 11 global optimization time steps. The initial value function (left inset of the figure above) is represented as a dynamic implicit surface over all point sets in the state space (using a signed distance function) for a coordinate-aligned cylinder whose vertical axes runs parallel to the orientation of the rockets depicted. A three-dimensional grid with uniformly spaced dimensions over an interval $[-64, 64]$ and at a resolution of $100$ points per dimension was used in updating the values. The Hamiltonian was resolved with a second-order essentially non-oscillating (ENO) upwinding scheme. This is implemented as _*upwindFirstENO2*_ function under our _*SpatialDerivative*_ package. As with all matters involving the numerical discretization schemes employed for solving Hamilton-Jacobi equations, the stability of the ensuing solution to tthe HJ PDE is of eminence. we employed a global **Lax-Friedrichs** scheme together with a total variation diminishing Runge-Kutta discretization scheme based on fluxes are chosen. The final BRT at the end of the optimization run is shown in the right inset of the figure.
 
-#### Time to Reach Problems
+#### **Time to Reach Problems**
 
 **The jupyter notebook file for reproducing the experiments in this section are available in [dint_basic.ipynb](Notes/dint_basic.ipynb).**
 
@@ -235,7 +249,7 @@ A point $(x_1, x_2)$ on the state grid belongs to the set of states $S(t^\star)$
 Time to reach the origin at different integration steps. Left: Stacked numerical BRS at $t=0.25$ secs. Right: Stacked numerical BRS at $t=0.75$ secs.
 
 
-#### Geometry of Implicit Surfaces
+#### **Geometry of Implicit Surfaces**
 
 + Implicit representation of 2D geometric primitives on a [grid](/Grids) in 2 dimensions are herewith put forward. We construct surfaces implicitly on 2D grid nodes by performing elementary geometric operations between the representation of specific geometric primitives and grid nodal points. All the codes for reproducing these geometries are available in [test_mesh_2d_only.py](Tests/test_mesh_2d_only.py). Jupyter notebook files are available in [init_conds.ipynb](Notes/init_conds.ipynb).
 
