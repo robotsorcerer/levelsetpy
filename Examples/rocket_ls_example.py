@@ -31,8 +31,8 @@ from LevelSetPy.ExplicitIntegration.Integration import odeCFL2, odeCFLset
 from LevelSetPy.ExplicitIntegration.Dissipation import artificialDissipationGLF
 from LevelSetPy.ExplicitIntegration.Term import termRestrictUpdate, termLaxFriedrichs
 
-
-from LevelSetPy.Visualization import RCBRTVisualizer
+from os.path import join
+from LevelSetPy.Visualization import ROCKETSVisualizer
 
 parser = argparse.ArgumentParser(description='Hamilton-Jacobi Analysis')
 parser.add_argument('--silent', '-si', action='store_false', help='silent debug print outs' )
@@ -133,7 +133,7 @@ def main(args):
 		brt = np.load("data/rcbrt.npz")
 	else:
 		if args.visualize:
-			viz = RCBRTVisualizer(params=args.params)
+			viz = ROCKETSVisualizer(params=args.params)
 		t_plot = (t_range[1] - t_range[0]) / 10
 		small = 100*eps
 		options = Bundle(dict(factorCFL=0.95, stats='on', singleStep='off'))
