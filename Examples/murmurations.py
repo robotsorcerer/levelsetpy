@@ -49,9 +49,9 @@ parser.add_argument('--flock_payoff', '-sp', action='store_false', default=False
 parser.add_argument('--resume', '-rz', type=str, help='Resume BRAT optimization from a previous iteration?' )
 parser.add_argument('--mode', '-md', default='single', type=str, help='Stitch BRATs together? <stitch|single>' )
 parser.add_argument('--load_brt', '-lb', action='store_true', help='Load saved brt?' )
-parser.add_argument('--verify', '-vf', action='store_true', default=True, help='Verify a trajectory?' )
-parser.add_argument('--elevation', '-el', type=float, default=-15., help='Elevation angle for target set plot.' )
-parser.add_argument('--azimuth', '-az', type=float, default=10., help='Azimuth angle for target set plot.' )
+parser.add_argument('--verify', '-vf', action='store_true', default=False, help='Verify a trajectory?' )
+parser.add_argument('--elevation', '-el', type=float, default=25., help='Elevation angle for target set plot.' )
+parser.add_argument('--azimuth', '-az', type=float, default=45., help='Azimuth angle for target set plot.' )
 parser.add_argument('--pause_time', '-pz', type=float, default=.3, help='Pause time between successive updates of plots' )
 args = parser.parse_args()
 args.verbose = True if not args.silent else False
@@ -282,15 +282,18 @@ def main(args):
 					h5file.create_dataset(f'value/spacing', data=spacing, compression="gzip")
 			times, norm_tracker = [], []
 			start_time = cputime()
+			
+			cpu_time_buffer, gpu_time_buffer = [], [] 
+
 			while(t_range[1] - t_now > small * t_range[1]):
-				itr_start.record()
-				cpu_start = time.perf_counter()
+				itr_start.record(); cpu_start = cputime()
 
 				# Reshape data array into column vector for ode solver call.
 				y0 = value_rolling.flatten()
 
 				# How far to step?
 				t_span = np.hstack([ t_now, min(t_range[1], t_now + t_plot) ])
+				
 				# Integrate a timestep.
 				t, y, _ = odeCFL3(termRestrictUpdate, t_span, y0, odeCFLset(options), finite_diff_data)
 				cp.cuda.Stream.null.synchronize()
@@ -302,7 +305,7 @@ def main(args):
 				# compute zero-level set
 				value_rolling_np = value_rolling.get()
 				mesh_bundle=implicit_mesh(value_rolling_np, level=0, spacing=tuple(spacing.tolist()),
-												edge_color=None,  face_color=color)
+												edge_color=None,  face_color=next(colors))
 				# track the evolution of the growth of the level set so that when the norm stops decreasing, 
 				# we terminate the game
 				norm_tracker.append(LA.norm(y, 2))
@@ -323,17 +326,17 @@ def main(args):
 
 				itr_end.record(); itr_end.synchronize(); cpu_end = cputime()
 
-				times.append((cp.cuda.get_elapsed_time(itr_start, itr_end)/1e3))
-				info(f't: {time_step} | GPU time: {times[-1]:.2f} \
-						| CPU Time: {(cpu_end-cpu_start):.2f}, | Targ bnds {min(y):.2f}/{max(y):.2f} \
-						| Norm: {norm_tracker[-1]:.2f}')
-				
+				cpu_time_buffer.append(cpu_end-cpu_start)
+				gpu_time_buffer.append(cp.cuda.get_elapsed_time(itr_start, itr_end)/1e3)
+				info(f't: {time_step} | GPU time: {gpu_time_buffer[-1]:.4f} | CPU Time: {cpu_time_buffer[-1]:.4f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
+
+					
 				if len(norm_tracker)>20: # and cp.all(cp.diff(norm_tracker[:-5])<.01):
 					logger.info("Terminating the game!")
 					break
 			end_time = cputime()
 
-			info(f"Avg. local time: ({sum(times)/len(times)}):.4f secs")
+			info(f"Avg. local time: ({sum(gpu_time_buffer)/len(gpu_time_buffer)}):.4f secs")
 			info(f"Total Time: ({end_time-start_time}):.4f secs")
 
 		if args.verify:

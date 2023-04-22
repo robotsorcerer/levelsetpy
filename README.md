@@ -43,7 +43,7 @@ Then install to the activated environment as follows
 
 + BUILD: `python setup.py build --build-lib=/path/to/your-desired/build`
 
-+ INSTALL: via setup.py: `python setup.py install`; or via pip: `pip install -e . `
++ INSTALL: via pip: `pip install -e . `
 
 Some examples listed in the [Examples](/Examples) folder are listed below:
 

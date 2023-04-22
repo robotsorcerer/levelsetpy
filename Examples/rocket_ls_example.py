@@ -16,10 +16,8 @@ import sys, os
 import cupy as cp
 import numpy  as np
 from math import pi
+from os.path import join
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from skimage import measure
 
 from LevelSetPy.Utilities import *
 from LevelSetPy.Visualization import *
@@ -31,8 +29,6 @@ from LevelSetPy.ExplicitIntegration.Integration import odeCFL2, odeCFLset
 from LevelSetPy.ExplicitIntegration.Dissipation import artificialDissipationGLF
 from LevelSetPy.ExplicitIntegration.Term import termRestrictUpdate, termLaxFriedrichs
 
-from os.path import join
-from LevelSetPy.Visualization import ROCKETSVisualizer
 
 parser = argparse.ArgumentParser(description='Hamilton-Jacobi Analysis')
 parser.add_argument('--silent', '-si', action='store_false', help='silent debug print outs' )
@@ -40,11 +36,9 @@ parser.add_argument('--save', '-sv', action='store_false', help='save BRS/BRT at
 parser.add_argument('--visualize', '-vz', action='store_false', help='visualize level sets?' )
 parser.add_argument('--load_brt', '-lb', action='store_true', help='load saved brt?' )
 parser.add_argument('--stochastic', '-st', action='store_true', help='Run trajectories with stochastic dynamics?' )
-parser.add_argument('--compute_traj', '-ct', action='store_false', help='Run trajectories with stochastic dynamics?' )
-parser.add_argument('--verify', '-vf', action='store_true', default=True, help='visualize level sets?' )
-parser.add_argument('--elevation', '-el', type=float, default=30., help='elevation angle for target set plot.' )
+parser.add_argument('--elevation', '-el', type=float, default=25., help='elevation angle for target set plot.' )
 parser.add_argument('--direction', '-dr',  action='store_true',  help='direction to grow the level sets. Negative by default.' )
-parser.add_argument('--azimuth', '-az', type=float, default=30., help='azimuth angle for target set plot.' )
+parser.add_argument('--azimuth', '-az', type=float, default=45., help='azimuth angle for target set plot.' )
 parser.add_argument('--pause_time', '-pz', type=float, default=.3, help='pause time between successive updates of plots' )
 
 args = parser.parse_args()
@@ -87,7 +81,7 @@ def preprocessing():
 def main(args):
 	# global params
 	g, value_init = preprocessing()
-	rocket_rel = RocketSystemRel(g, u_bound, w_bound, a=64, g=32)
+	rocket_rel = RocketSystemRel(g, u_bound, w_bound, a=1, g=32)
 
 	# after creating value function, make state space cupy objects
 	g.xs = [cp.asarray(x) for x in g.xs]
@@ -101,7 +95,7 @@ def main(args):
 									positive = args.direction,  # direction to grow the updated level set
 								))
 
-	t_range = [0, 2.5]
+	t_range = [0, 1.0]
 
 	# Visualization paramters
 	spacing = tuple(g.dx.flatten().tolist())
@@ -119,7 +113,7 @@ def main(args):
 					 'pause_time': args.pause_time,
 					 'level': 0, # which level set to visualize
 					 'winsize': (16,9),
-					 'fontdict': Bundle({'fontsize':18, 'fontweight':'bold'}),
+					 'fontdict': {'fontsize':18, 'fontweight':'bold'},
 					 "savedict": Bundle({"save": False,
 									"savename": "dint_basic.jpg",
 									"savepath": join("/opt/LevPy/Rockets")
@@ -128,42 +122,44 @@ def main(args):
 	args.spacing = spacing
 	args.init_mesh = init_mesh; args.params = params
 
+	if not os.path.exists(params.savedict.savepath):
+		os.makedirs(params.savedict.savepath)
+
+	os.makedirs(join(params.savedict.savepath, "data")) if not os.path.exists(join(params.savedict.savepath, "data")) else None
+
 	if args.load_brt:
 		args.save = False
-		brt = np.load("data/rcbrt.npz")
+		brt = np.load(join(params.savedict.savepath, "data/rocket_brt.npz"))
 	else:
 		if args.visualize:
 			viz = ROCKETSVisualizer(params=args.params)
-		t_plot = (t_range[1] - t_range[0]) / 10
+		t_steps = (t_range[1] - t_range[0]) / 10
 		small = 100*eps
 		options = Bundle(dict(factorCFL=0.95, stats='on', singleStep='off'))
 
 		# Loop through t_range (subject to a little roundoff).
 		t_now = t_range[0]
-		start_time = cputime()
-		itr_start = cp.cuda.Event()
-		itr_end = cp.cuda.Event()
+		start_time = cputime(); itr_start = cp.cuda.Event(); itr_end = cp.cuda.Event()
 
 		brt = [value_init]
 		meshes, brt_time = [], []
 		value_rolling = cp.asarray(copy.copy(value_init))
 
 		# remove preexisting dataset
-		if os.path.exists("/opt/LevPy/Rockets/data/rocket.npz"):
-			os.remove("/opt/LevPy/Rockets/data/rocket.npz")
+		# if os.path.exists(join(params.savedict.savepath, "data/rocket_brt.npz")):
+		# 	os.remove(join(params.savedict.savepath, "data/rocket_brt.npz"))
 
-		cpu_time_buffer = []
-		gpu_time_buffer = []
+		cpu_time_buffer, gpu_time_buffer = [], []
+
 		while(t_range[1] - t_now > small * t_range[1]):
-			itr_start.record()
-			cpu_start = cputime()
-			time_step = f"{t_now}/{t_range[-1]}"
+			itr_start.record(); cpu_start = cputime()
+			time_step = f"{t_now:.2f}/{t_range[-1]}"
 
 			# Reshape data array into column vector for ode solver call.
 			y0 = value_rolling.flatten()
 
 			# How far to step?
-			t_span = np.hstack([ t_now, min(t_range[1], t_now + t_plot) ])
+			t_span = np.hstack([ t_now, min(t_range[1], t_now + t_steps) ])
 
 			# Integrate a timestep.
 			t, y, _ = odeCFL2(termRestrictUpdate, t_span, y0, odeCFLset(options), finite_diff_data)
@@ -192,20 +188,13 @@ def main(args):
 			info(f't: {time_step} | GPU time: {gpu_time_buffer[-1]:.4f} | CPU Time: {cpu_time_buffer[-1]:.4f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
 
 		if not args.load_brt:
-			os.makedirs("/opt/LevPy/Rockets/data/") if not os.path.exists("/opt/LevPy/Rockets/data/") else None
-			np.savez_compressed("/opt/LevPy/Rockets/data/rocket.npz", brt=np.asarray(brt), \
+			np.savez_compressed(join(params.savedict.savepath, "data/rocket_brt.npz"), brt=np.asarray(brt), \
 				meshes=np.asarray(meshes), brt_time=np.asarray(brt_time))
 		
 		end_time = cputime()
 
 		info(f"Avg. local time: ({sum(gpu_time_buffer)/len(gpu_time_buffer)}):.4f secs")
-		info(f"Total Time: ({end_time-start_time}):.4f secs")
-
-	if args.verify:
-		x0 = np.array([[1.25, 0, pi]])
-
-		#examine to see if the initial state is in the BRS/BRT
-		gexam = copy.deepcopy(g)
+		info(f"Total Time: {end_time-start_time}:.4f secs")
 
 if __name__ == '__main__':
 	main(args)

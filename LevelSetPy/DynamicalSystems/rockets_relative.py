@@ -78,7 +78,7 @@ class RocketSystemRel():
 
         # set linear speeds
         self.u_e = self.u(u_bound)
-        self.u_p = self.u(u_bound)
+        self.u_p = self.u(-u_bound)
 
     def hamiltonian(self, t, value, value_derivs, finite_diff_bundle):
         """
@@ -100,16 +100,21 @@ class RocketSystemRel():
                     .derivFunc: Upwinding scheme (upwindFirstENO2).
                     .innerFunc: terminal Lax Friedrichs integration scheme.
         """
+        # p1, p2, p3 = value_derivs[0], value_derivs[1], value_derivs[2]
+        # p1_coeff = self.a - self.a * cp.cos(self.grid.xs[2])
+        # p2_coeff = self.a * cp.sin(self.grid.xs[2])
+
+        # Hxp = -self.a*p1*cp.cos(self.grid.xs[2]) + p2*(self.g-self.a-self.a*cp.sin(self.grid.xs[2])) \
+        #       -self.u_e*cp.abs(p1*self.grid.xs[0]+p2*self.grid.xs[0]+p3) \
+        #         - self.u_p*cp.abs(p3)
         p1, p2, p3 = value_derivs[0], value_derivs[1], value_derivs[2]
-        p1_coeff = self.a - self.a * cp.cos(self.grid.xs[2])
-        p2_coeff = self.a * cp.sin(self.grid.xs[2])
 
-        Hxp = -self.a*p1*cp.cos(self.grid.xs[2]) + p2*(self.g-self.a-self.a*cp.sin(self.grid.xs[2])) \
-              -self.u_e*cp.abs(p1*self.grid.xs[0]+p2*self.grid.xs[0]+p3) \
-                - self.u_p*cp.abs(p3)
+        p1_coeff = -self.a*cp.cos(self.grid.xs[2]) 
+        p2_coeff = self.g - self.a - self.a*cp.sin(self.grid.xs[2])
+        p31_coeff = cp.abs(p1*self.grid.xs[0] + p3)
+        p32_coeff = cp.abs(p2*self.grid.xs[0] + p3)
 
-        # Hxp = p1 * p1_coeff - p2 * p2_coeff - self.w(1)*cp.abs(p1*self.grid.xs[1] - \
-        #         p2*self.grid.xs[0] - p3) + self.u(1) * cp.abs(p3)
+        Hxp = p1*p1_coeff + p2*p2_coeff - self.u_p*p31_coeff + self.u_p*p32_coeff
 
         return Hxp
 
@@ -127,12 +132,18 @@ class RocketSystemRel():
         """
         assert dim>=0 and dim <3, "Dubins vehicle dimension has to between 0 and 2 inclusive."
 
+        # if dim==0:
+        #     return cp.abs(self.a*cp.cos(self.grid.xs[2]))+cp.abs(+self.u_e*self.grid.xs[0])
+        # elif dim==1:
+        #     return cp.abs(self.g)+cp.abs(self.a)+cp.abs(self.a*cp.sin(self.grid.xs[2]))+cp.abs(self.u_e*self.grid.xs[0]) #
+        # elif dim==2:
+        #     return cp.abs(self.u_p) + cp.abs(self.u_e)
         if dim==0:
-            return cp.abs(self.a*cp.cos(self.grid.xs[2]))+cp.abs(+self.u_e*self.grid.xs[0])
+            return cp.abs(-self.a*cp.cos(self.grid.xs[2])) + cp.abs(self.u_e*self.grid.xs[0])
         elif dim==1:
-            return cp.abs(self.g)+cp.abs(self.a)+cp.abs(self.a*cp.sin(self.grid.xs[2]))+cp.abs(self.u_e*self.grid.xs[0]) #
+            return cp.abs(self.g - self.a -self.a*cp.sin(self.grid.xs[2])) + cp.abs(self.u_p*self.grid.xs[0]) # - self.a - self.g)
         elif dim==2:
-            return cp.abs(self.u_p) + cp.abs(self.u_e)
+            return cp.abs(self.u_p + self.u_e)
 
     def dynamics(self):
         """
