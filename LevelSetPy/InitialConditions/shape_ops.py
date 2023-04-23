@@ -12,9 +12,8 @@ __maintainer__ 	= "Lekan Molu"
 __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
-
-import numpy as np
 import logging
+import numpy as np
 logger = logging.getLogger(__name__)
 
 def shapeUnion(shapes):

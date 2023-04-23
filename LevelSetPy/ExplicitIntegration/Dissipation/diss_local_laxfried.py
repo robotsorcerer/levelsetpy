@@ -10,7 +10,6 @@ __status__ 		= "Completed"
 
 
 import copy
-import cupy as cp
 import numpy as np
 from LevelSetPy.Utilities import *
 
@@ -91,12 +90,12 @@ def artificialDissipationLLF(t, data, derivL, derivR, schemeData):
 
     for i in range(grid.dim):
         # Get derivative bounds over entire grid (scalars).
-        derivMinL = cp.min(derivL[i].flatten())
-        derivMinR = cp.min(derivR[i].flatten())
+        derivMinL = np.min(derivL[i].flatten())
+        derivMinR = np.min(derivR[i].flatten())
         derivMin[i] = min(derivMinL, derivMinR)
 
-        derivMaxL = cp.max(derivL[i].flatten())
-        derivMaxR = cp.max(derivR[i].flatten())
+        derivMaxL = np.max(derivL[i].flatten())
+        derivMaxR = np.max(derivR[i].flatten())
         derivMax[i] = max(derivMaxL, derivMaxR)
 
         # Get derivative differences at each node.
@@ -116,8 +115,8 @@ def artificialDissipationLLF(t, data, derivL, derivR, schemeData):
         # For each dimension, LLF restricts the range of that dimension's
         #   costate at each node to the range between left and right
         #   approximations at that node.
-        derivMin[i] = cp.minimum(derivL[i], derivR[i])
-        derivMax[i] = cp.maximum(derivL[i], derivR[i])
+        derivMin[i] = np.minimum(derivL[i], derivR[i])
+        derivMax[i] = np.maximum(derivL[i], derivR[i])
 
         alpha = schemeData.partialFunc(t, data, derivMin, derivMax, schemeData, i)
 

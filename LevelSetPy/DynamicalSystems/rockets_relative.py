@@ -12,7 +12,6 @@ __status__ 		= "Completed"
 __date__        = "Dec. 21, 2021"
 __comment__     = "Two Rockets in Relative Coordinates"
 
-import cupy as cp
 import numpy as np
 
 from LevelSetPy.Utilities.matlab_utils import isColumnLength, isvector
@@ -61,7 +60,7 @@ class RocketSystemRel():
         self.grid        = grid
 
         if x:
-            assert isinstance(x, np.ndarray) or isinstance(x, cp.ndarray), "initial state must either be a numpy or cupy array."
+            assert isinstance(x, np.ndarray) or isinstance(x, np.ndarray), "initial state must either be a numpy or cupy array."
             r, c = x.shape
             if r<c:
                 # turn to column vector
@@ -82,8 +81,8 @@ class RocketSystemRel():
 
     def hamiltonian(self, t, value, value_derivs, finite_diff_bundle):
         """
-            H = p_1 [u_e - u_p cos(x_3)] - p_2 [u_p sin x_3] \
-                   - w | p_1 x_2 - p_2 x_1 - p_3| + w |p_3|
+            H = -a p_1 \cos θ - p_2(g - a -asin θ) - \bar{u} | p_1 x + p_3 | + 
+                                \underline{u} | p_2 x + p_3|
 
             Parameters
             ==========
@@ -100,19 +99,12 @@ class RocketSystemRel():
                     .derivFunc: Upwinding scheme (upwindFirstENO2).
                     .innerFunc: terminal Lax Friedrichs integration scheme.
         """
-        # p1, p2, p3 = value_derivs[0], value_derivs[1], value_derivs[2]
-        # p1_coeff = self.a - self.a * cp.cos(self.grid.xs[2])
-        # p2_coeff = self.a * cp.sin(self.grid.xs[2])
-
-        # Hxp = -self.a*p1*cp.cos(self.grid.xs[2]) + p2*(self.g-self.a-self.a*cp.sin(self.grid.xs[2])) \
-        #       -self.u_e*cp.abs(p1*self.grid.xs[0]+p2*self.grid.xs[0]+p3) \
-        #         - self.u_p*cp.abs(p3)
         p1, p2, p3 = value_derivs[0], value_derivs[1], value_derivs[2]
 
-        p1_coeff = -self.a*cp.cos(self.grid.xs[2]) 
-        p2_coeff = self.g - self.a - self.a*cp.sin(self.grid.xs[2])
-        p31_coeff = cp.abs(p1*self.grid.xs[0] + p3)
-        p32_coeff = cp.abs(p2*self.grid.xs[0] + p3)
+        p1_coeff = -self.a*np.cos(self.grid.xs[2]) 
+        p2_coeff = self.g - self.a - self.a*np.sin(self.grid.xs[2])
+        p31_coeff = np.abs(p1*self.grid.xs[0] + p3)
+        p32_coeff = np.abs(p2*self.grid.xs[0] + p3)
 
         Hxp = p1*p1_coeff + p2*p2_coeff - self.u_p*p31_coeff + self.u_p*p32_coeff
 
@@ -132,34 +124,23 @@ class RocketSystemRel():
         """
         assert dim>=0 and dim <3, "Dubins vehicle dimension has to between 0 and 2 inclusive."
 
-        # if dim==0:
-        #     return cp.abs(self.a*cp.cos(self.grid.xs[2]))+cp.abs(+self.u_e*self.grid.xs[0])
-        # elif dim==1:
-        #     return cp.abs(self.g)+cp.abs(self.a)+cp.abs(self.a*cp.sin(self.grid.xs[2]))+cp.abs(self.u_e*self.grid.xs[0]) #
-        # elif dim==2:
-        #     return cp.abs(self.u_p) + cp.abs(self.u_e)
         if dim==0:
-            return cp.abs(-self.a*cp.cos(self.grid.xs[2])) + cp.abs(self.u_e*self.grid.xs[0])
+            return np.abs(-self.a*np.cos(self.grid.xs[2])) + np.abs(self.u_e*self.grid.xs[0])
         elif dim==1:
-            return cp.abs(self.g - self.a -self.a*cp.sin(self.grid.xs[2])) + cp.abs(self.u_p*self.grid.xs[0]) # - self.a - self.g)
+            return np.abs(self.g - self.a -self.a*np.sin(self.grid.xs[2])) + np.abs(self.u_p*self.grid.xs[0]) # - self.a - self.g)
         elif dim==2:
-            return cp.abs(self.u_p + self.u_e)
+            return np.abs(self.u_p + self.u_e)
 
     def dynamics(self):
         """
             Computes the Dubins vehicular dynamics in relative
             coordinates (deterministic dynamics).
 
-            \dot{x}_1 = -u_e + u_p cos x_3 + w_e x_2
-            \dot{x}_2 = -u_p sin x_3 - w_e x_1
-            \dot{x}_3 = -w_p - w_e
+            \dot{x} = a_p cos θ + u_e x
+            \dot{z} = a_p sin θ + a_e + u_e x - g
+            \dot{θ} = u_p - u_e
         """
 
-        # xdot = [
-        #             self.a*cp.cos(self.grid.xs[2])+self.u_e*self.grid.xs[0],
-        #             self.a*cp.sin(self.grid.xs[2])+self.a+self.u_e*self.grid.xs[0]-self.g,
-        #             self.u_p - self.u_e,
-        #         ]
         x1 = self.grid.xs[0]
         x2 = self.grid.xs[1]
         x3 = self.grid.xs[2]
@@ -167,7 +148,7 @@ class RocketSystemRel():
         xdot = [
                 -self.ae + self.ap * np.cos(x3) + self.u_e * x2,
                 -self.ap * np.sin(x3) - self.u_e * x1,
-                -self.u_p - self.u_e # pursuer minimizes
+                -self.u_p - self.u_e 
         ]
 
         return xdot

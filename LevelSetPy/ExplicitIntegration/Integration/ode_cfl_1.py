@@ -8,12 +8,12 @@ __maintainer__ 	= "Lekan Molu"
 __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
-
-import cupy as cp
+import  copy
 import numpy as np
 from LevelSetPy.Utilities import *
 from .ode_cfl_set import odeCFLset
 from .ode_cfl_call import odeCFLcallPostTimestep
+from .ode_cfl_mult import odeCFLmultipleSteps
 
 def odeCFL1(schemeFunc, tspan, y0, options=None, schemeData=None):
     """

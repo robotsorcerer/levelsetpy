@@ -156,9 +156,8 @@ def termNormal(t, y, schemeData):
 
         # For diverging characteristics, take gradient = 0
         #   (so we don't actually need to calculate this term).
-        #flow0 = ((prodL <= 0) & (prodR >= 0))
 
-        # Now we know the upwind direction, add its contribution to \|\grad \phi\|.
+        # Add the upwind direction contribution to \|\grad \phi\|.
         magnitude += (derivL**2 * flowL + derivR**2 * flowR)
 
         # CFL condition: sum of effective velocities from O&F (6.2).

@@ -72,4 +72,5 @@ def  createGrid(grid_min, grid_max, N, pdDims=None, process=True, low_mem=False)
 
     if process:
       g = processGrid(g)
+      
     return g

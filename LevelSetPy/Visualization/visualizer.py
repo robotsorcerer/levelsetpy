@@ -8,11 +8,11 @@ __status__ 		= "Completed"
 
 import copy, os
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import cm
 from os.path import join
-from LevelSetPy.Utilities import error
+from matplotlib import cm
 from .color_utils import cmaps
+import matplotlib.pyplot as plt
+from LevelSetPy.Utilities import error
 from mpl_toolkits.mplot3d import Axes3D
 
 def buffered_axis_limits(amin, amax, buffer_factor=1.0):

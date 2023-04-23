@@ -31,7 +31,6 @@ def  getOGPBounds(gBase, gMinIn, gMaxIn, padding):
         dx = np.divide((gBase.max - gBase.min), (gBase.N))
 
     # Add padding to both sides
-    #print(f'gMinIn: {gMinIn.shape} padding {padding.shape}')
     gMinIn -= padding
     gMaxIn += padding
 

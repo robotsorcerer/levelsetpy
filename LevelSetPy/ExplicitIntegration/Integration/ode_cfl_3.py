@@ -10,7 +10,6 @@ __status__ 		= "Completed"
 
 
 import copy
-import cupy as cp
 import numpy as np
 from .ode_cfl_set import odeCFLset
 from .ode_cfl_mult import odeCFLmultipleSteps

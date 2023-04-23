@@ -191,7 +191,6 @@ def termReinit(t, y, schemeData):
 
         # Diverging flow entropy condition requires choosing deriv = 0
         #   (so we don't actually have to calculate this term).
-        #flow0 = ((S * derivR >  0) and (S * derivL <  0))
 
         # Converging flow, need to check which direction arrives first.
         flows = ((S * derivR <  0) and (S * derivL >  0))

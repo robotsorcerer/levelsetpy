@@ -11,7 +11,6 @@ __date__        = "Dec. 21, 2021"
 __comment__     = "Two Dubins Vehicle in Absolute Coordinates"
 
 import time
-import cupy as cp
 import numpy as np
 from LevelSetPy.Utilities import eps
 
@@ -48,8 +47,6 @@ class DubinsVehicleAbs():
         assert label is not None, "label of an agent cannot be empty"
 
         self.grid        = grid
-        # self.v = lambda u: u*u_bound
-        # self.w = lambda w: w*w_bound
         self.v = u_bound
         self.w = w_bound
         self.neigh_rad = neigh_rad
@@ -66,6 +63,7 @@ class DubinsVehicleAbs():
             init_state = np.zeros((grid.shape))
 
         # position this bird at in the state space
+        init_random = False
         self.initialize(init_state, init_random)
 
     def initialize(self, init_state, init_random):
@@ -168,8 +166,8 @@ class DubinsVehicleAbs():
         assert dim>=0 and dim <3, "Dubins vehicle dimension has to between 0 and 2 inclusive."
 
         if dim==0:
-            return cp.abs(self.v_e - self.v_p * cp.cos(self.grid.xs[2])) + cp.abs(self.w(1) * self.grid.xs[1])
+            return np.abs(self.v_e - self.v_p * np.cos(self.grid.xs[2])) + np.abs(self.w(1) * self.grid.xs[1])
         elif dim==1:
-            return cp.abs(self.v_p * cp.sin(self.grid.xs[2])) + cp.abs(self.w(1) * self.grid.xs[0])
+            return np.abs(self.v_p * np.sin(self.grid.xs[2])) + np.abs(self.w(1) * self.grid.xs[0])
         elif dim==2:
             return self.w_e + self.w_p

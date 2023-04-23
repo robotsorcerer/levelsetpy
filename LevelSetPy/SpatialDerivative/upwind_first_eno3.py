@@ -10,7 +10,6 @@ __status__ 		= "Completed"
 
 import copy
 import logging
-import cupy as cp
 import numpy as np
 from LevelSetPy.Utilities import *
 logger = logging.getLogger(__name__)

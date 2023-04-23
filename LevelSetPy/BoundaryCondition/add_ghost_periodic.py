@@ -14,7 +14,6 @@ __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
 import copy
-import cupy as cp
 import numpy as np
 import logging
 logger = logging.getLogger(__name__)
@@ -41,7 +40,7 @@ def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
               dataOut(width+1,1) == dataIn(1,1)
 
      parameters:
-       dataIn	cp.intp data array
+       dataIn	np.intp data array
        dim		dimension in which to add ghost cells
        width	number of ghost cells to add on each side (default = 1)
        ghostData	A structure (see below).
@@ -59,13 +58,10 @@ def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
 
      created Ian Mitchell, 5/12/03
      modified to allow choice of dimension, Ian Mitchell, 5/27/03
-     modified to allow ghostData cp.intp structure, Ian Mitchell, 1/13/04
+     modified to allow ghostData np.intp structure, Ian Mitchell, 1/13/04
 
      Lekan Molu, Circa, August Week I, 2021
     """
-    if isinstance(dataIn, np.ndarray):
-      dataIn = cp.asarray(dataIn)
-
     if not width:
       width = 1
 
@@ -83,19 +79,19 @@ def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
     # create appropriately sized output array
     sizeOut = copy.copy(list(sizeIn))
     sizeOut[dim] = sizeOut[dim] + 2 * width
-    dataOut = cp.zeros(tuple(sizeOut), dtype=cp.float64)
+    dataOut = np.zeros(tuple(sizeOut), dtype=np.float64)
 
-    # fill output array with cp.intp data
-    indicesOut[dim] = cp.arange(width, sizeOut[dim] - width, dtype=cp.intp)
-    dataOut[cp.ix_(*indicesOut)] = dataIn
+    # fill output array with np.intp data
+    indicesOut[dim] = np.arange(width, sizeOut[dim] - width, dtype=np.intp)
+    dataOut[np.ix_(*indicesOut)] = dataIn
 
     # fill ghost cells
-    indicesIn[dim] = cp.arange(sizeIn[dim] - width,sizeIn[dim], dtype=cp.intp)
-    indicesOut[dim] = cp.arange(width, dtype=cp.intp)
-    dataOut[cp.ix_(*indicesOut)] = dataIn[cp.ix_(*indicesIn)]
+    indicesIn[dim] = np.arange(sizeIn[dim] - width,sizeIn[dim], dtype=np.intp)
+    indicesOut[dim] = np.arange(width, dtype=np.intp)
+    dataOut[np.ix_(*indicesOut)] = dataIn[np.ix_(*indicesIn)]
 
-    indicesIn[dim] = cp.arange(width, dtype=cp.intp)
-    indicesOut[dim] = cp.arange(sizeOut[dim] - width, sizeOut[dim], dtype=cp.intp)
-    dataOut[cp.ix_(*indicesOut)] = dataIn[cp.ix_(*indicesIn)]
+    indicesIn[dim] = np.arange(width, dtype=np.intp)
+    indicesOut[dim] = np.arange(sizeOut[dim] - width, sizeOut[dim], dtype=np.intp)
+    dataOut[np.ix_(*indicesOut)] = dataIn[np.ix_(*indicesIn)]
 
     return dataOut

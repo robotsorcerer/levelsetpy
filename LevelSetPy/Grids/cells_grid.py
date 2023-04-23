@@ -13,9 +13,9 @@ __status__ 		= "Completed"
 
 import copy
 import numpy as np
+from .cell_neighs import neighbors
 from LevelSetPy.Utilities import *
 from LevelSetPy.Grids import getOGPBounds, createGrid
-from .cell_neighs import neighbors
 
 
 def cells_from_grid(g, bounds, padding=None):
@@ -73,8 +73,7 @@ def cells_from_grid(g, bounds, padding=None):
             grid_min.append(bounds_grid[j][ii])
             grid_max.append(bounds_grid[j][iip])
         grid_min, grid_max = np.vstack((grid_min)), np.vstack((grid_max))
-        #print(f'grid_min: {grid_min.shape}, grid_max: {grid_max.shape}')
-        grid_min, grid_max, N = getOGPBounds(g, grid_min, grid_max, padding);
+        grid_min, grid_max, N = getOGPBounds(g, grid_min, grid_max, padding)
 
         # create cell within grid
         celi = createGrid(grid_min, grid_max, N, process=True)
@@ -82,7 +81,5 @@ def cells_from_grid(g, bounds, padding=None):
         celi.idx = ii # index of this cell within the grid subgrd
         celi.gshape = gs.shape # shape of containing grid
         gss.append(celi)
-        # partition[ii]=celi
-
-    # result=dict(cellshape = gs.shape, cells=gss, partition=partition)
+        
     return gss

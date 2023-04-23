@@ -11,7 +11,6 @@ __status__ 		= "Completed"
 import numpy as np
 from .utils import check_target
 from LevelSetPy.Utilities.matlab_utils import *
-from .utils import check_target
 
 def shapeCylinder(grid, axis_align=[], center=None, radius=1):
     """

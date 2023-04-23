@@ -16,8 +16,8 @@ class ROCKETSVisualizer(object):
 		"""
 			Class ROCKETSVisualizer:
 
-			This class expects to be constantly given values to plot in realtime.
-			It assumes the values are an array and plots different indices at different
+			This class expects to be constantly given np.s to plot in realtime.
+			It assumes the np.s are an array and plots different indices at different
 			colors according to the spectral colormap.
 
 			Inputs:

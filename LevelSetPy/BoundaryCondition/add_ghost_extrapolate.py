@@ -18,7 +18,6 @@ __status__ 		= "Completed"
 
 import copy
 import logging
-import cupy as cp
 import numpy as np
 from LevelSetPy.Utilities import *
 logger = logging.getLogger(__name__)
@@ -44,7 +43,7 @@ def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
               dataOut(width+1,1) == dataIn(1,1)
 
      parameters:
-       dataIn	cp.intp data array.
+       dataIn	np.intp data array.
        dim		Dimension in which to add ghost cells.
        width	Number of ghost cells to add on each side (default = 1).
        ghostData	A structure (see below).
@@ -59,9 +58,6 @@ def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
 
      Lekan Molu, Circa, August Week I, 2021
     """
-    if isinstance(dataIn, np.ndarray):
-      dataIn = cp.asarray(dataIn)
-
     if not width:
         width = 1
 
@@ -78,46 +74,43 @@ def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
     sizeIn = size(dataIn)
     indicesOut = []
     for i in range(dims):
-        indicesOut.append(cp.arange(sizeIn[i], dtype=cp.intp))
+        indicesOut.append(np.arange(sizeIn[i], dtype=np.intp))
     indicesIn = copy.copy(indicesOut)
 
     # create appropriately sized output array
     sizeOut = copy.copy(list(sizeIn))
     sizeOut[dim] = sizeOut[dim] + (2 * width)
-    dataOut = cp.zeros(tuple(sizeOut), dtype=cp.float64)
+    dataOut = np.zeros(tuple(sizeOut), dtype=np.float64)
 
-    # fill output array with icp.t data
-    indicesOut[dim] = cp.arange(width, sizeOut[dim] - width, dtype=cp.intp) # correct
+    # fill output array with inp.t data
+    indicesOut[dim] = np.arange(width, sizeOut[dim] - width, dtype=np.intp) # correct
     # dynamic slicing to save the day
-    dataOut[cp.ix_(*indicesOut)] = copy.copy(dataIn) # correct
-    #logger.debug(f'dataIn: {cp.linalg.norm(dataIn, 2)} dataOut: {cp.linalg.norm(dataOut, 2)}')
+    dataOut[np.ix_(*indicesOut)] = copy.copy(dataIn) # correct
 
     # compute slopes
     indicesOut[dim] = [0]
     indicesIn[dim] = [1]
-    slopeBot = dataIn[cp.ix_(*indicesOut)] - dataIn[cp.ix_(*indicesIn)]
+    slopeBot = dataIn[np.ix_(*indicesOut)] - dataIn[np.ix_(*indicesIn)]
 
     indicesOut[dim] = [sizeIn[dim]-1]
     indicesIn[dim] = [sizeIn[dim] - 2]
-    slopeTop = dataIn[cp.ix_(*indicesOut)] - dataIn[cp.ix_(*indicesIn)]
-    #logger.debug(f'slopeBot: {cp.linalg.norm(slopeBot, 2)} slopeTop: {cp.linalg.norm(slopeTop, 2)}')
+    slopeTop = dataIn[np.ix_(*indicesOut)] - dataIn[np.ix_(*indicesIn)]
 
     # adjust slope sign to correspond with sign of data at array edge
     indicesIn[dim] = [0]
-    slopeBot = slopeMultiplier * cp.abs(slopeBot) * cp.sign(dataIn[cp.ix_(*indicesIn)])
+    slopeBot = slopeMultiplier * np.abs(slopeBot) * np.sign(dataIn[np.ix_(*indicesIn)])
 
     indicesIn[dim] = [sizeIn[dim]-1]
-    slopeTop = slopeMultiplier * cp.abs(slopeTop) * cp.sign(dataIn[cp.ix_(*indicesIn)])
+    slopeTop = slopeMultiplier * np.abs(slopeTop) * np.sign(dataIn[np.ix_(*indicesIn)])
 
     # now extrapolate
     for i in range(width):
         indicesOut[dim] = [i]
         indicesIn[dim] = [0]
-        dataOut[cp.ix_(*indicesOut)] = (dataIn[cp.ix_(*indicesIn)] + (width - i) * slopeBot)
+        dataOut[np.ix_(*indicesOut)] = (dataIn[np.ix_(*indicesIn)] + (width - i) * slopeBot)
 
         indicesOut[dim] = [sizeOut[dim]-1-i]
         indicesIn[dim] = [sizeIn[dim]-1]
-        dataOut[cp.ix_(*indicesOut)] = (dataIn[cp.ix_(*indicesIn)] + (width - i) * slopeTop)
+        dataOut[np.ix_(*indicesOut)] = (dataIn[np.ix_(*indicesIn)] + (width - i) * slopeTop)
 
-    cp.cuda.Device().synchronize()
     return dataOut

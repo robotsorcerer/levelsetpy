@@ -10,9 +10,8 @@ __status__ 		= "Completed"
 
 
 import copy
-import cupy as cp
-import numpy as np
 import logging
+import numpy as np
 from LevelSetPy.Utilities.matlab_utils import *
 from LevelSetPy.BoundaryCondition import addGhostPeriodic
 

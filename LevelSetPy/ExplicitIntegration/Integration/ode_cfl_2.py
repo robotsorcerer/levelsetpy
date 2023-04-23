@@ -11,7 +11,6 @@ __status__ 		= "Completed"
 
 import copy
 import time
-import cupy as cp
 import numpy as np
 
 from LevelSetPy.Utilities import *
@@ -154,7 +153,7 @@ def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
             for i in range(numY):
                 ydot[i], stepBound[i], schemeData = schemeFuncCell[i](t1, y1, schemeData)
 
-                # If this is a vector level set, rotate the lists of vector arguments.
+                # Rotate the lists of vector arguments.
                 if(iscell(y1)):  y1 = y1[1:]
 
                 if(iscell(schemeData)): schemeData = schemeData[1:]
@@ -164,7 +163,6 @@ def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
               the CFL condition by a significant amount, throw a warning. For vector level sets,
               use the most restrictive stepBound. Occasional failure should not cause too many problems.
             """
-            # if(deltaT > np.min(safetyFactorCFL * stepBound)):
             if(deltaT > np.min(options.factorCFL * stepBound)):
                 violation = deltaT / np.asarray(stepBound)
                 warn(f'Second substep violated CFL effective number {violation}')

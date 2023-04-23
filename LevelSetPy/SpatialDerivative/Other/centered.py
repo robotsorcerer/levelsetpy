@@ -1,4 +1,4 @@
-from Utilities import *
+from LevelSetPy.Utilities import *
 
 def centeredFirstSecond(grid, data, dim):
     """

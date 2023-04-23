@@ -9,8 +9,8 @@ __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
 
-import numpy as np
 import logging
+import numpy as np
 from LevelSetPy.Utilities.matlab_utils import *
 
 logger = logging.getLogger(__name__)

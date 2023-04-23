@@ -8,10 +8,9 @@ __maintainer__ 	= "Lekan Molu"
 __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
-
-from LevelSetPy.Utilities import *
 import copy
 import numpy as np
+from LevelSetPy.Utilities import *
 
 def artificialDissipationLLLF(t, data, derivL, derivR, schemeData):
     """

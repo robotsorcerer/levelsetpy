@@ -9,7 +9,6 @@ __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
 import copy
-import cupy as cp
 import numpy as np
 from LevelSetPy.Utilities import *
 

@@ -1,4 +1,4 @@
-from Utilities import *
+from LevelSetPy.Utilities import *
 from .hessian import hessianSecond
 
 def curvatureSecond(grid, data):

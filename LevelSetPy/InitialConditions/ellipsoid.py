@@ -13,7 +13,6 @@ import warnings
 import numpy as np
 from .utils import check_target
 from LevelSetPy.Utilities.matlab_utils import *
-from .utils import check_target
 
 def shapeEllipsoid(grid, center=None, radius=1.0):
     """

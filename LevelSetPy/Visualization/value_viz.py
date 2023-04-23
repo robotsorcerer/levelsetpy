@@ -11,10 +11,10 @@ import time, os
 import numpy as np
 from os.path import join
 import matplotlib.pylab as plt
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.gridspec as gridspec
 from LevelSetPy.Utilities.matlab_utils import *
 from LevelSetPy.Grids.create_grid import createGrid
-from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from LevelSetPy.Visualization.mesh_implicit import implicit_mesh
 from LevelSetPy.Visualization.settings import buffered_axis_limits

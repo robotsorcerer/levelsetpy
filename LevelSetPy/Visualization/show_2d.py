@@ -6,8 +6,8 @@ __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Testing"
 
 import numpy as np
-import matplotlib.pyplot as plt
 from os.path import  join
+import matplotlib.pyplot as plt
 
 
 def show2D(g, mesh, title='', winsize=(16,9), ec='k', disp=False,

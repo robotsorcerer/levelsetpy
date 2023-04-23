@@ -12,12 +12,12 @@ import numpy as np
 from os.path import join
 import matplotlib.pylab as plt
 import matplotlib.gridspec as gridspec
-from ..Utilities.matlab_utils import *
-from ..Grids.create_grid import createGrid
 from mpl_toolkits.mplot3d import Axes3D
+from LevelSetPy.Utilities.matlab_utils import *
+from LevelSetPy.Grids.create_grid import createGrid
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from ..Visualization.mesh_implicit import implicit_mesh
-from ..Visualization.settings import buffered_axis_limits
+from LevelSetPy.Visualization.mesh_implicit import implicit_mesh
+from LevelSetPy.Visualization.settings import buffered_axis_limits
 
 def get_field(field, bundle):
 	if isfield(field, bundle):
@@ -66,8 +66,8 @@ class InteractiveVisualizer(object):
 				item.set_fontweight(self._fontdict.fontweight)
 
 		if self.params.init_conditions or self.value:
-			assert isinstance(value, np.ndarray), "value function must be an ndarray."
-			self.init_projections(value.ndim)
+			assert isinstance(self.value, np.ndarray), "self.value function must be an ndarray."
+			self.init_projections(self.value.ndim)
 		else:
 			self.init_valueset(params, 0)
 
@@ -78,11 +78,6 @@ class InteractiveVisualizer(object):
 		"""
 		Initialize plots based off the length of the data array.
 		"""
-		# value_dims = value_dims
-		# Show me the value function
-		# self._ax.set_xlabel('$\\xi$', fontdict=self._fontdict)
-		# self._ax.set_ylabel('$\\dot{\\xi}$', fontdict=self._fontdict)
-
 		ax_idx = 0
 		if self.params.init_projections:
 			if value_dims==2:
