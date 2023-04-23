@@ -47,7 +47,7 @@ function [ data, g, data0 ] = reinitTest(initialType, accuracy, displayType)
   
 %---------------------------------------------------------------------------
 % Make sure we can see the kernel m-files.
-run('../addPathToKernel');
+run('Examples/addPathToKernel');
 
 %---------------------------------------------------------------------------
 % What level set should we view?

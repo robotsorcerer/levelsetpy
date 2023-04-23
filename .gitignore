@@ -5,3 +5,4 @@ syntax: glob
 *.avi
 *.png
 *.eps
+*.mp4

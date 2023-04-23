@@ -53,7 +53,7 @@ function [ data, g, data0 ] = curvatureStarDemo(accuracy,splitFlow,displayType)
   
 %---------------------------------------------------------------------------
 % Make sure we can see the kernel m-files.
-run('../addPathToKernel');
+%run('../addPathToKernel');
 
 %---------------------------------------------------------------------------
 % Curvature speed parameter.
