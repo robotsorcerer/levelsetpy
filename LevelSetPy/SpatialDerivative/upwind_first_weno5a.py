@@ -68,10 +68,6 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=False):
 
      Copyright Lekan Molu, 8/21/2021
     """
-
-    if isinstance(data, np.ndarray):
-      data = np.asarray(data)
-
     if((dim < 0) or (dim > grid.dim)):
         error('Illegal dim parameter')
 
@@ -96,8 +92,6 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=False):
         #   plus the (unstripped) divided differences to pick the least oscillatory.
         dL, dR, DD = upwindFirstENO3aHelper(grid, data, dim, False, False)
 
-        # The smoothness estimates may have some relation to the higher order
-        #   divided differences, but it isn't obvious from just reading O&F.
         # For now, use only the first order divided differences.
         D1 = DD.D1
 
@@ -116,15 +110,13 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=False):
         #   that pulls out the v_i terms for the left approximation from the
         #   first divided difference table.
         for i in range(terms):
-            indices[i][dim] = np.arange(size(D1, dim) + i - 5, dtype=np.intp)
-        #---------------------------------------------------------------------------
+            indices[i][dim] = np.arange(i, size(D1, dim) + i - 4, dtype=np.intp)
+            
         # Smoothness estimates of stencils.
         smooth = cell(3,1)
         smooth[0] = ((13/12) * (D1[np.ix_(*indices[0])] \
-                              - 2 * D1[np.ix_(*indices[1])] \
-                              + D1[np.ix_(*indices[2])]) **2 \
-                   + (1/4) * (D1[np.ix_(*indices[0])] \
-                              - 4 * D1[np.ix_(*indices[1])] \
+                        - 2 * D1[np.ix_(*indices[1])] + D1[np.ix_(*indices[2])]) **2 \
+                   + (1/4) * (D1[np.ix_(*indices[0])] - 4 * D1[np.ix_(*indices[1])] \
                               + 3 * D1[np.ix_(*indices[2])]) **2)
         smooth[1] = ((13/12) * (D1[np.ix_(*indices[1])] \
                               - 2 * D1[np.ix_(*indices[2])] \
@@ -137,7 +129,7 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=False):
                    + (1/4) * (3 * D1[np.ix_(*indices[2])] \
                               - 4 * D1[np.ix_(*indices[3])] \
                               + D1[np.ix_(*indices[4])]) ** 2)
-
+        
         # Left smoothness estimates just use the left looking portion of
         #   these estimates.  The ENO approximations are in the same order
         #   as in O&F, so we can use the same alpha weights as (3.35) - (3.37).
@@ -145,6 +137,7 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=False):
         indices1[dim] = np.arange(size(data, dim),dtype=np.intp)
 
         for i in range(len(smooth)):
+            print(f"smooth[{i}]: {smooth[i].shape}")
             smoothL[i] = smooth[i][np.ix_(*indices1)]
 
         weightL = [ 0.1, 0.6, 0.3 ]

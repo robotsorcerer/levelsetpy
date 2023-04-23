@@ -52,8 +52,6 @@ def upwindFirstENO2(grid, data, dim, generateAll=0):
 
      Lekan on August 16, 2021
     """
-    if isinstance(data, np.ndarray):
-      data = np.asarray(data)
 
     if((dim < 0) or (dim > grid.dim)):
         raise ValueError('Illegal dim parameter')
@@ -79,8 +77,7 @@ def upwindFirstENO2(grid, data, dim, generateAll=0):
     for i in range(grid.dim):
       indices1.append(np.arange(sizeData[i], dtype=np.intp))
     indices2 = copy.copy(indices1)
-
-    np.cuda.Device().synchronize()
+    
     #---------------------------------------------------------------------------
     # First divided differences (first entry corresponds to D^1_{-1/2}).
     indices1[dim] = np.arange(1,size(gdata, dim), dtype=np.intp)

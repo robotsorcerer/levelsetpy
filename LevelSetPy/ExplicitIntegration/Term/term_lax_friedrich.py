@@ -105,9 +105,9 @@ def termLaxFriedrichs(t, y, schemeData):
 
     #---------------------------------------------------------------------------
     # Get upwinded and centered derivative approximations.
-    derivL = [cp.nan for i in range(grid.dim)]
-    derivR = [cp.nan for i in range(grid.dim)]
-    derivC = [cp.nan for i in range(grid.dim)]
+    derivL = [np.nan for i in range(grid.dim)]
+    derivR = [np.nan for i in range(grid.dim)]
+    derivC = [np.nan for i in range(grid.dim)]
 
     # Calculate the co-states of value function
     for i in range(grid.dim):
@@ -132,6 +132,6 @@ def termLaxFriedrichs(t, y, schemeData):
 
     #---------------------------------------------------------------------------
     # Reshape output into vector format and negate for RHS of ODE.
-    ydot = cp.expand_dims(-delta.flatten(), 1)
+    ydot = np.expand_dims(-delta.flatten(), 1)
 
     return ydot, stepBound, schemeData

@@ -9,7 +9,6 @@ __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
 import copy
-import cupy as cp
 import numpy as np
 from LevelSetPy.Utilities import *
 
@@ -97,8 +96,8 @@ def termRestrictUpdate(t, y, schemeData):
     #Restrict the update (stepBound is returned unchanged).
     #   Do not negate for RHS of ODE (that is handled by innerFunc).
     if(positive):
-        ydot = cp.maximum(unRestricted, 0).squeeze()
+        ydot = np.maximum(unRestricted, 0).squeeze()
     else:
-        ydot = cp.minimum(unRestricted, 0).squeeze()
+        ydot = np.minimum(unRestricted, 0).squeeze()
 
     return ydot, stepBound, schemeData

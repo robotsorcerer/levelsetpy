@@ -105,7 +105,7 @@ def termSum(t, y, schemeData):
 
     # Final timestep bound.
     if(stepBoundInv == 0):
-        stepBound = cp.inf
+        stepBound = np.inf
     else:
         stepBound = 1 / stepBoundInv
 

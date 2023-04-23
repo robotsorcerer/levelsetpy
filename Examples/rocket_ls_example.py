@@ -84,7 +84,7 @@ def main(args):
 	rocket_rel = RocketSystemRel(g, u_bound, w_bound, a=1, g=32)
 
 	# after creating value function, make state space cupy objects
-	g.xs = [cp.asarray(x) for x in g.xs]
+	g.xs = [np.asarray(x) for x in g.xs]
 	finite_diff_data = Bundle(dict(innerFunc = termLaxFriedrichs,
 								innerData = Bundle({'grid': g,
 									'hamFunc': rocket_rel.hamiltonian,
@@ -139,20 +139,16 @@ def main(args):
 
 		# Loop through t_range (subject to a little roundoff).
 		t_now = t_range[0]
-		start_time = cputime(); itr_start = cp.cuda.Event(); itr_end = cp.cuda.Event()
+		start_time = cputime()
 
 		brt = [value_init]
 		meshes, brt_time = [], []
-		value_rolling = cp.asarray(copy.copy(value_init))
+		value_rolling = copy.copy(value_init)
 
-		# remove preexisting dataset
-		# if os.path.exists(join(params.savedict.savepath, "data/rocket_brt.npz")):
-		# 	os.remove(join(params.savedict.savepath, "data/rocket_brt.npz"))
-
-		cpu_time_buffer, gpu_time_buffer = [], []
+		cpu_time_buffer = []
 
 		while(t_range[1] - t_now > small * t_range[1]):
-			itr_start.record(); cpu_start = cputime()
+			cpu_start = cputime()
 			time_step = f"{t_now:.2f}/{t_range[-1]}"
 
 			# Reshape data array into column vector for ode solver call.
@@ -163,29 +159,26 @@ def main(args):
 
 			# Integrate a timestep.
 			t, y, _ = odeCFL2(termRestrictUpdate, t_span, y0, odeCFLset(options), finite_diff_data)
-			cp.cuda.Stream.null.synchronize()
 			t_now = t
 
 			# Get back the correctly shaped data array
 			value_rolling = y.reshape(g.shape)
 
 			if args.visualize:
-				value_rolling_np = value_rolling.get()
-				mesh=implicit_mesh(value_rolling_np, level=0, spacing=args.spacing,
+				mesh=implicit_mesh(value_rolling, level=0, spacing=args.spacing,
 									edge_color='m',  face_color='white')
 				viz.update_tube(mesh, time_step, True)
 				# store this brt
-				brt.append(value_rolling_np); brt_time.append(t_now); meshes.append(mesh)
+				brt.append(value_rolling); brt_time.append(t_now); meshes.append(mesh)
 
 			if args.save:
 				fig = plt.gcf()
 				fig.savefig(join(params.savedict.savepath, rf"rocket_{t_now}.jpg"), bbox_inches='tight',facecolor='None')
 
-			itr_end.record(); itr_end.synchronize(); cpu_end = cputime()
+			cpu_end = cputime()
 
 			cpu_time_buffer.append(cpu_end-cpu_start)
-			gpu_time_buffer.append(cp.cuda.get_elapsed_time(itr_start, itr_end)/1e3)
-			info(f't: {time_step} | GPU time: {gpu_time_buffer[-1]:.4f} | CPU Time: {cpu_time_buffer[-1]:.4f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
+			info(f't: {time_step} | CPU Time: {cpu_time_buffer[-1]:.4f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
 
 		if not args.load_brt:
 			np.savez_compressed(join(params.savedict.savepath, "data/rocket_brt.npz"), brt=np.asarray(brt), \
@@ -193,8 +186,8 @@ def main(args):
 		
 		end_time = cputime()
 
-		info(f"Avg. local time: ({sum(gpu_time_buffer)/len(gpu_time_buffer)}):.4f secs")
-		info(f"Total Time: {end_time-start_time}:.4f secs")
+		info(f"Avg. local time: {sum(cpu_time_buffer)/len(cpu_time_buffer):.4f} secs")
+		info(f"Total Time: {end_time-start_time:.4f} secs")
 
 if __name__ == '__main__':
 	main(args)

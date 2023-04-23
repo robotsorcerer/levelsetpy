@@ -202,7 +202,7 @@ def main(args):
 						color=next(color))
 
 		finite_diff_data = Bundle(dict(innerFunc = termLaxFriedrichs,
-										innerData = Bundle({'grid':flock.grid,
+					innerData = Bundle({'grid':flock.grid,
 						'hamFunc': flock.hamiltonian,
 						'partialFunc': flock.dissipation,
 						'dissFunc': artificialDissipationGLF,
@@ -240,14 +240,14 @@ def main(args):
 			if args.visualize:
 				viz = RCBRTVisualizer(params=params)
 			t_range = [0, 100]
-			t_plot = (t_range[1] - t_range[0]) / 20
+			t_plot = (t_range[1] - t_range[0]) / 10000
 			small = 100*eps
 
 			# Loop through t_range (subject to a little roundoff).
 			t_now = t_range[0]
-			start_time = cputime()
+			start_time = time.perf_counter()
 
-			value_rolling = copy.copy(flock.payoff)
+			value_rolling = np.asarray(copy.copy(flock.payoff))
 
 			colors = iter(plt.cm.ocean(np.linspace(.25, 2, 100)))
 			color = next(colors)
@@ -261,6 +261,7 @@ def main(args):
 				with h5py.File(savename, 'r+') as df:
 					last_key = [key for key in df['value']][-1]
 					value_rolling = np.asarray(df[f"value/{last_key}"])
+					value_rolling = np.asarray(value_rolling)
 					t_now = float(last_key.split(sep='_')[-1])
 			else:
 				savename = join(params.savedict.savepath, rf"murmurations_flock_{args.flock_num:0>2}_{datetime.strftime(datetime.now(), '%m-%d-%y_%H-%M')}.hdf5")
@@ -276,14 +277,13 @@ def main(args):
 			times, norm_tracker = [], []
 			start_time = cputime()
 			
-			cpu_time_buffer = [] 
+			cpu_time_buffer = []
 
 			while(t_range[1] - t_now > small * t_range[1]):
 				cpu_start = cputime()
 
 				# Reshape data array into column vector for ode solver call.
 				y0 = value_rolling.flatten()
-				# print(f"value_rolling: ", value_rolling.shape, " y0: ", y0.shape)
 
 				# How far to step?
 				t_span = np.hstack([ t_now, min(t_range[1], t_now + t_plot) ])
@@ -298,7 +298,8 @@ def main(args):
 				# compute zero-level set
 				mesh_bundle=implicit_mesh(value_rolling, level=0, spacing=tuple(spacing.tolist()),
 												edge_color=None,  face_color=next(colors))
-				
+				# track the evolution of the growth of the level set so that when the norm stops decreasing, 
+				# we terminate the game
 				norm_tracker.append(LA.norm(y, 2))
 
 				time_step = f"{t_now:0>3.4f}/{t_range[-1]}"
@@ -318,15 +319,15 @@ def main(args):
 				cpu_end = cputime()
 
 				cpu_time_buffer.append(cpu_end-cpu_start)
-				info(f't: {time_step} | CPU Time: {cpu_time_buffer[-1]:.4f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
+				info(f't: {time_step} |  CPU Time: {cpu_time_buffer[-1]:.4f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
 
 					
-				if len(norm_tracker)>20: # and cp.all(cp.diff(norm_tracker[:-5])<.01):
+				if len(norm_tracker)>20: 
 					logger.info("Terminating the game!")
 					break
 			end_time = cputime()
 
-			info(f"Avg. local time: ({sum(cpu_time_buffer)/len(cpu_time_buffer):.4f} secs")
+			info(f"Avg. local time: {sum(cpu_time_buffer)/len(cpu_time_buffer):.4f} secs")
 			info(f"Total Time: {end_time-start_time:.4f} secs")
 
 		if args.verify:

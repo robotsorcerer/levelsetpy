@@ -82,7 +82,7 @@ class RocketSystemRel():
     def hamiltonian(self, t, value, value_derivs, finite_diff_bundle):
         """
             H = -a p_1 \cos θ - p_2(g - a -asin θ) - \bar{u} | p_1 x + p_3 | + 
-                                \underline{u} | p_2 x + p_3|
+                                underline{u} | p_2 x + p_3|
 
             Parameters
             ==========

@@ -46,9 +46,6 @@ def upwindFirstFirst(grid, data, dim, generateAll=False):
      Lekan Molu, 8/21/2021
          Added cupy impl on Nov 18, 21
     """
-    if isinstance(data, np.ndarray):
-      data = np.asarray(data)
-
     if((dim < 0) or (dim > grid.dim)):
         ValueError('Illegal dim parameter')
 

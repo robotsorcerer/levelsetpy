@@ -53,10 +53,7 @@ def  upwindFirstENO3b(grid, data, dim, generateAll=0):
        derivR      Right approximation of first derivative (same size as data).
 
     Lekan on August 16, 2021
-    Added cupy impl on Nov 18, 21
     """
-    if isinstance(data, np.ndarray):
-      data = np.asarray(data)
 
     if((dim < 0) or (dim > grid.dim)):
         ValueError('Illegal dim parameter')
