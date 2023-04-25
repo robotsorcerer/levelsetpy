@@ -2,7 +2,7 @@ function [ derivL, derivR ] = upwindFirstWENO5a(grid, data, dim, generateAll)
 % upwindFirstWENO5a: fifth order upwind approx of first deriv by divided diffs.
 %
 %   [ derivL, derivR ] = upwindFirstWENO5a(grid, data, dim, generateAll)
-%
+%`
 % Computes a fifth order directional approximation to the first derivative, 
 %   using a Weighted Essentially Non-Oscillatory (WENO) approximation.
 %

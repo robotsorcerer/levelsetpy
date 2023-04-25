@@ -1,4 +1,5 @@
-function [ data, g, data0 ] = air3D(accuracy)
+function [ local_time, global_time ] = air3D(accuracy)
+% function [ data, g, data0 ] = air3D(accuracy)
 % air3D: demonstrate the 3D aircraft collision avoidance example
 %
 %   [ data, g, data0 ] = air3D(accuracy)
@@ -59,6 +60,7 @@ function [ data, g, data0 ] = air3D(accuracy)
 %---------------------------------------------------------------------------
 % Make sure we can see the kernel m-files.
 run('setup.m');
+close all
 
 %---------------------------------------------------------------------------
 % Integration parameters.
@@ -223,7 +225,9 @@ drawnow;
 % Loop until tMax (subject to a little roundoff).
 tNow = t0;
 startTime = cputime;
+avg_time = [];
 while(tMax - tNow > small * tMax)
+  internal_time_start = cputime;
 
   % Reshape data array into column vector for ode solver call.
   y0 = data(:);
@@ -265,10 +269,16 @@ while(tMax - tNow > small * tMax)
   % Restore view.
   view(view_az, view_el);
   
+  internal_time_end = cputime;
+  avg_time = [avg_time, internal_time_end-internal_time_start];
 end
 
 endTime = cputime;
-fprintf('Total execution time %g seconds\n', endTime - startTime);
+local_time = sum(avg_time)/(length(avg_time));
+global_time = endTime - startTime;
+
+fprintf('Avg local time: %g.\t', local_time);
+fprintf('Total execution time %g seconds\n', global_time);
 
 
 %---------------------------------------------------------------------------

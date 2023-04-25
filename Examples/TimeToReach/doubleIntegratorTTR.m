@@ -292,7 +292,10 @@ end
 % Loop until tMax (subject to a little roundoff).
 tNow = t0;
 startTime = cputime;
+
+avg_time = [];
 while(tMax - tNow > small * tMax)
+  internal_time_start = cputime;
 
   % Reshape data array into column vector for ode solver call.
   y0 = data(:);
@@ -337,10 +340,16 @@ while(tMax - tNow > small * tMax)
   % Create new visualization.
   h = visualizeLevelSet(g, data, displayType, level, [ 't = ' num2str(tNow) ]);
 
+  internal_time_end = cputime;
+  avg_time = [avg_time, internal_time_end-internal_time_start];
 end
 
 endTime = cputime;
-fprintf('Total execution time %g seconds\n', endTime - startTime);
+local_time = sum(avg_time)/(length(avg_time));
+global_time = endTime - startTime;
+
+fprintf('Avg local time: %g.\t', local_time);
+fprintf('Total execution time %g seconds\n', global_time);
 
 % Extract the minimum time to reach function from the schemeData structure.
 %   Reshape it into an array, and replace the +inf entries with NaN to
