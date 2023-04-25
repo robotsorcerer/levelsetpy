@@ -13,11 +13,9 @@ import time
 import logging
 import argparse
 import sys, os
-import cupy as cp
 import numpy  as np
 from math import pi
 import matplotlib.pyplot as plt
-from cupyx.profiler import benchmark
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from skimage import measure
@@ -42,7 +40,7 @@ parser.add_argument('--visualize', '-vz', action='store_false', help='visualize 
 parser.add_argument('--load_brt', '-lb', action='store_true', help='load saved brt?' )
 parser.add_argument('--stochastic', '-st', action='store_true', help='Run trajectories with stochastic dynamics?' )
 parser.add_argument('--compute_traj', '-ct', action='store_false', help='Run trajectories with stochastic dynamics?' )
-parser.add_argument('--verify', '-vf', action='store_true', default=True, help='visualize level sets?' )
+parser.add_argument('--verify', '-vf', action='store_true', default=False, help='visualize level sets?' )
 parser.add_argument('--elevation', '-el', type=float, default=5., help='elevation angle for target set plot.' )
 parser.add_argument('--direction', '-dr',  action='store_true',  help='direction to grow the level sets. Negative by default.' )
 parser.add_argument('--azimuth', '-az', type=float, default=15., help='azimuth angle for target set plot.' )
@@ -93,7 +91,6 @@ def main(args):
 	dubins_rel = DubinsVehicleRel(g, u_bound, w_bound)
 
 	# after creating value function, make state space cupy objects
-	g.xs = [cp.asarray(x) for x in g.xs]
 	finite_diff_data = Bundle(dict(innerFunc = termLaxFriedrichs,
 				innerData = Bundle({'grid':g,
 					'hamFunc': dubins_rel.hamiltonian,
@@ -123,7 +120,7 @@ def main(args):
 					 'pause_time': args.pause_time,
 					 'level': 0, # which level set to visualize
 					 'winsize': (16,9),
-					 'fontdict': Bundle({'fontsize':18, 'fontweight':'bold'}),
+					 'fontdict': {'fontsize':18, 'fontweight':'bold'},
 					 "savedict": Bundle({"save": False, "savename": "dint_basic.jpg",
 										"savepath": "/opt/LevPy/Dubins"}),
 					})
@@ -146,15 +143,13 @@ def main(args):
 
 		brt = [value_init]
 		meshes, brt_time = [], []
-		value_rolling = cp.asarray(copy.copy(value_init))
+		value_rolling = copy.copy(value_init)
 
 		start_time = time.perf_counter()
 
+		cpu_time_buffer = []
 		while(t_range[1] - t_now > small * t_range[1]):
-			itr_start = cp.cuda.Event()
-			itr_end = cp.cuda.Event()
 
-			itr_start.record()
 			cpu_start = time.perf_counter()
 			time_step = f"{t_now}/{t_range[-1]}"
 
@@ -166,19 +161,17 @@ def main(args):
 
 			# Integrate a timestep.
 			t, y, _ = odeCFL2(termRestrictUpdate, t_span, y0, odeCFLset(options), finite_diff_data)
-			# cp.cuda.Stream.null.synchronize()
 			t_now = t
 
 			# Get back the correctly shaped data array
 			value_rolling = y.reshape(g.shape)
 
 			if args.visualize:
-				value_rolling_np = value_rolling.get()
-				mesh=implicit_mesh(value_rolling_np, level=0, spacing=args.spacing,
+				mesh=implicit_mesh(value_rolling, level=0, spacing=args.spacing,
 									edge_color=None,  face_color='maroon')
 				viz.update_tube(mesh, time_step, True)
 				# store this brt
-				brt.append(value_rolling_np); brt_time.append(t_now); meshes.append(mesh)
+				brt.append(value_rolling); brt_time.append(t_now); meshes.append(mesh)
 
 			if args.save:
 				fig = plt.gcf()
@@ -186,19 +179,20 @@ def main(args):
 					rf"rcbrt_{t_now}.jpg"),
 					bbox_inches='tight',facecolor='None')
 
-			cpu_end = time.perf_counter()
-			itr_end.record()
-			itr_end.synchronize()
+			cpu_end = cputime()
 
-			info(f't: {time_step} | GPU time: {(cp.cuda.get_elapsed_time(itr_start, itr_end)/1000.0):.4f} | CPU Time: {(cpu_end-cpu_start):.4f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
+			cpu_time_buffer.append(cpu_end-cpu_start)
+			info(f't: {time_step} | CPU Time: {cpu_time_buffer[-1]:.4f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
 
 		if not args.load_brt:
 			np.savez_compressed(join(params.savedict.savepath, "rcbrt.npz"), brt=np.asarray(brt), \
 				meshes=np.asarray(meshes), brt_time=np.asarray(brt_time))
 		
-		final_time = time.perf_counter()
+		end_time = cputime()
 
-		info(f'total time for ops: {final_time-start_time} secs')
+		info(f"Avg. local time: {sum(cpu_time_buffer)/len(cpu_time_buffer):.4f} secs")
+		info(f"Total Time: {end_time-start_time:.4f} secs")
+
 	if args.verify:
 		x0 = np.array([[1.25, 0, pi]])
 

@@ -88,14 +88,12 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=False):
         derivL, derivR, _ = upwindFirstENO3aHelper(grid, data, dim, False)
     else:
 
-        # We need the three ENO approximations
-        #   plus the (unstripped) divided differences to pick the least oscillatory.
+        # We need the three ENO approximations plus the (unstripped) divided differences to pick the least oscillatory.
         dL, dR, DD = upwindFirstENO3aHelper(grid, data, dim, False, False)
 
         # For now, use only the first order divided differences.
         D1 = DD.D1
 
-        #---------------------------------------------------------------------------
         # Create cell array with array indices.
         sizeData = size(data)
         indices1 = []
@@ -106,13 +104,13 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=False):
         terms = 5
         indices = [indices1 for i in range(terms)]
 
-        # Element i of the indices cell vector contains an index cell vector
-        #   that pulls out the v_i terms for the left approximation from the
-        #   first divided difference table.
+        # print(f"D1: {D1.shape}")
+        # create the substencils
         for i in range(terms):
-            indices[i][dim] = np.arange(i, size(D1, dim) + i - 4, dtype=np.intp)
+            indices[i][dim] = np.arange(i, size(D1, dim) + i - terms + 1, dtype=np.intp)
+            # print(f"indices[{i}][{dim}]: {indices[i][dim]}, min: {indices[i][dim].min()}, max: {indices[i][dim].max()}")
             
-        # Smoothness estimates of stencils.
+        # Smoothness estimates of stencils (see eq. 35 in my paper).
         smooth = cell(3,1)
         smooth[0] = ((13/12) * (D1[np.ix_(*indices[0])] \
                         - 2 * D1[np.ix_(*indices[1])] + D1[np.ix_(*indices[2])]) **2 \
@@ -138,6 +136,7 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=False):
 
         for i in range(len(smooth)):
             print(f"smooth[{i}]: {smooth[i].shape}")
+            print("indices1 \n", indices1)
             smoothL[i] = smooth[i][np.ix_(*indices1)]
 
         weightL = [ 0.1, 0.6, 0.3 ]

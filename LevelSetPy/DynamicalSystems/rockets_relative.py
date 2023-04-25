@@ -19,32 +19,12 @@ from LevelSetPy.Utilities.matlab_utils import isColumnLength, isvector
 class RocketSystemRel():
     def __init__(self, grid, u_bound=5, w_bound=5, x=None, a=32, g=64):
         """
-            Dubins Vehicle Dynamics in relative coordinates.
-            Please consult Merz, 1972 for a detailed reference.
+            Rockets in relative coordinates.
+            Please consult Dreyfus, 1964 for a detailed reference.
 
-            The equations of motion are adopted from Dreyfus' construction as follows:
-
-                &\dot{y}_1 = y_3,          &\dot{y}_5 = y_7, \\
-                &\dot{y}_2 = y_4,          &\dot{y}_6 = y_8, \\
-                &\dot{y}_3 = a\cos(u),     &\dot{y}_7 = a\cos(v), \\
-                &\dot{y}_4 = a\sin(u) - g, &\dot{y}_8 = a\sin(v) - g.
-
-            where $u(t), t \in [-T,0]$ is the controller under the coercion of the evader and
-             $v(t), t \in [-T,0]$ is the controller under the coercion of the pursuer i.e.
-             the pursuer is minimizing while the evader is maximizing. The full state dynamics
-             is given by
-
-            \dot{y} = \left(\begin{array}{c}
-                            \dot{y}_1 & \dot{y}_2 & \dot{y}_3 & \dot{y}_4 \\
-                            \dot{y}_5 & \dot{y}_6 & \dot{y}_7 &\dot{y}_8 \\
-                            \end{array}
-                        \right)^T =
-                            \left(\begin{array}{c}
-                            y_3 & y_4 & a\cos(u) & a\sin(u) - g &
-                            y_7 & y_8 & a\cos(v) & a\sin(v) - g
-                            \end{array}\right).
-
-            In relative coordinates between the two rockets, we have
+            The equations of motion are adopted from Dreyfus' construction. In relative 
+            coordinates between the two rockets, we have:
+            
                     &\dot{x} = a(cos(u_p)+ cos(u_e)),\\
                     &\dot{z} = a(sin(u_p)+sin(u_e))-2g,\\
                     &\dot{\theta} = u_p - u_e

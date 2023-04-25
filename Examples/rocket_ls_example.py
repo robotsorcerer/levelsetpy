@@ -147,7 +147,7 @@ def main(args):
 
 		cpu_time_buffer = []
 
-		while(t_range[1] - t_now > small * t_range[1]):
+		while((t_range[1] - t_now) > small * t_range[1]):
 			cpu_start = cputime()
 			time_step = f"{t_now:.2f}/{t_range[-1]}"
 
