@@ -134,7 +134,6 @@ def main(args):
 	else:
 		if args.visualize:
 			viz = RCBRTVisualizer(params=args.params)
-		t_plot = (t_range[1] - t_range[0]) / 10
 		small = 100*eps
 		options = Bundle(dict(factorCFL=0.95, stats='on', singleStep='off'))
 
@@ -145,19 +144,17 @@ def main(args):
 		meshes, brt_time = [], []
 		value_rolling = copy.copy(value_init)
 
-		start_time = time.perf_counter()
-
+		start_time = time.time()
 		cpu_time_buffer = []
+		t_steps = (t_range[1] - t_range[0]) / 10
 		while(t_range[1] - t_now > small * t_range[1]):
-
-			cpu_start = time.perf_counter()
-			time_step = f"{t_now}/{t_range[-1]}"
+			time_step = f"{t_now:.2f}/{t_range[-1]}"
 
 			# Reshape data array into column vector for ode solver call.
 			y0 = value_rolling.flatten()
 
 			# How far to step?
-			t_span = np.hstack([ t_now, min(t_range[1], t_now + t_plot) ])
+			t_span = np.hstack([ t_now, min(t_range[1], t_now + t_steps) ])
 
 			# Integrate a timestep.
 			t, y, _ = odeCFL2(termRestrictUpdate, t_span, y0, odeCFLset(options), finite_diff_data)
@@ -167,31 +164,26 @@ def main(args):
 			value_rolling = y.reshape(g.shape)
 
 			if args.visualize:
-				mesh=implicit_mesh(value_rolling, level=0, spacing=args.spacing,
+				value_rolling_np = value_rolling.get()
+				mesh=implicit_mesh(value_rolling_np, level=0, spacing=args.spacing,
 									edge_color=None,  face_color='maroon')
 				viz.update_tube(mesh, time_step, True)
 				# store this brt
-				brt.append(value_rolling); brt_time.append(t_now); meshes.append(mesh)
+				brt.append(value_rolling_np); brt_time.append(t_now); meshes.append(mesh)
 
-			if args.save:
-				fig = plt.gcf()
-				fig.savefig(join(params.savedict.savepath,
-					rf"rcbrt_{t_now}.jpg"),
-					bbox_inches='tight',facecolor='None')
+				if args.save:
+					fig = plt.gcf()
+					fig.savefig(join(params.savedict.savepath, rf"rcbrt_{t_now}.jpg"), bbox_inches='tight',facecolor='None')
 
-			cpu_end = cputime()
-
-			cpu_time_buffer.append(cpu_end-cpu_start)
-			info(f't: {time_step} | CPU Time: {cpu_time_buffer[-1]:.4f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
+			cpu_time_buffer.append((time.time()-start_time))
+			info(f't: {time_step} | CPU time: {cpu_time_buffer[-1]:.4f} | Norm: {np.linalg.norm(y, 2):.2f}')
 
 		if not args.load_brt:
 			np.savez_compressed(join(params.savedict.savepath, "rcbrt.npz"), brt=np.asarray(brt), \
 				meshes=np.asarray(meshes), brt_time=np.asarray(brt_time))
-		
-		end_time = cputime()
 
 		info(f"Avg. local time: {sum(cpu_time_buffer)/len(cpu_time_buffer):.4f} secs")
-		info(f"Total Time: {end_time-start_time:.4f} secs")
+		info(f"Total Time: {((time.time()-start_time)):.4f} secs")
 
 	if args.verify:
 		x0 = np.array([[1.25, 0, pi]])

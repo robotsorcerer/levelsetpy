@@ -135,8 +135,6 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=False):
         indices1[dim] = np.arange(size(data, dim),dtype=np.intp)
 
         for i in range(len(smooth)):
-            print(f"smooth[{i}]: {smooth[i].shape}")
-            print("indices1 \n", indices1)
             smoothL[i] = smooth[i][np.ix_(*indices1)]
 
         weightL = [ 0.1, 0.6, 0.3 ]
