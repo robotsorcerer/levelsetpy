@@ -42,7 +42,7 @@ In the [shapeOps file](/shapeOps.py), these operations are implemented.
 
 + For example, if we desire to unite two separate interfaces defined along the nodal points of a grid constructed on $\mathbb{R}^n$, say a sphere and a rectangle, we would carry out an element-wise minimum of every point belonging to the two or more interfaces. This is what we do in `shapeUnion`. 
 
-+ If we desire to intersect the two interfaces, we would carry out an element-wise maximum of every nodal point belonging to the two or more interfaces. We implement this in the routine `shapeUIntersect`. 
++ If we desire to intersect the two interfaces, we would carry out an element-wise maximum of every nodal point belonging to the two or more interfaces. We implement this in the routine `shapeIntersect`. 
 
 + Very often, we want to just subtract an interface' geometry from that of another. In this case, we negate the nodal points belong to the interface which we want to subtract, and then follow this operation with an element-wise maximum of all shapes. We implement this operation in `shapeDifference`.
 

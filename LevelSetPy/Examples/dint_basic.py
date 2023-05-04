@@ -1,7 +1,7 @@
 __comment__     = "Solves the approx. time to reach the origin for a double integral plant."
 __author__ 		= "Lekan Molu"
 __copyright__ 	= "2023, Hamilton-Jacobi Analysis in Python"
-__license__ 	= "Molux License"
+__license__ 	= "MIT License"
 __comment__ 	= "Evader at origin"
 __maintainer__ 	= "Lekan Molu"
 __email__ 		= "patlekno@icloud.com"

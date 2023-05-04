@@ -2,7 +2,7 @@ __all__ = ['Two rockets example from Dreyfus']
 
 __author__ 		= "Lekan Molu"
 __copyright__ 	= "2022, Large Hamilton-Jacobi Analysis."
-__license__ 	= "Molux License"
+__license__ 	= "MIT License"
 __comment__ 	= "Dreyfus' Rocket Launch Example with a First-Order Calculus of Variations Approach."
 __maintainer__ 	= "Lekan Molu"
 __email__ 		= "patlekno@icloud.com"
