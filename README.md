@@ -41,9 +41,10 @@ Be sure to activate your `conda` or `virtualven` environment first e.g. if your 
 
 Then install to the activated environment as follows
 
-+ BUILD: `python setup.py build --build-lib=/path/to/your-desired/build`
-
-+ INSTALL: via pip: `pip install -e . `
+```bash
+python setup.py build --build-lib=/path/to/your-desired/build
+pip install -e . 
+```
 
 
 A separate `README.md` file is left in the respective folders for each package.
