@@ -38,7 +38,7 @@ For the operations implemented in this section, we have closely followed Osher a
 
 ```
 
-In the [shape_ops file](/shape_ops.py), these operations are implemented. 
+In the [shape_ops file](../InitialConditions/shape_ops.py), these operations are implemented. 
 
 + For example, if we desire to unite two separate interfaces defined along the nodal points of a grid constructed on $\mathbb{R}^n$, say a sphere and a rectangle, we would carry out an element-wise minimum of every point belonging to the two or more interfaces. This is what we do in `shapeUnion`. 
 
