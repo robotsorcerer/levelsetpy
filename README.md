@@ -47,7 +47,7 @@ pip install -e .
 ```
 
 
-A separate `README.md` file is left in the respective folders for each package.
+A separate `README.md` file is left in the respective folders to guide the reader and user on how to use each subpackage.
 
 
 ### Citing this work

@@ -55,7 +55,6 @@ Some examples of some operations on using this subpackage are illustrated below.
 
 + Implicit representation of 2D geometric primitives on a [grid](../Grids) in 2 dimensions are herewith put forward. We construct surfaces implicitly on 2D grid nodes by performing elementary geometric operations between the representation of specific geometric primitives and grid nodal points. All the codes for reproducing these geometries are available in [test_mesh_2d_only.py](../Tests/test_mesh_2d_only.py). Jupyter notebook files are available in [init_conds.ipynb](../Notes/init_conds.ipynb).
 
-+ <center><b>Left to right: A cylinder, a rectangle, and a sphere.</b></center>
 
 <div align="center">
 <img src="../../Figures/Shapes2D/cylinder_2d.jpeg" height="330px" width="260px"/>
@@ -63,8 +62,8 @@ Some examples of some operations on using this subpackage are illustrated below.
 <img src="../../Figures/Shapes2D/sphere2_2d.jpeg" height="330px" width="260px"/>
 </div>
 
++ <center><b>Left to right: A cylinder, a rectangle, and a sphere.</b></center>
 
-+ <center><b>Left to right: Union of two spatially separated rectangles on a grid; union of two spheres; and union of a sphere and a rectangle.</b></center>
 
 <div align="center">
 <img src="../../Figures/Shapes2D/rect_union_2d.jpeg" height="330px" width="260px"/>
@@ -72,18 +71,22 @@ Some examples of some operations on using this subpackage are illustrated below.
 <img src="../../Figures/Shapes2D/sph_rect_diff_2d.jpeg" height="330px" width="260px"/>
 </div>
 
++ <center><b>Left to right: Union of two spatially separated rectangles on a grid; union of two spheres; and union of a sphere and a rectangle.</b></center>
+
 + Implicit representation of 3D geometric primitives on a [grid](/Grids) in 3 dimensions are herewith put forward. We construct surfaces implicitly on 3D grid nodes by performing elementary geometric operations between the representation of specific geometric primitives and grid nodal points. All the codes for reproducing these geometries are available in [test_mesh_3d.py](Tests/test_mesh_3d_only.py).
 
-- <center><b>Left to right: A cylinder, and a sphere.</b></center>
 
 <div align="center">
 <img src="../../Figures/Shapes3D/cylinder.jpeg" height="330px" width="330px"/>
 <img src="../../Figures/Shapes3D/sphere.jpeg" height="330px" width="330px"/>
 </div>
 
-- <center><b>Left to right: Union of a sphere and cylinder, and intersection of a sphere and cylinder.</b></center>
+- <center><b>Left to right: A cylinder, and a sphere.</b></center>
 
 <div align="center">
 <img src="../../Figures/Shapes3D/sphere_cyl_union.jpeg" height="350px" width="330px"/>
 <img src="../../Figures/Shapes3D/sphere_cyl_intersect.jpeg" height="350px" width="330px"/>
 </div>
+
+- <center><b>Left to right: Union of a sphere and cylinder, and intersection of a sphere and cylinder.</b></center>
+
