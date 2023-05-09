@@ -2,19 +2,13 @@
 __all__ = ["addGhostExtrapolate"]
  
 __author__ 		= "Lekan Molu"
-__copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
+__copyright__ = "2021, Hamilton-Jacobi Analysis in Python"
 __credits__  	= "There are None."
 __license__ 	= "MIT License"
-__maintainer__ 	= "Lekan Molu"
+__maintainer__= "Lekan Molu"
 __email__ 		= "patlekno@icloud.com"
-__status__ 		= "Completed"
-
-__author__ 		= "Lekan Molu"
-__maintainer__ 	= "Lekan Molu"
-__email__ 		= "patlekno@icloud.com"
-__status__ 		= "Completed"
-
-
+__status__ 		= "Completed, Circa, August Week I, 2021."
+__revised__   = "May 09, 2023"
 
 import copy
 import logging
@@ -25,39 +19,34 @@ logger = logging.getLogger(__name__)
 
 def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
     """
-     addGhostExtrapolate: add ghost cells, values extrapolated from bdry nodes.
+     addGhostExtrapolate: add ghost nodes, values extrapolated from bdry nodes.
 
        dataOut = addGhostExtrapolate(dataIn, dim, width, ghostData)
 
-     Creates ghost cells to manage the boundary conditions for the array dataIn.
+     Creates ghost nodes to manage the boundary conditions for the array dataIn.
 
-     This script fills the ghost cells with data linearly extrapolated
-       from the grid edge, where the sign of the slope is chosen to make sure the
+     This script fills the ghost nodes with data linearly extrapolated
+       from the grid edge, where the sign of the derivative is chosen to make sure the
        extrapolation goes away from or towards the zero level set.
 
      For implicit surfaces, the extrapolation will typically be away from zero
        (the extrapolation should not imply the presence of an implicit surface
         beyond the array bounds).
 
-     Notice that the indexing is shifted by the ghost cell width in output array.
-       So in 2D with dim == 1, the first data in the original array will be at
-              dataOut(width+1,1) == dataIn(1,1)
 
-     parameters:
-       dataIn	cp.intp data array.
-       dim		Dimension in which to add ghost cells.
-       width	Number of ghost cells to add on each side (default = 1).
-       ghostData	A structure (see below).
+    Input parameters
+    ================
+      dataIn (ndarray):	  Input data.
+      dim (scalar):		    Dimension in which to add ghost nodes.
+      width (scalar):	    Number of ghost nodes to add on each side (default = 1).
+      ghostData (Bundle): Data structure containing data specific to this type of
+                  ghost node.  For this function it is contains the field:
 
-       dataOut	Output data array.
-
-     ghostData is a structure containing data specific to this type of
-       ghost cell.  For this function it contains the field(s)
-
-       .towardZero Boolean indicating whether sign of extrapolation should
+            .towardZero Boolean indicating whether sign of extrapolation should
                      be towards or away from the zero level set (default = 0).
-
-     Lekan Molu, Circa, August Week I, 2021
+    Output parameter
+    ================
+      dataOut (ndarray):	Output data.  
     """
     if isinstance(dataIn, np.ndarray):
       dataIn = cp.asarray(dataIn)
@@ -69,11 +58,11 @@ def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
         error('Illegal width parameter')
 
     if(np.any(ghostData) and isinstance(ghostData, Bundle)):
-        slopeMultiplier = -1 if(ghostData.towardZero) else +1
+        derivativeMultiplier = -1 if(ghostData.towardZero) else +1
     else:
-        slopeMultiplier = +1
+        derivativeMultiplier = +1
 
-    # create cell array with array size
+    # create node array with array size
     dims = dataIn.ndim
     sizeIn = size(dataIn)
     indicesOut = []
@@ -86,38 +75,35 @@ def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
     sizeOut[dim] = sizeOut[dim] + (2 * width)
     dataOut = cp.zeros(tuple(sizeOut), dtype=cp.float64)
 
-    # fill output array with icp.t data
+    # fill output array with input data
     indicesOut[dim] = cp.arange(width, sizeOut[dim] - width, dtype=cp.intp) # correct
     # dynamic slicing to save the day
-    dataOut[cp.ix_(*indicesOut)] = copy.copy(dataIn) # correct
-    #logger.debug(f'dataIn: {cp.linalg.norm(dataIn, 2)} dataOut: {cp.linalg.norm(dataOut, 2)}')
+    dataOut[cp.ix_(*indicesOut)] = copy.copy(dataIn) 
 
-    # compute slopes
+    # compute derivatives
     indicesOut[dim] = [0]
     indicesIn[dim] = [1]
-    slopeBot = dataIn[cp.ix_(*indicesOut)] - dataIn[cp.ix_(*indicesIn)]
+    derivativeBot = dataIn[cp.ix_(*indicesOut)] - dataIn[cp.ix_(*indicesIn)]
 
     indicesOut[dim] = [sizeIn[dim]-1]
     indicesIn[dim] = [sizeIn[dim] - 2]
-    slopeTop = dataIn[cp.ix_(*indicesOut)] - dataIn[cp.ix_(*indicesIn)]
-    #logger.debug(f'slopeBot: {cp.linalg.norm(slopeBot, 2)} slopeTop: {cp.linalg.norm(slopeTop, 2)}')
+    derivativeTop = dataIn[cp.ix_(*indicesOut)] - dataIn[cp.ix_(*indicesIn)]
 
-    # adjust slope sign to correspond with sign of data at array edge
+    # adjust derivative sign to correspond with sign of data at array edge
     indicesIn[dim] = [0]
-    slopeBot = slopeMultiplier * cp.abs(slopeBot) * cp.sign(dataIn[cp.ix_(*indicesIn)])
+    derivativeBot = derivativeMultiplier * cp.abs(derivativeBot) * cp.sign(dataIn[cp.ix_(*indicesIn)])
 
     indicesIn[dim] = [sizeIn[dim]-1]
-    slopeTop = slopeMultiplier * cp.abs(slopeTop) * cp.sign(dataIn[cp.ix_(*indicesIn)])
+    derivativeTop = derivativeMultiplier * cp.abs(derivativeTop) * cp.sign(dataIn[cp.ix_(*indicesIn)])
 
     # now extrapolate
     for i in range(width):
         indicesOut[dim] = [i]
         indicesIn[dim] = [0]
-        dataOut[cp.ix_(*indicesOut)] = (dataIn[cp.ix_(*indicesIn)] + (width - i) * slopeBot)
+        dataOut[cp.ix_(*indicesOut)] = (dataIn[cp.ix_(*indicesIn)] + (width - i) * derivativeBot)
 
         indicesOut[dim] = [sizeOut[dim]-1-i]
         indicesIn[dim] = [sizeIn[dim]-1]
-        dataOut[cp.ix_(*indicesOut)] = (dataIn[cp.ix_(*indicesIn)] + (width - i) * slopeTop)
-
-    cp.cuda.Device().synchronize()
+        dataOut[cp.ix_(*indicesOut)] = (dataIn[cp.ix_(*indicesIn)] + (width - i) * derivativeTop)
+        
     return dataOut

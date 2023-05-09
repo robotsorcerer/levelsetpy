@@ -1,17 +1,13 @@
 __all__ = ["addGhostPeriodic"]
 
-__author__ 		= "Lekan Molu"
+__author__ 		  = "Lekan Molu"
 __copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
-__credits__  	= "There are None."
-__license__ 	= "MIT License"
+__credits__  	  = "There are None."
+__license__ 	  = "MIT License"
 __maintainer__ 	= "Lekan Molu"
-__email__ 		= "patlekno@icloud.com"
-__status__ 		= "Completed"
-
-__author__ 		= "Lekan Molu"
-__maintainer__ 	= "Lekan Molu"
-__email__ 		= "patlekno@icloud.com"
-__status__ 		= "Completed"
+__email__ 		  = "patlekno@icloud.com"
+__status__ 		  = "Completed, Circa, August Week I, 2021."
+__revised__     = "May 09, 2023"
 
 import copy
 import cupy as cp
@@ -40,18 +36,17 @@ def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
        so in 2D for dim == 1, the first data in the original array will be at
               dataOut(width+1,1) == dataIn(1,1)
 
-     parameters:
-       dataIn	cp.intp data array
-       dim		dimension in which to add ghost cells
-       width	number of ghost cells to add on each side (default = 1)
-       ghostData	A structure (see below).
-
-       dataOut	Output data array.
-
-     ghostData is a structure containing data specific to this type of
-       ghost cell.  For this function it is entirely ignored.
-
-     Lekan Molu, Circa, August Week I, 2021
+     Input parameters
+     ================
+       dataIn (ndarray):	Input data
+       dim (scalar):		  Dimension in which to add ghost cells
+       width (scalar):	  Number of ghost cells to add on each side (default = 1)
+       ghostData (Bundle): Data structure containing data specific to this type of
+            ghost node.  For this function it is entirely ignored.
+    
+     Output parameter
+     ================
+       dataOut:	Output data array.
     """
     if isinstance(dataIn, np.ndarray):
       dataIn = cp.asarray(dataIn)
