@@ -8,10 +8,13 @@ The Dirichlet boundary condition is a first-type boundary condition which when i
 
 An example of a partial differential equation with Dirichlet boundary condition would be 
 
-$$ u_t(x,t) &= \epsilon u_{xx}(x,t) + \lambda(x) u(x,t) + g(x) u_x(0, t) + \int_0^x f(x,y)u(y, t) dy, \\ 
+```math
+\begin{align}
+ u_t(x,t) &= \epsilon u_{xx}(x,t) + \lambda(x) u(x,t) + g(x) u_x(0, t) + \int_0^x f(x,y)u(y, t) dy, \\ 
 u(0, t) &= 0 \\
 u(1, t) &= \pi 
-$$
+\end{align}
+```
 
 defined over the triangular domain $\mathcal{T} = \{0 \le x \le 1}$ for all $t>0$. We say the boundary conditions $u(0, t)$ and $u(1, t)$ are of the Dirichlet type since they define the values of the solution to the PDE at the boundaries of the computational domain.
 
@@ -46,11 +49,13 @@ The Neumann boundary condition is the classical second-type of boundary conditio
 
 An example of a partial differential equation with Dirichlet boundary condition would be 
 
+```math
 \begin{align} 
 u_t(x,t) &= \epsilon u_{xx}(x,t) + \lambda(x) u(x,t) + g(x) u_x(0, t) + \int_0^x f(x,y)u(y, t) dy, \\ 
 u_x(0, t) &= 0 \\
 u_x(1, t) &= \pi 
 \end{align}
+```
 
 defined over the triangular domain $\mathcal{T} = \{0 \le x \le 1}$ for all $t>0$. We say the boundary conditions $u(0, t)$ and $u(1, t)$ are of the Neumnann type since they define the derivatives of the solution to the PDE at the boundaries of the computational domain of the partial differential equation. 
 
