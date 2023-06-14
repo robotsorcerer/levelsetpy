@@ -5,7 +5,7 @@ import time
 import numpy as np
 from skimage import measure
 import matplotlib.pylab as plt
-import matplotlib.Gridspec as Gridspec
+import matplotlib.gridspec as Gridspec
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from os.path import join, expanduser
