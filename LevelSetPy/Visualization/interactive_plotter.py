@@ -11,7 +11,7 @@ import time
 import numpy as np
 from os.path import join
 import matplotlib.pylab as plt
-import matplotlib.Gridspec as Gridspec
+import matplotlib.gridspec as Gridspec
 from ..Utilities.matlab_utils import *
 from ..Grids.create_grid import createGrid
 from mpl_toolkits.mplot3d import Axes3D
