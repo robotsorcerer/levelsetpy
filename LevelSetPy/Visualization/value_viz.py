@@ -13,7 +13,7 @@ from os.path import join
 import matplotlib.pylab as plt
 import matplotlib.Gridspec as Gridspec
 from LevelSetPy.Utilities.matlab_utils import *
-from LevelSetPy.Grids.create_grid import createGrid
+from LevelSetPy.grids.create_grid import createGrid
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from LevelSetPy.Visualization.mesh_implicit import implicit_mesh
