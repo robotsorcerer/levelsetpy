@@ -54,7 +54,7 @@ class Bundle(object):
     def __len__(self):
         return len(self.__dict__.keys())
 
-    def keys():
+    def keys(self):
         return list(self.__dict__.keys())
 
 def mat_like_array(start, end, step=1):

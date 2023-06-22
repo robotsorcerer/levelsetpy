@@ -10,9 +10,6 @@ __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Ongoing"
 __date__ 		= "Nov. 2021"
 
-
-
-
 import copy
 import time
 import h5py
@@ -378,6 +375,4 @@ def main(args):
 		os._exit()
 
 if __name__ == '__main__':
-	# Do not use python profiler: https://docs.cupy.dev/en/stable/user_guide/performance.html
-	from cupyx.profiler import benchmark
-	print(benchmark(main, (args,), n_repeat=10))
+	main(args)
