@@ -1,0 +1,12 @@
+./levelsetpy/visualization/__pycache__
+./levelsetpy/dynamicalsystems/__pycache__
+./levelsetpy/boundarycondition/__pycache__
+./levelsetpy/initialconditions/__pycache__
+./levelsetpy/spatialderivative/Other/__pycache__
+./levelsetpy/spatialderivative/__pycache__
+./levelsetpy/grids/__pycache__
+./levelsetpy/utilities/__pycache__
+./levelsetpy/explicitintegration/__pycache__
+build/**
+dist/**
+levelsetpy.egg-info/**
