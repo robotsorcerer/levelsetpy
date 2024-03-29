@@ -63,7 +63,7 @@ class RocketSystemRel():
         self.grid        = grid
 
         if x:
-            assert isinstance(x, np.ndarray) or isinstance(x, cp.ndarray), "initial state must either be a numpy or cupy array."
+            assert isinstance(x, np.ndarray) or isinstance(x, np.ndarray), "initial state must either be a numpy or cupy array."
             r, c = x.shape
             if r<c:
                 # turn to column vector
@@ -104,10 +104,10 @@ class RocketSystemRel():
         """
         p1, p2, p3 = value_derivs[0], value_derivs[1], value_derivs[2]
 
-        p1_coeff = -self.a*cp.cos(self.grid.xs[2]) 
-        p2_coeff = self.g - self.a - self.a*cp.sin(self.grid.xs[2])
-        p31_coeff = cp.abs(p1*self.grid.xs[0] + p3)
-        p32_coeff = cp.abs(p2*self.grid.xs[0] + p3)
+        p1_coeff = -self.a*np.cos(self.grid.xs[2]) 
+        p2_coeff = self.g - self.a - self.a*np.sin(self.grid.xs[2])
+        p31_coeff = np.abs(p1*self.grid.xs[0] + p3)
+        p32_coeff = np.abs(p2*self.grid.xs[0] + p3)
 
         Hxp = p1*p1_coeff + p2*p2_coeff - self.u_p*p31_coeff + self.u_p*p32_coeff
 
@@ -128,11 +128,11 @@ class RocketSystemRel():
         assert dim>=0 and dim <3, "Dubins vehicle dimension has to between 0 and 2 inclusive."
 
         if dim==0:
-            return cp.abs(-self.a*cp.cos(self.grid.xs[2])) + cp.abs(self.u_e*self.grid.xs[0])
+            return np.abs(-self.a*np.cos(self.grid.xs[2])) + np.abs(self.u_e*self.grid.xs[0])
         elif dim==1:
-            return cp.abs(self.g - self.a -self.a*cp.sin(self.grid.xs[2])) + cp.abs(self.u_p*self.grid.xs[0]) # - self.a - self.g)
+            return np.abs(self.g - self.a -self.a*np.sin(self.grid.xs[2])) + np.abs(self.u_p*self.grid.xs[0]) # - self.a - self.g)
         elif dim==2:
-            return cp.abs(self.u_p + self.u_e)
+            return np.abs(self.u_p + self.u_e)
 
     def dynamics(self):
         """

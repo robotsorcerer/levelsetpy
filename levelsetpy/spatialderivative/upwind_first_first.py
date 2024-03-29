@@ -10,7 +10,6 @@ __status__ 		= "Completed"
 
 import copy
 import logging
-import cupy as cp
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -47,8 +46,8 @@ def upwindFirstFirst(grid, data, dim, generateAll=False):
      Lekan Molu, 8/21/2021
          Added cupy impl on Nov 18, 21
     """
-    if isinstance(data, cp.ndarray):
-      data = cp.asarray(data)
+    if isinstance(data, np.ndarray):
+      data = np.asarray(data)
 
     if((dim < 0) or (dim > grid.dim)):
         ValueError('Illegal dim parameter')
@@ -65,22 +64,22 @@ def upwindFirstFirst(grid, data, dim, generateAll=False):
     sizeData = size(gdata)
     indices1 = []
     for i in range(grid.dim):
-        indices1[i] = cp.arange(sizeData[i], dtype=cp.intp)
+        indices1[i] = np.arange(sizeData[i], dtype=np.intp)
     indices2 = copy.copy(indices1)
 
     #Where does the actual data lie in the dimension of interest?
-    indices1[dim] = cp.arange(size(gdata, dim), dtype=cp.intp)
+    indices1[dim] = np.arange(size(gdata, dim), dtype=np.intp)
     indices2[dim] = indices1[dim] - 1
 
     #This array includes one extra entry in dimension of interest.
-    deriv = dxInv*(gdata[cp.ix_(indices1)] - gdata[cp.ix_(indices2)])
+    deriv = dxInv*(gdata[np.ix_(indices1)] - gdata[np.ix_(indices2)])
 
     #Take leftmost grid.N(dim) entries for left approximation.
-    indices1[dim] = cp.arange(size(deriv, dim) - 1, dtype=cp.intp)
-    derivL = deriv[cp.ix_(indices1)]
+    indices1[dim] = np.arange(size(deriv, dim) - 1, dtype=np.intp)
+    derivL = deriv[np.ix_(indices1)]
 
     #Take rightmost grid.N(dim) entries for right approximation.
-    indices1[dim] = cp.arange(1,size(deriv, dim), dtype=cp.intp)
-    derivR = deriv[cp.ix_(indices1)]
+    indices1[dim] = np.arange(1,size(deriv, dim), dtype=np.intp)
+    derivR = deriv[np.ix_(indices1)]
 
     return  derivL, derivR

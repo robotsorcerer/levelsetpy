@@ -9,7 +9,6 @@ __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
 
-import cupy as cp
 import numpy as np
 from levelsetpy.utilities import *
 
@@ -90,12 +89,12 @@ def artificialDissipationGLF(t, data, derivL, derivR, schemeData):
 
     for i in range(grid.dim):
         # Get derivative bounds over entire grid (scalars).
-        derivMinL = cp.min(derivL[i].flatten())
-        derivMinR = cp.min(derivR[i].flatten())
+        derivMinL = np.min(derivL[i].flatten())
+        derivMinR = np.min(derivR[i].flatten())
         derivMin[i] = min(derivMinL, derivMinR)
 
-        derivMaxL = cp.max(derivL[i].flatten())
-        derivMaxR = cp.max(derivR[i].flatten())
+        derivMaxL = np.max(derivL[i].flatten())
+        derivMaxR = np.max(derivR[i].flatten())
         derivMax[i] = max(derivMaxL, derivMaxR)
 
         # Get derivative differences at each node.
@@ -110,10 +109,10 @@ def artificialDissipationGLF(t, data, derivL, derivR, schemeData):
                       schemeData, i)
 
         diss += (0.5 * derivDiff[i] * alpha)
-        if isinstance(alpha, cp.ndarray):
+        if isinstance(alpha, np.ndarray):
           #from Osher and Fedkiw, the coeffs are
           # set to the max possible values of |H_{x|y}| respectively
-          alpha = cp.max(alpha.flatten())
+          alpha = np.max(alpha.flatten())
 
 
         stepBoundInv += (alpha / grid.dx.item(i))

@@ -11,7 +11,6 @@ __status__ 		= "Needs review"
 
 import copy
 import logging
-import cupy as cp
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -59,8 +58,8 @@ def upwindFirstWENO5b(grid, data, dim, generateAll=False):
 
      Copyright Lekan Molu, 8/21/2021.
     """
-    if isinstance(data, cp.ndarray):
-      data = cp.asarray(data)
+    if isinstance(data, np.ndarray):
+      data = np.asarray(data)
 
     if((dim < 0) or (dim > grid.dim)):
         ValueError('Illegal dim parameter')

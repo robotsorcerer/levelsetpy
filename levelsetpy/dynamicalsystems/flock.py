@@ -233,7 +233,6 @@ class Flock(Bird):
         for vehicle in vehicles:
             ham_x = vehicle.hamiltonian_abs(t, data, value_derivs, finite_diff_bundle)
             unattacked_hams.append(ham_x.get())
-        # unattacked_hams = cp.sum(cp.asarray(unattacked_hams), axis=0)
 
         # try computing the attack of a pursuer against the targeted agent
         attacked_ham = self.vehicles[self.attacked_idx].hamiltonian(t, data, value_derivs, finite_diff_bundle)
@@ -242,7 +241,7 @@ class Flock(Bird):
         ham = unattacked_hams + [attacked_ham.get() ]
         ham = shapeUnion(ham)
 
-        return cp.asarray(ham)
+        return np.asarray(ham)
 
     def dissipation(self, t, data, derivMin, derivMax, \
                       schemeData, dim):
@@ -265,10 +264,9 @@ class Flock(Bird):
         alphas.append(attacked_alpha)
 
         alphas = [a_ for a_ in alphas if isnumeric(a_)]+[x.item() for x in alphas if isinstance(x, np.ndarray)]
-        # print(alphas) 
-        # alphas = np.maximum(alphas, dtype=object)
+        
         alphas = np.max(alphas)
-        return cp.asarray(alphas)
+        return np.asarray(alphas)
 
     def __eq__(self,other):
         if hash(self)==hash(other):

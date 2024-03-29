@@ -10,7 +10,6 @@ __status__ 		= "Completed"
 
 
 import copy
-import cupy as cp
 import numpy as np
 import logging
 from levelsetpy.utilities.matlab_utils import *

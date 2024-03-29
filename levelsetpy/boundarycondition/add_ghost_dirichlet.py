@@ -12,7 +12,6 @@ __revised__     = "May 09, 2023"
 
 import copy 
 import logging
-import cupy as cp
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -82,15 +81,15 @@ def addGhostDirichlet(dataIn, dim, width=None, ghostData=None):
 
     sizeOut = copy.copy(sizeIn)
     sizeOut[dim] += 2*width 
-    dataOut = cp.zeros(sizeOut)
+    dataOut = np.zeros(sizeOut)
 
     indicesOut[dim] = range(width, sizeOut[dim]-width)
-    dataOut[cp.ix_(indicesOut)] = copy.copy(dataIn)
+    dataOut[np.ix_(indicesOut)] = copy.copy(dataIn)
     
     indicesOut[dim] = range(width)
-    dataOut[cp.ix_(indicesOut)] = lowerValue 
+    dataOut[np.ix_(indicesOut)] = lowerValue 
     
     indicesOut[dim] = range(sizeOut[dim] - width, sizeOut[dim])
-    dataOut[cp.ix_(indicesOut)] = copy.copy(upperValue)
+    dataOut[np.ix_(indicesOut)] = copy.copy(upperValue)
     
     return dataOut

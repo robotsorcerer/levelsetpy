@@ -40,7 +40,7 @@ class DubinsVehicleRel():
         self.grid        = grid
 
         if x:
-            assert isinstance(x, np.ndarray) or isinstance(x, cp.ndarray), "initial state must either be a numpy or cupy array."
+            assert isinstance(x, np.ndarray) or isinstance(x, np.ndarray), "initial state must either be a numpy or cupy array."
             r, c = x.shape
             if r<c:
                 # turn to column vector
@@ -89,11 +89,11 @@ class DubinsVehicleRel():
                     .innerFunc: terminal Lax Friedrichs integration scheme.
         """
         p1, p2, p3  = value_derivs[0], value_derivs[1], value_derivs[2]
-        p1_coeff    = self.v_e - self.v_p * cp.cos(self.grid.xs[2])
-        p2_coeff    = self.v_p * cp.sin(self.grid.xs[2])
+        p1_coeff    = self.v_e - self.v_p * np.cos(self.grid.xs[2])
+        p2_coeff    = self.v_p * np.sin(self.grid.xs[2])
 
-        Hxp = p1 * p1_coeff - p2 * p2_coeff - self.w(1)*cp.abs(p1*self.grid.xs[1] - \
-                p2*self.grid.xs[0] - p3) + self.w(1) * cp.abs(p3)
+        Hxp = p1 * p1_coeff - p2 * p2_coeff - self.w(1)*np.abs(p1*self.grid.xs[1] - \
+                p2*self.grid.xs[0] - p3) + self.w(1) * np.abs(p3)
 
         return Hxp
 
@@ -111,9 +111,9 @@ class DubinsVehicleRel():
         assert dim>=0 and dim <3, "Dubins vehicle dimension has to between 0 and 2 inclusive."
 
         if dim==0:
-            return cp.abs(self.v_e - self.v_p * cp.cos(self.grid.xs[2])) + cp.abs(self.w(1) * self.grid.xs[1])
+            return np.abs(self.v_e - self.v_p * np.cos(self.grid.xs[2])) + np.abs(self.w(1) * self.grid.xs[1])
         elif dim==1:
-            return cp.abs(self.v_p * cp.sin(self.grid.xs[2])) + cp.abs(self.w(1) * self.grid.xs[0])
+            return np.abs(self.v_p * np.sin(self.grid.xs[2])) + np.abs(self.w(1) * self.grid.xs[0])
         elif dim==2:
             return self.w_e + self.w_p
 

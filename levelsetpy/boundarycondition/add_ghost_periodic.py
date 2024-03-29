@@ -49,7 +49,7 @@ def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
        dataOut:	Output data array.
     """
     if isinstance(dataIn, np.ndarray):
-      dataIn = cp.asarray(dataIn)
+      dataIn = np.asarray(dataIn)
 
     if not width:
       width = 1
@@ -68,19 +68,19 @@ def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
     # create appropriately sized output array
     sizeOut = copy.copy(list(sizeIn))
     sizeOut[dim] = sizeOut[dim] + 2 * width
-    dataOut = cp.zeros(tuple(sizeOut), dtype=cp.float64)
+    dataOut = np.zeros(tuple(sizeOut), dtype=np.float64)
 
-    # fill output array with cp.intp data
-    indicesOut[dim] = cp.arange(width, sizeOut[dim] - width, dtype=cp.intp)
-    dataOut[cp.ix_(*indicesOut)] = dataIn
+    # fill output array with np.intp data
+    indicesOut[dim] = np.arange(width, sizeOut[dim] - width, dtype=np.intp)
+    dataOut[np.ix_(*indicesOut)] = dataIn
 
     # fill ghost cells
-    indicesIn[dim] = cp.arange(sizeIn[dim] - width,sizeIn[dim], dtype=cp.intp)
-    indicesOut[dim] = cp.arange(width, dtype=cp.intp)
-    dataOut[cp.ix_(*indicesOut)] = dataIn[cp.ix_(*indicesIn)]
+    indicesIn[dim] = np.arange(sizeIn[dim] - width,sizeIn[dim], dtype=np.intp)
+    indicesOut[dim] = np.arange(width, dtype=np.intp)
+    dataOut[np.ix_(*indicesOut)] = dataIn[np.ix_(*indicesIn)]
 
-    indicesIn[dim] = cp.arange(width, dtype=cp.intp)
-    indicesOut[dim] = cp.arange(sizeOut[dim] - width, sizeOut[dim], dtype=cp.intp)
-    dataOut[cp.ix_(*indicesOut)] = dataIn[cp.ix_(*indicesIn)]
+    indicesIn[dim] = np.arange(width, dtype=np.intp)
+    indicesOut[dim] = np.arange(sizeOut[dim] - width, sizeOut[dim], dtype=np.intp)
+    dataOut[np.ix_(*indicesOut)] = dataIn[np.ix_(*indicesIn)]
 
     return dataOut

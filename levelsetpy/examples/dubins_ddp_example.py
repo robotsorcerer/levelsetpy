@@ -1,4 +1,4 @@
-__comment__     = "Solves the BRT of a P-E Dubins Vehicle in Relative Coordinates (Air3D Basic)."
+__comment__     = "Solves the BRT of a Pasarray-E Dubins Vehicle in Relative Coordinates (Air3D Basic)."
 __author__ 		= "Lekan Molu"
 __copyright__ 	= "2022, Hamilton-Jacobi Analysis in Python"
 __license__ 	= "MIT License"
@@ -13,7 +13,6 @@ import time
 import logging
 import argparse
 import sys, os
-import cupy as cp
 import numpy  as np
 from math import pi
 import matplotlib.pyplot as plt
@@ -91,12 +90,12 @@ def main(args):
 	dubins_rel = DubinsVehicleRel(g, u_bound, w_bound)
 
 	# after creating value function, make state space cupy objects
-	g.xs = [cp.asarray(x) for x in g.xs]
+	g.xs = [np.asarray(x) for x in g.xs]
 	finite_diff_data = Bundle(dict(innerFunc = termLaxFriedrichs,
 				innerData = Bundle({'grid':g,
 					'hamFunc': dubins_rel.hamiltonian,
 					'partialFunc': dubins_rel.dissipation,
-					'dissFunc': artificia.dissipationGLF,
+					'dissFunc': artificialDissipationGLF,
 					'CoStateCalc': upwindFirstENO2,
 					}),
 					positive = args.direction,  # direction to grow the updated level set
@@ -143,17 +142,13 @@ def main(args):
 
 		# Loop through t_range (subject to a little roundoff).
 		t_now = t_range[0]
-		start_time = cputime()
-		itr_start = cp.cuda.Event()
-		itr_end = cp.cuda.Event()
+		cpu_start = cputime()
 
 		brt = [value_init]
 		meshes, brt_time = [], []
-		value_rolling = cp.asarray(copy.copy(value_init))
+		value_rolling = np.asarray(copy.copy(value_init))
 
 		while(t_range[1] - t_now > small * t_range[1]):
-			itr_start.record()
-			cpu_start = cputime()
 			time_step = f"{t_now}/{t_range[-1]}"
 
 			# Reshape data array into column vector for ode solver call.
@@ -164,7 +159,7 @@ def main(args):
 
 			# Integrate a timestep.
 			t, y, _ = odeCFL2(termRestrictUpdate, t_span, y0, odeCFLset(options), finite_diff_data)
-			cp.cuda.Stream.null.synchronize()
+			
 			t_now = t
 
 			# Get back the correctly shaped data array
@@ -180,15 +175,11 @@ def main(args):
 
 			if args.save:
 				fig = plt.gcf()
-				fig.savefig(join(expanduser("~"),"Documents/Papers/Safety/WAFR2022",
-					rf"figures/rcbrt_{t_now}.jpg"),
-					bbox_inches='tight',facecolor='None')
+				fig.savefig(join("/opt", rf"figures/rcbrt_{t_now}.jpg"), bbox_inches='tight',facecolor='None')
 
-			itr_end.record()
-			itr_end.synchronize()
 			cpu_end = cputime()
 
-			info(f't: {time_step} | GPU time: {(cp.cuda.get_elapsed_time(itr_start, itr_end)):.2f} | CPU Time: {(cpu_end-cpu_start):.2f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
+			info(f't: {time_step} |  CPU Time: {(cpu_end-cpu_start):.2f}, | Targ bnds {min(y):.2f}/{max(y):.2f} Norm: {np.linalg.norm(y, 2):.2f}')
 
 		if not args.load_brt:
 			os.makedirs("data") if not os.path.exists("data") else None

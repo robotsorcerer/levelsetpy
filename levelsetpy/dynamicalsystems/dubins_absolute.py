@@ -168,8 +168,8 @@ class DubinsVehicleAbs():
         assert dim>=0 and dim <3, "Dubins vehicle dimension has to between 0 and 2 inclusive."
 
         if dim==0:
-            return cp.abs(self.v_e - self.v_p * cp.cos(self.grid.xs[2])) + cp.abs(self.w(1) * self.grid.xs[1])
+            return np.abs(self.v_e - self.v_p * np.cos(self.grid.xs[2])) + np.abs(self.w(1) * self.grid.xs[1])
         elif dim==1:
-            return cp.abs(self.v_p * cp.sin(self.grid.xs[2])) + cp.abs(self.w(1) * self.grid.xs[0])
+            return np.abs(self.v_p * np.sin(self.grid.xs[2])) + np.abs(self.w(1) * self.grid.xs[0])
         elif dim==2:
             return self.w_e + self.w_p

@@ -36,9 +36,6 @@ realmax = sys.float_info.max
 eps     = sys.float_info.epsilon
 DEFAULT_ORDER = "C"
 
-
-
-
 class Bundle(object):
     def __init__(self, dicko):
         """

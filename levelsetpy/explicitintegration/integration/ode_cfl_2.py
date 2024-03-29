@@ -11,7 +11,6 @@ __status__ 		= "Completed"
 
 import copy
 import time
-import cupy as cp
 import numpy as np
 
 from levelsetpy.utilities import *

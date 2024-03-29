@@ -13,7 +13,6 @@ import time
 import logging
 import argparse
 import sys, os
-import cupy as cp
 import numpy  as np
 from math import pi
 import matplotlib.pyplot as plt
@@ -94,7 +93,7 @@ def main(args):
 	dubins_rel = DubinsVehicleRel(g, u_bound, w_bound)
 
 	# after creating value function, make state space cupy objects
-	g.xs = [cp.asarray(x) for x in g.xs]
+	g.xs = [np.asarray(x) for x in g.xs]
 	finite_diff_data = Bundle(dict(innerFunc = termLaxFriedrichs,
 				innerData = Bundle({'grid':g, 'hamFunc': dubins_rel.hamiltonian,
 				'partialFunc': dubins_rel.dissipation, 'dissFunc': artificia.dissipationGLF,
@@ -140,13 +139,14 @@ def main(args):
 
 		brt = [value_init]
 		meshes, brt_time = [], []
-		value_rolling = cp.asarray(copy.copy(value_init))
+		value_rolling = np.asarray(copy.copy(value_init))
 
 		t_now = t_range[0]
-		gpu_time_buffer = []
-		itr_start = cp.cuda.Event(); itr_end = cp.cuda.Event()
+		cpu_time_buffer = []
+		
 		while(t_range[1] - t_now > small * t_range[1]):
-			itr_start.record()
+			itr_start = cputime()
+			
 			time_step = f"{t_now:.2f}/{t_range[-1]}"
 
 			# Reshape data array into column vector for ode solver call.
@@ -174,17 +174,16 @@ def main(args):
 					fig = plt.gcf()
 					fig.savefig(join(params.savedict.savepath, rf"rcbrt_{t_now}.jpg"), bbox_inches='tight',facecolor='None')
 
-			itr_end.record(); itr_end.synchronize()
-
-			gpu_time_buffer.append(cp.cuda.get_elapsed_time(itr_start, itr_end)/1e3)
-			info(f't: {time_step} | GPU time: {gpu_time_buffer[-1]:.4f} | Norm: {np.linalg.norm(y, 2):.2f}')
+			itr_end = cputime()
+			cpu_time_buffer.append((-itr_start + itr_end)/1e3)
+			info(f't: {time_step} | GPU time: {cpu_time_buffer[-1]:.4f} | Norm: {np.linalg.norm(y, 2):.2f}')
 
 		if not args.load_brt:
 			np.savez_compressed(join(params.savedict.savepath, "dubins.npz"), brt=np.asarray(brt), \
 				meshes=np.asarray(meshes), brt_time=np.asarray(brt_time))
 
-		info(f"Avg. local time: {sum(gpu_time_buffer)/len(gpu_time_buffer):.4f} secs")
-		info(f"Total Time: {sum(gpu_time_buffer):.4f} secs")
+		info(f"Avg. local time: {sum(cpu_time_buffer)/len(cpu_time_buffer):.4f} secs")
+		info(f"Total Time: {sum(cpu_time_buffer):.4f} secs")
 		
 
 if __name__ == '__main__':

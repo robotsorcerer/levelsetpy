@@ -10,7 +10,6 @@ __status__ 		= "Completed"
 
 import copy
 import logging
-import cupy as cp
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -56,8 +55,8 @@ def  upwindFirstENO3b(grid, data, dim, generateAll=0):
     Lekan on August 16, 2021
     Added cupy impl on Nov 18, 21
     """
-    if isinstance(data, cp.ndarray):
-      data = cp.asarray(data)
+    if isinstance(data, np.ndarray):
+      data = np.asarray(data)
 
     if((dim < 0) or (dim > grid.dim)):
         ValueError('Illegal dim parameter')
@@ -116,7 +115,7 @@ def choose(d, s):
     choose2over3 = (s[1] < s[2])
 
     deriv = ((choose1over2 and choose1over3) * d[0] \
-            + (cp.logical_not(choose1over2) and choose2over3) * d[1] \
-            + (cp.logical_not(choose1over3) and cp.logical_not(choose2over3)) * d[2])
+            + (np.logical_not(choose1over2) and choose2over3) * d[1] \
+            + (np.logical_not(choose1over3) and np.logical_not(choose2over3)) * d[2])
 
     return deriv

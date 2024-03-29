@@ -74,10 +74,10 @@ class DoubleIntegrator():
                     .derivFunc: Upwinding scheme (upwindFirstENO2).
                     .innerFunc: terminal Lax Friedrichs integration scheme.
         """
-        x2 = cp.asarray(self.grid.xs[1])
+        x2 = np.asarray(self.grid.xs[1])
 
         return -(value_derivs[0]*x2- \
-                 cp.abs(value_derivs[1])*self.control_law)
+                 np.abs(value_derivs[1])*self.control_law)
 
     def dissipation(self, t, data, derivMin, derivMax, \
                       schemeData, dim):
@@ -88,8 +88,8 @@ class DoubleIntegrator():
                 the grid (see 5.11-5.12 of O&F).
         """
         x_dot = [
-                    cp.asarray(np.abs(self.grid.xs[1])),
-                    cp.abs(self.control_law)
+                    np.asarray(np.abs(self.grid.xs[1])),
+                    np.abs(self.control_law)
         ]
 
         return x_dot[dim]

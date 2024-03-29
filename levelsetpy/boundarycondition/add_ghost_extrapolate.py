@@ -49,7 +49,7 @@ def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
       dataOut (ndarray):	Output data.  
     """
     if isinstance(dataIn, np.ndarray):
-      dataIn = cp.asarray(dataIn)
+      dataIn = np.asarray(dataIn)
 
     if not width:
         width = 1
@@ -67,43 +67,43 @@ def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
     sizeIn = size(dataIn)
     indicesOut = []
     for i in range(dims):
-        indicesOut.append(cp.arange(sizeIn[i], dtype=cp.intp))
+        indicesOut.append(np.arange(sizeIn[i], dtype=np.intp))
     indicesIn = copy.copy(indicesOut)
 
     # create appropriately sized output array
     sizeOut = copy.copy(list(sizeIn))
     sizeOut[dim] = sizeOut[dim] + (2 * width)
-    dataOut = cp.zeros(tuple(sizeOut), dtype=cp.float64)
+    dataOut = np.zeros(tuple(sizeOut), dtype=np.float64)
 
     # fill output array with input data
-    indicesOut[dim] = cp.arange(width, sizeOut[dim] - width, dtype=cp.intp) # correct
+    indicesOut[dim] = np.arange(width, sizeOut[dim] - width, dtype=np.intp) # correct
     # dynamic slicing to save the day
-    dataOut[cp.ix_(*indicesOut)] = copy.copy(dataIn) 
+    dataOut[np.ix_(*indicesOut)] = copy.copy(dataIn) 
 
     # compute derivatives
     indicesOut[dim] = [0]
     indicesIn[dim] = [1]
-    derivativeBot = dataIn[cp.ix_(*indicesOut)] - dataIn[cp.ix_(*indicesIn)]
+    derivativeBot = dataIn[np.ix_(*indicesOut)] - dataIn[np.ix_(*indicesIn)]
 
     indicesOut[dim] = [sizeIn[dim]-1]
     indicesIn[dim] = [sizeIn[dim] - 2]
-    derivativeTop = dataIn[cp.ix_(*indicesOut)] - dataIn[cp.ix_(*indicesIn)]
+    derivativeTop = dataIn[np.ix_(*indicesOut)] - dataIn[np.ix_(*indicesIn)]
 
     # adjust derivative sign to correspond with sign of data at array edge
     indicesIn[dim] = [0]
-    derivativeBot = derivativeMultiplier * cp.abs(derivativeBot) * cp.sign(dataIn[cp.ix_(*indicesIn)])
+    derivativeBot = derivativeMultiplier * np.abs(derivativeBot) * np.sign(dataIn[np.ix_(*indicesIn)])
 
     indicesIn[dim] = [sizeIn[dim]-1]
-    derivativeTop = derivativeMultiplier * cp.abs(derivativeTop) * cp.sign(dataIn[cp.ix_(*indicesIn)])
+    derivativeTop = derivativeMultiplier * np.abs(derivativeTop) * np.sign(dataIn[np.ix_(*indicesIn)])
 
     # now extrapolate
     for i in range(width):
         indicesOut[dim] = [i]
         indicesIn[dim] = [0]
-        dataOut[cp.ix_(*indicesOut)] = (dataIn[cp.ix_(*indicesIn)] + (width - i) * derivativeBot)
+        dataOut[np.ix_(*indicesOut)] = (dataIn[np.ix_(*indicesIn)] + (width - i) * derivativeBot)
 
         indicesOut[dim] = [sizeOut[dim]-1-i]
         indicesIn[dim] = [sizeIn[dim]-1]
-        dataOut[cp.ix_(*indicesOut)] = (dataIn[cp.ix_(*indicesIn)] + (width - i) * derivativeTop)
+        dataOut[np.ix_(*indicesOut)] = (dataIn[np.ix_(*indicesIn)] + (width - i) * derivativeTop)
         
     return dataOut

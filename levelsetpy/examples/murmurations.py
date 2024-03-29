@@ -20,7 +20,6 @@ import logging
 import argparse
 import sys, os
 import random
-import cupy as cp
 import numpy  as np
 from math import pi
 import numpy.linalg as LA
@@ -251,10 +250,8 @@ def main(args):
 			# Loop through t_range (subject to a little roundoff).
 			t_now = t_range[0]
 			start_time = time.perf_counter()
-			itr_start = cp.cuda.Event()
-			itr_end = cp.cuda.Event()
 
-			value_rolling = cp.asarray(copy.copy(flock.payoff))
+			value_rolling = np.asarray(copy.copy(flock.payoff))
 
 			colors = iter(plt.cm.ocean(np.linspace(.25, 2, 100)))
 			color = next(colors)
@@ -268,7 +265,7 @@ def main(args):
 				with h5py.File(savename, 'r+') as df:
 					last_key = [key for key in df['value']][-1]
 					value_rolling = np.asarray(df[f"value/{last_key}"])
-					value_rolling = cp.asarray(value_rolling)
+					value_rolling = np.asarray(value_rolling)
 					t_now = float(last_key.split(sep='_')[-1])
 			else:
 				savename = join(params.savedict.savepath, rf"murmurations_flock_{args.flock_num:0>2}_{datetime.strftime(datetime.now(), '%m-%d-%y_%H-%M')}.hdf5")
@@ -284,11 +281,10 @@ def main(args):
 			times, norm_tracker = [], []
 			start_time = cputime()
 			
-			gpu_time_buffer = []
-			itr_start = cp.cuda.Event(); itr_end = cp.cuda.Event()
+			cpu_time_buffer = []
 
 			while(t_range[1] - t_now > small * t_range[1]):
-				itr_start.record()
+				itr_start = cputime()
 				time_step = f"{t_now:.2f}/{t_range[-1]}"
 
 				# Reshape data array into column vector for ode solver call.
@@ -324,17 +320,17 @@ def main(args):
 						with h5py.File(savename, 'a') as h5file:
 							h5file.create_dataset(f'value/time_{t_now:0>3.3f}', data=value_rolling_np, compression="gzip")
 
-				itr_end.record(); itr_end.synchronize()
+				itr_end = cputime()
 
-				gpu_time_buffer.append(cp.cuda.get_elapsed_time(itr_start, itr_end)/1e3)
-				info(f't: {time_step} | GPU time: {gpu_time_buffer[-1]:.4f} | Norm: {np.linalg.norm(y, 2):.2f}')
+				cpu_time_buffer.append((-itr_start + itr_end)/1e3)
+				info(f't: {time_step} | GPU time: {cpu_time_buffer[-1]:.4f} | Norm: {np.linalg.norm(y, 2):.2f}')
 					
-				if len(norm_tracker)>20: # and cp.all(cp.diff(norm_tracker[:-5])<.01):
-					logger.info(.terminating the game!")
+				if len(norm_tracker)>20: 
+					logger.info("terminating the game!")
 					break
 			end_time = cputime()
 
-			info(f"Avg. local time: {sum(gpu_time_buffer)/len(gpu_time_buffer):.4f} secs")
+			info(f"Avg. local time: {sum(cpu_time_buffer)/len(cpu_time_buffer):.4f} secs")
 			info(f"Total Time: {(end_time-start_time):.4f} secs")
 
 		if args.verify:

@@ -53,12 +53,12 @@ setup(
     version='0.0',
     author='Lekan Molu',
     author_email='lekanmolu@microsoft.com',
-    url='https://github.com/robotsorcerer/LevelSetPy',
+    url='https://github.com/robotsorcerer/levelsetpy',
     description='GPU-Accelerated Hyperbolic PDE Solvers and Level Set Dynamics to Implicit Geometries in Python',
     long_description=long_description,
-    packages=['LevelSetPy', 'LevelSetPy.BoundaryCondition', 'LevelSetPy.DynamicalSystems', 'LevelSetPy.ExplicitIntegration', \
-                'LevelSetPy.Grids', 'LevelSetPy.InitialConditions', 'LevelSetPy.SpatialDerivative', \
-                'LevelSetPy.Utilities', 'LevelSetPy.Visualization'],
+    packages=['levelsetpy', 'levelsetpy.boundarycondition', 'levelsetpy.dynamicalsystems', 'levelsetpy.explicitintegration', \
+                'levelsetpy.grids', 'levelsetpy.initialconditions', 'levelsetpy.spatialderivative', \
+                'levelsetpy.utilities', 'levelsetpy.visualization'],
     # packages=find_packages(exclude=excludes),
     classifiers=[f for f in CLASSIFIERS.split('\n') if f],
     install_requires=required,

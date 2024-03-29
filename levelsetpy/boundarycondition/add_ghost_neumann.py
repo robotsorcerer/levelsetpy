@@ -80,19 +80,19 @@ def addGhostNeumann(dataIn, dim, width=None, ghostData=None):
 
     sizeOut       = copy.copy(sizeIn)
     sizeOut[dim] += 2*width 
-    dataOut       = cp.zeros(sizeOut)
+    dataOut       = np.zeros(sizeOut)
 
     indicesOut[dim] = range(width, sizeOut[dim]-width)
-    dataOut[cp.ix_(*indicesOut)] = copy.copy(dataIn)
+    dataOut[np.ix_(*indicesOut)] = copy.copy(dataIn)
     
     # extrapolate 
     for i in range(width):
         indicesOut[dim] = i
         indicesIn[dim]  = 1
-        dataOut[cp.ix_(*indicesOut)] = dataIn[cp.ix_(*indicesIn)] + (width - i) * lowerDerivative
+        dataOut[np.ix_(*indicesOut)] = dataIn[np.ix_(*indicesIn)] + (width - i) * lowerDerivative
     
         indicesOut[dim] = copy.copy(sizeOut[dim] - i - 1)
         indicesIn[dim]  = copy.copy(sizeIn[dim] )
-        dataOut[cp.ix_(*indicesOut)] = dataIn[cp.ix_(*indicesIn)] + (width - i) * upperDerivative
+        dataOut[np.ix_(*indicesOut)] = dataIn[np.ix_(*indicesIn)] + (width - i) * upperDerivative
     
     return dataOut

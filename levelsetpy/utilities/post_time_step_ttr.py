@@ -10,7 +10,6 @@ __status__ 		  = "Completed"
 __date__        = "March 29, 2023"
 
 import copy
-import cupy as cp
 import numpy as np 
 from math import inf
 from levelsetpy.utilities.matlab_utils import * 

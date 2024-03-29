@@ -14,10 +14,6 @@ from os.path import abspath, join
 
 sys.path.append(abspath(join('..')))
 
-# filepath = os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) )
-# print("filepath: ", filepath)
-# sys.path.append( filepath )
-
 from levelsetpy.grids import *
 import matplotlib.pyplot as plt
 from levelsetpy.utilities import *

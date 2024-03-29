@@ -13,7 +13,6 @@ import sys, os
 import logging
 import argparse
 import copy, time
-import cupy as cp
 import numpy as np
 import scipy.linalg as la
 import matplotlib.pyplot as plt
@@ -337,7 +336,7 @@ def main():
 
 	y = copy.copy(value_func_init.flatten())
 	y, finite_diff_data = postTimestepTTR(0, y, finite_diff_data)
-	value_func = cp.asarray(copy.copy(y.reshape(g.shape)))
+	value_func = np.asarray(copy.copy(y.reshape(g.shape)))
 
 	# Visualization paramters
 	spacing = tuple(g.dx.flatten().tolist())
@@ -365,12 +364,11 @@ def main():
 	cur_time, max_time = 0, t_span[-1]
 	step_time = (t_span[-1]-t_span[0])/8.0
 
-	gpu_time_buffer = []
+	cpu_time_buffer = []
 
 	idx = 0
-	itr_start = cp.cuda.Event(); itr_end = cp.cuda.Event()
 	while max_time-cur_time > small * max_time:
-		itr_start.record(); 
+		itr_start = cputime(); 
 		time_step = f"{cur_time:.2f}/{max_time:.2f}"
 
 		y0 = value_func.flatten()
@@ -391,13 +389,13 @@ def main():
 			viz.update_tube(attr, ls_mesh, cur_time, delete_last_plot=True)
 			idx += 1
 
-		itr_end.record(); itr_end.synchronize()
+		itr_end = cputime()
 
-		gpu_time_buffer.append(cp.cuda.get_elapsed_time(itr_start, itr_end)/1e3)
-		info(f't: {time_step} | GPU time: {gpu_time_buffer[-1]:.4f} | Norm: {np.linalg.norm(y, 2):.2f}')
+		cpu_time_buffer.append((-itr_start + itr_end)/1e3)
+		info(f't: {time_step} | CPU time: {cpu_time_buffer[-1]:.4f} | Norm: {np.linalg.norm(y, 2):.2f}')
 
-	info(f"Avg. local time: {sum(gpu_time_buffer)/len(gpu_time_buffer):.4f} secs")
-	info(f"Total Time: {sum(gpu_time_buffer):.4f} secs")
+	info(f"Avg. local time: {sum(cpu_time_buffer)/len(cpu_time_buffer):.4f} secs")
+	info(f"Total Time: {sum(cpu_time_buffer):.4f} secs")
 
 if __name__ == '__main__':
 	# Do not use python profiler: https://docs.cupy.dev/en/stable/user_guide/performance.html
