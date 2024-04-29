@@ -8,7 +8,7 @@ __maintainer__ 	= "Lekan Molu"
 __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
-
+import copy
 import cupy as cp
 import numpy as np
 from levelsetpy.utilities import *
