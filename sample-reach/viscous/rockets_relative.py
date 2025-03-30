@@ -18,7 +18,7 @@ import numpy as np
 from levelsetpy.utilities.matlab_utils import isColumnLength, isvector
 
 class RocketSystemRel():
-    def __init__(self, u_bound=5, w_bound=5, x=None, a=32, g=64):
+    def __init__(self, u_bound=5, w_bound=5, x=None, a=32, g=64, T=1, ):
         """
             The Rocket Launch Problem with Dynamics in relative coordinates.
             Please consult Merz, 1972 for a detailed reference.

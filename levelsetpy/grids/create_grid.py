@@ -40,7 +40,7 @@ def  createGrid(grid_min, grid_max, N, pdDims=None, process=True, low_mem=False)
     if not pdDims:
         pdDims = []
 
-    # Inp.t checks
+    # Input checks
     if isscalar(N):
         N = N*np.ones(grid_min.shape).astype(np.int64)
 
