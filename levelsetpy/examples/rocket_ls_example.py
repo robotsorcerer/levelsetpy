@@ -137,7 +137,6 @@ def main(args):
 		options = Bundle(dict(factorCFL=0.95, stats='on', singleStep='off'))
 
 		# Loop through t_range (subject to a little roundoff).
-
 		brt = [value_init]
 		meshes, brt_time = [], []
 		value_rolling = cp.asarray(value_init)

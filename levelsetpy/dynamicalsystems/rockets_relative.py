@@ -20,9 +20,7 @@ from levelsetpy.utilities.matlab_utils import isColumnLength, isvector
 class RocketSystemRel():
     def __init__(self, grid, u_bound=5, w_bound=5, x=None, a=32, g=64):
         """
-            Dubins Vehicle Dynamics in relative coordinates.
-            Please consult Merz, 1972 for a detailed reference.
-
+            Rockets Dynamics in relative coordinates.
             The equations of motion are adopted from Dreyfus' construction as follows:
 
                 &\dot{y}_1 = y_3,          &\dot{y}_5 = y_7, \\
