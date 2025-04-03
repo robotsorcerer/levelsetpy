@@ -113,6 +113,23 @@ class RocketDynamics():
                                      self.a + self.u * X - self.g)**2)
 
         return values 
+    
+    def get_value(self, state):
+        """
+           [x] The value is the l\_2 distance to the boundary of the target region in the x-z plane.
+
+           Parameters
+           ==========
+           states: x, z, θ over the whole statge space 
+           a, g, u: see opening doc in class def.
+        """
+        X, _, θ = state[0], 0, state[2]
+
+        value = torch.sqrt(self.a * torch.cos(θ)**2  + (self.a * torch.sin(θ) + \
+                                     self.a + self.u * X - self.g)**2)
+
+        return value
+    
     def sample_states(self, num_samples_per_dim=10):
         """ 
             Sample from the state space, compute the values that correspond to these samples,
