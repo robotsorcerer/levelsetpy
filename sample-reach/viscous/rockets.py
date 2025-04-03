@@ -2,6 +2,7 @@ __all__ = ["RocketDynamics"]
 
 import sys 
 import torch 
+import numpy as np 
 from torch.utils.data import Dataset, DataLoader
 from gmm import GMM 
 
@@ -49,6 +50,9 @@ class RocketDynamics():
         self.small   = 100*eps
         self.device  = rank
 
+
+        torch.manual_seed(123)
+
         self.t_range = torch.linspace(0, T, k)
         self.t_now   = self.t_range[0]
         self.t_steps = self.t_range[1] -  self.t_range[0]
@@ -61,7 +65,7 @@ class RocketDynamics():
         # generate the spatial domain whereupon v(t;x) is domiciled
         self.state_space = self.get_state_space(L, resolution)
         self.state_domain = self.get_state_domain()
-        self.initial_conditions = self.get_initial_conditions(L)
+        self.initial_conditions = self.get_initial_conditions()
         self.values = self.get_values(self.state_space)
 
         self.state_dim = self.state_space[0].shape[0]
@@ -91,9 +95,15 @@ class RocketDynamics():
 
         return self.state_space[1:-1, :]
 
-    def get_initial_conditions(self, L):
+    def get_initial_conditions(self):
+        x0 = torch.zeros_like(self.state_space)
+
+        idx = np.random.choice(np.arange(self.state_space.shape[0]), 1).item()
+        x0[1:-1, 0] =  self.state_space[1:-1, 0]
+        x0[1:-1, 1] =  self.state_space[1:-1, 1]
+        x0[1:-1, 2] =  self.state_space[1:-1, 2]
         
-        return self.state_domain
+        return x0
     
     def get_values(self, states):
         """
@@ -109,8 +119,9 @@ class RocketDynamics():
         else:
             X, _, θ = states[:, 0], 0, states[:, 2]
 
-        values = torch.sqrt(self.a * torch.cos(θ)**2  + (self.a * torch.sin(θ) + \
-                                     self.a + self.u * X - self.g)**2)
+        # values = torch.sqrt(self.a * torch.cos(θ)**2  + (self.a * torch.sin(θ) + \
+        #                              self.a + self.u * X - self.g)**2)
+        values = torch.sqrt(X * X + θ * θ)
 
         return values 
     
@@ -125,10 +136,37 @@ class RocketDynamics():
         """
         X, _, θ = state[0], 0, state[2]
 
-        value = torch.sqrt(self.a * torch.cos(θ)**2  + (self.a * torch.sin(θ) + \
-                                     self.a + self.u * X - self.g)**2)
+        # value = torch.sqrt(self.a * torch.cos(θ)**2  + (self.a * torch.sin(θ) + \
+        #                              self.a + self.u * X - self.g)**2)
+        value = torch.sqrt(X * X + θ * θ)
 
         return value
+    
+    def dynamics(self, xdot):
+        pass 
+    
+    def runge_kutta4(self, xdot, M=50, h = 0.2):
+        """
+           A Runge-Kutta integration scheme.
+
+           Parameters
+           ----------
+            [x] xdot: right hand side of the ode
+            [x] M: Integration horizon.
+            [x] h: step size.
+        """
+        # assert not np.any(cur_state), "current state cannot be empty."
+        X = torch.Tensor(xdot) if isinstance(xdot, list) else xdot
+
+        for j in range(M):
+            k1 = self.dynamics(X)
+            k2 = self.dynamics(X + h/2 * k1)
+            k3 = self.dynamics(X + h/2 * k2)
+            k4 = self.dynamics(X + h * k3)
+
+            X  = X+(h/6)*(k1 +2*k2 +2*k3 +k4)
+
+        return X
     
     def sample_states(self, num_samples_per_dim=10):
         """ 
@@ -158,7 +196,29 @@ class RocketDynamics():
         θ_samp = θ.reshape(-1)[idx].reshape(num_samples_per_dim) #, num_samples_per_dim, num_samples_per_dim) 
 
         return torch.stack([x_samp, z_samp, θ_samp], axis=1)
-    
+
+    def hamiltonian(self, value_derivs, state_compos):
+        """
+            H = p_1 [u_e - u_p cos(x_3)] - p_2 [u_p sin x_3] \
+                   - w | p_1 x_2 - p_2 x_1 - p_3| + w |p_3|
+
+            Parameters
+            ==========
+            value: Value function at this time step, t
+            value_derivs: Spatial derivatives (finite difference) of
+                        value function computed with the Proximal operator
+        """
+        p1, p2, p3 = value_derivs[0], value_derivs[1], value_derivs[2]
+
+        p1_coeff = -self.a*torch.cos(state_compos[2]) 
+        p2_coeff = self.g - self.a - self.a*torch.sin(state_compos[2])
+        p31_coeff = torch.abs(p1*state_compos[0] + p3)
+        p32_coeff = torch.abs(p2*state_compos[0] + p3)
+
+        Hxp = p1*p1_coeff + p2*p2_coeff - self.u_p*p31_coeff + self.u_p*p32_coeff
+
+        return Hxp
+        
     def get_prox_innards(self, t, num_samples_per_dim=10, delta=1e-1, alpha=1.0):
         """ 
             Evaluate the innards of the proximal operator 

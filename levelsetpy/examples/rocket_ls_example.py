@@ -88,7 +88,7 @@ def main(args):
 								innerData = Bundle({'grid': g,
 									'hamFunc': rocket_rel.hamiltonian,
 									'partialFunc': rocket_rel.dissipation,
-									'dissFunc': artificia.dissipationGLF,
+									'dissFunc': artificialDissipationGLF,
 									'CoStateCalc': upwindFirstENO2,
 									}),
 									positive = args.direction,  # direction to grow the updated level set

@@ -37,8 +37,6 @@ eps     = sys.float_info.epsilon
 DEFAULT_ORDER = "C"
 
 
-
-
 class Bundle(object):
     def __init__(self, dicko):
         """

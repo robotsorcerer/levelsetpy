@@ -13,6 +13,7 @@ import numpy as np
 # ------------------------------------------------------------------------------------------------------------
 
 
+
 class HJ_MAD:
     ''' 
         Hamilton-Jacobi Moreau Adaptive Descent (HJ_MAD) is used to solve nonconvex minimization
@@ -20,6 +21,7 @@ class HJ_MAD:
         
         Inputs:
           1)  g           = function to be minimized. Inputs have size (n_samples x n_features). Outputs have size n_samples
+          2)  x_true       = true global minimizer
           3)  delta        = coefficient of viscous term in the HJ equation
           4)  int_samples  = number of samples used to approximate expectation in heat equation solution
           6)  t_vec        = time vector containig [initial time, minimum time allowed, maximum time]
@@ -69,15 +71,15 @@ class HJ_MAD:
       standard_dev = np.sqrt(delta*t)
 
       n_features = x.shape[0]
-      y = standard_dev * torch.randn(self.int_samples, n_features) + x
+      y = standard_dev * torch.randn(self.int_samples, n_features) + x.view(1, -1)
       
       exp_term = torch.exp(-g(y)/delta)
       phi_delta       = torch.mean(exp_term)
 
       # separate grad_v into two terms for numerical stability
-      numerator = y*exp_term.view(self.int_samples, 1)
+      numerator = y*exp_term 
       numerator = torch.mean(numerator, dim=0)
-      grad_uk = (x -  numerator/(phi_delta + eps)) # the t gets canceled with the update formula
+      grad_uk = (x.squeeze() -  numerator/(phi_delta + eps)).view(-1, 1) # the t gets canceled with the update formula
 
       uk       = -delta * torch.log(phi_delta+eps)
 
@@ -115,7 +117,6 @@ class HJ_MAD:
     def run(self, x0):
 
       n_features            = x0.shape[0]
-      print(f'max_iters: {type(self.max_iters)}, n_features: {n_features}, {type(n_features)}')
       xk_hist               = torch.zeros(int(self.max_iters), n_features)
       xk_error_hist         = torch.zeros(self.max_iters)
       rel_grad_uk_norm_hist = torch.zeros(self.max_iters)
@@ -139,18 +140,17 @@ class HJ_MAD:
 
       for k in range(self.max_iters):
 
-        xk_hist[k,:]    = xk
+        xk_hist[k,:]    = xk.squeeze()
 
         rel_grad_uk_norm_hist[k]  = rel_grad_uk_norm
 
-        xk_error_hist[k] = torch.norm(xk - self.x_true)
+        xk_error_hist[k] = torch.norm((xk - self.x_true.squeeze()))
         tk_hist[k]       = tk
 
-        # gk_hist[k]       = self.g(xk.view(1, n_features))
-        gk_hist[k]       = self.g(xk) #.view(1, n_features))
+        gk_hist[k]       = self.g(xk.squeeze())
 
         if self.verbose:
-          print(fmt.format(k+1, gk_hist[k], rel_grad_uk_norm_hist[k], tk))
+          print(fmt.format(k+1, gk_hist[k], xk_error_hist[k], rel_grad_uk_norm_hist[k], tk))
 
         if xk_error_hist[k] < self.tol:
           tk_hist = tk_hist[0:k+1]
@@ -171,11 +171,11 @@ class HJ_MAD:
             x_opt = xk 
 
         xk = xk - self.alpha * first_moment # tk gets canceled out with gradient formula
-        
+
         if self.fixed_time == False:
           tk = self.update_time(tk, rel_grad_uk_norm)
         
-        grad_uk, _ = self.compute_grad_uk(xk, tk, self.f, self.delta)
+        grad_uk, _ = self.compute_grad_uk(xk, tk, self.g, self.delta)
 
         grad_uk_norm_old = torch.norm(first_moment)
         first_moment  = self.beta*first_moment + (1-self.beta)*grad_uk
@@ -183,4 +183,4 @@ class HJ_MAD:
         grad_uk_norm = torch.norm(first_moment)
         rel_grad_uk_norm = grad_uk_norm/(grad_uk_norm_old + 1e-12)
 
-      return x_opt, tk_hist, rel_grad_uk_norm_hist, gk_hist
+      return x_opt, xk_hist, xk_error_hist, tk_hist, rel_grad_uk_norm_hist, gk_hist
