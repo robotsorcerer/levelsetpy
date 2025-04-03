@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[47]:
-
-
 import torch 
 from torch.utils.data import Dataset 
 
@@ -11,11 +5,12 @@ import numpy as np
 
 import sys, os
 from gmm import GMM
+from os.path import join, expanduser 
 import scipy.ndimage as sp_ndimage
 from rockets import RocketDynamics
 
-import matplotlib 
-get_ipython().run_line_magic('matplotlib', 'inline')
+import matplotlib as mpl
+mpl.use('Agg')
 
 import matplotlib.pyplot as plt
 
@@ -39,75 +34,6 @@ import matplotlib.pyplot as plt
 # $$
 # 
 # This is a model for a one-dimensional rod that conducts heat: the temperature at the ends of the rod are fixed at $0$ and heat is allowed to flow out of the rod through the ends.
-
-# In[ ]:
-
-
-def termRestrictUpdate(t, values, LaxFriedrichs):
-    """
-     termRestrictUpdate: restrict the sign of a term to be positive or negative.
-
-     [ ydot, stepBound, LaxFriedrichs ] = termRestrictUpdate(t, y, LaxFriedrichs)
-
-     Given some other HJ term approximation, this function either restricts
-       the sign of that update to be either:
-           nonnegative (level set function only decreases), or
-           nonpositive (level set function only increases).
-
-     The CFL restriction of the other HJ term approximation is returned
-       without modification.
-
-     Parameters:
-     ----------
-       t            Time at beginning of timestep.
-       y            Data array in vector form.
-       LaxFriedrichs	 LaxFriedrichs Integration Scheme.
-     
-     Returns:
-     -------
-       ydot	 Change in the data array, in vector form.
-       stepBound	 CFL bound on timestep for stability.
-       LaxFriedrichs structure that leverages the proximal operator's costates #(see below).
-
-     LaxFriedrichs is a structure containing data specific to this type of
-       term approximation.  For this function it contains the field(s)
-
-       .innerFunc   Function handle for the approximation scheme to
-                      calculate the unrestricted HJ term.
-       .innerData   LaxFriedrichs structure to pass to innerFunc.
-       .positive    Boolean, true if update must be positive (nonnegative)
-                      (optional, default = 1).
-
-     It may contain addition fields at the user's discretion.
-
-     While termRestrictUpdate will not change the LaxFriedrichs structure,
-       the LaxFriedrichs.innerData component may be changed during the call
-       to the LaxFriedrichs.innerFunc function handle.
-
-     For evolving vector level sets, y may be a cell vector.  In this case
-       the entire y cell vector is passed unchanged in the call to the
-       LaxFriedrichs.innerFunc function handle.
-
-     If y is a cell vector, LaxFriedrichs may be a cell vector of equal length.
-       In this case, LaxFriedrichs[0] contains the fields listed above.  In the
-       call to LaxFriedrichs[0].innerFunc, the LaxFriedrichs cell vector is passed
-       unchanged except that the element LaxFriedrichs[0] is replaced with
-       the contents of the LaxFriedrichs[0].innerData field.
-
-      Lekan Molu, 08/21/21
-    """
-    ham_compute = LaxFriedrichs.hamFunc(t, values, LaxFriedrichs.CoStates)
-
-    #Get the unrestricted update. # this is usually termLaxFriedrichs
-    unRestricted, stepBound, innerData = termLaxFriedrichs(t, y, CoStates)
-
-    ydot = torch.maximum(unRestricted, 0).squeeze()
-
-    return ydot, stepBound, LaxFriedrichs
-
-
-# In[ ]:
-
 
 class HJ_MAD:
     ''' 
@@ -181,9 +107,6 @@ class HJ_MAD:
       standard_dev = np.sqrt(delta*t)
 
       n_features = x.shape[1]
-      # print(f'self.int_samples: {self.int_samples} n_features {n_features} x.shape: {x.shape}')
-      # y = standard_dev * torch.randn(self.int_samples, n_features) + x #.view(1, -1)
-      # y = standard_dev * torch.randn(x.shape) + x #.view(1, -1)
       y = self.noise_samples(x, delta, t)
       
       exp_term = torch.exp(-g(y)/delta)
@@ -305,82 +228,93 @@ class HJ_MAD:
 
       return x_opt, xk_hist, xk_error_hist, tk_hist, rel_grad_vk_norm_hist, gk_hist
 
+def main(dynamics, resolution=1000, seed=123):  
 
-# In[75]:
+  torch.manual_seed(seed)
+  np.random.seed(seed)
 
+  x_all = dynamics.state_space
+  x0 = dynamics.get_initial_conditions()
 
-resolution = 1000
-dynamics = RocketDynamics(1, 1, T=1, L=100, a=1, g=32, resolution=resolution)
+  target_region_size = resolution//4
+  'set target region as top quadrant of the state space'
+  x_true = torch.zeros_like(x0)
+  x_true[:target_region_size, 0] = x_all[:target_region_size, 0]
+  x_true[:target_region_size, 1] = x_all[:target_region_size, 1]
+  x_true[:target_region_size, 2] = x_all[:target_region_size, 2]
 
-torch.manual_seed(123)
-np.random.seed(123)
+  int_samples     = 100
+  max_iters       = int(5e4)
 
-x_all = dynamics.state_space
-x0 = dynamics.get_initial_conditions()
+  print(x0.shape, x_all.shape)
 
-target_region_size = resolution//4
-'set target region as top quadrant of the state space'
-x_true = torch.zeros_like(x0)
-x_true[:target_region_size, 0] = x_all[:target_region_size, 0]
-x_true[:target_region_size, 1] = x_all[:target_region_size, 1]
-x_true[:target_region_size, 2] = x_all[:target_region_size, 2]
+  hj_mad_algo = HJ_MAD(dynamics.get_values, x_true, delta=0.1, int_samples=int_samples, t_vec = [0, 1.0], max_iters=int(5e4), 
+                  tol=5e-2, psi=0.9, beta=0.9, eta_vec = [0.9, 1.1], alpha=1.0, fixed_time=False, verbose=True)
 
-int_samples     = 100
-max_iters       = int(5e4)
-
-print(x0.shape, x_all.shape)
-
-
-# In[ ]:
-
-
-hj_mad_algo = HJ_MAD(dynamics.get_values, x_true, delta=0.1, int_samples=int_samples, t_vec = [0, 1.0], max_iters=int(5e4), 
-                tol=5e-2, psi=0.9, beta=0.9, eta_vec = [0.9, 1.1], alpha=1.0, fixed_time=False, verbose=True)
-
-# run 30 times 
-avg_trials      = 30
-avg_func_evals  = 0
+  # run 30 times 
+  avg_trials      = 30
+  avg_func_evals  = 0
 
 
 
-for i in range(avg_trials):
-  x_opt_MAD, xk_hist_MAD, tk_hist_MAD, xk_error_hist_MAD, \
-    rel_grad_uk_norm_hist_MAD, globalk_hist_MAD = hj_mad_algo.run(x0)
-  avg_func_evals = avg_func_evals + len(xk_error_hist_MAD)*int_samples
+  for i in range(avg_trials):
+    x_opt, xk_hist, tk_hist, xk_error_hist, \
+      rel_grad_uk_norm_hist, globalk_hist = hj_mad_algo.run(x0)
+    avg_func_evals = avg_func_evals + len(xk_error_hist)*int_samples
 
-avg_func_evals = avg_func_evals/avg_trials
+  avg_func_evals = avg_func_evals/avg_trials
 
-print('\n\n avg_func_evals = ', avg_func_evals)
-
-
-# In[ ]:
+  print('\n\n avg_func_evals = ', avg_func_evals)
 
 
-# plot solution space in space time 
-fig = plt.figure(figsize=(16,4), )
-ax = fig.add_subplot(111, projection='3d')
-
-# Plot a few snapshots.
-color = iter(plt.cm.viridis(np.linspace(.25, 1, 5)))
-
-cdata = ax.scatter(X_all, Z_all, Theta_all, c=values, cmap="magma") #, shading="nearest", 
-plt.colorbar(cdata, ax=ax, extend="both")
-ax.set_xlabel(r"Hor. Disp. $x$")
-ax.set_ylabel(r"Vert. Disp. $z$")
-ax.set_zlabel(r"Orientation: $\theta$")
-
-fig.suptitle("Dynamics")
-plt.show()
 
 
-# In[26]:
+def plot_values(states, title="Initial values", fname=None, fontdict={'fontsize':16, 'fontweight':'bold'}):  
+  X, Z, θ = states[:,0], states[:,1], states[:,2]
+  print(f'X: {X.shape} Z: {Z.shape} θ: {θ.shape}')
+  X, Z, θ =  torch.meshgrid(*(X, Z, θ ), indexing='ij') 
+  print(f'X: {X.shape} Z: {Z.shape} θ: {θ.shape}')
+
+  a = 32; g=32; u=1; 
+  values =  torch.sqrt(a * torch.cos(θ)**2  + (a * torch.sin(θ) + \
+                                     a + u * X - g)**2)
+  # plot solution space in space time 
+  fig = plt.figure(figsize=(16,9), )
+  ax = fig.add_subplot(111, projection='3d')
+  ax.axes.get_xaxis().set_ticks([])
+  ax.axes.get_yaxis().set_ticks([])
+  ax.axes.get_zaxis().set_ticks([])
+  # Plot a few snapshots.
+  # color = iter(plt.cm.viridis(np.linspace(.25, 1, 5)))
 
 
-(torch.randn(100, 1000) + torch.randn(1000, 3).view(-1, 1)).shape 
+  cdata = ax.scatter(X, Z, θ, c=values, cmap="magma") #, shading="nearest", 
+  plt.colorbar(cdata, ax=ax, extend="both", shrink=0.5)
+  ax.set_xlabel(r"Horz. $x$ (ft)", fontdict=fontdict)
+  ax.set_ylabel(r"Vert. $z$ (ft)", fontdict=fontdict)
+  ax.set_zlabel(r"Orientation: $\theta$ (rad)", fontdict=fontdict)
+  ax.set_title(title, fontdict=fontdict)
+
+  fig.suptitle("Rockets Relative Dynamics' Values", fontsize=16)
+  # plt.show()
+  plt.savefig(fname, bbox_inches='tight',facecolor='None', dpi=76)
 
 
-# In[ ]:
+if __name__ == "__main__":
+  # main()
+  
+  resolution = 100; L = 100
+  dynamics = RocketDynamics(1, 1, T=1, L=L, a=32, g=32, resolution=resolution)
+  states =  dynamics.state_space
+  print(f'states: {states.shape}')
+  # x0 = dynamics.get_initial_conditions()
+  values = dynamics.get_values(states)
+  print(f'values: {values.shape}')
 
 
+  save_dir = join(expanduser("~"), "Documents/Papers/MSRYeatrs/ProxSampReach/figures")
+  save_dir = join(expanduser("~"), "Downloads") #/Papers/MSRYeatrs/ProxSampReach/figures")
+  fname = join('init_values.jpg')
+  plot_values(states, fname=fname)
 
 

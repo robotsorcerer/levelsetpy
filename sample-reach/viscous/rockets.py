@@ -119,9 +119,9 @@ class RocketDynamics():
         else:
             X, _, θ = states[:, 0], 0, states[:, 2]
 
-        # values = torch.sqrt(self.a * torch.cos(θ)**2  + (self.a * torch.sin(θ) + \
-        #                              self.a + self.u * X - self.g)**2)
-        values = torch.sqrt(X * X + θ * θ)
+        values = torch.sqrt(self.a * torch.cos(θ)**2  + (self.a * torch.sin(θ) + \
+                                     self.a + self.u * X - self.g)**2)
+        # values = torch.sqrt(X * X + θ * θ)
 
         return values 
     
@@ -136,9 +136,9 @@ class RocketDynamics():
         """
         X, _, θ = state[0], 0, state[2]
 
-        # value = torch.sqrt(self.a * torch.cos(θ)**2  + (self.a * torch.sin(θ) + \
-        #                              self.a + self.u * X - self.g)**2)
-        value = torch.sqrt(X * X + θ * θ)
+        value = torch.sqrt(self.a * torch.cos(θ)**2  + (self.a * torch.sin(θ) + \
+                                     self.a + self.u * X - self.g)**2)
+        # value = torch.sqrt(X * X + θ * θ)
 
         return value
     
