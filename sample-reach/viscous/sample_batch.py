@@ -79,7 +79,7 @@ class HJ_MAD:
           4) fk_hist                  = function value history
           6) rel_grad_vk_norm_hist    = relative grad norm history of Moreau envelope
     '''
-    def __init__(self, dynamics, x_true, delta=0.1, int_samples=100, t_vec = [1.0, 1e-3, 1e1], max_iters=5e4, 
+    def __init__(self, dynamics, x_true, delta=0.1, int_samples=100, t_vec = [0, 1], max_iters=5e4, 
                  tol=5e-2, psi=0.9, beta=[0.9], eta_vec = [0.9, 1.1], alpha=1.0, fixed_time=False, verbose=True):
       
       self.delta            = delta
@@ -114,7 +114,7 @@ class HJ_MAD:
         for idx in range(x0.shape[1]):
             noised[:, idx] = sp_ndimage.gaussian_filter(x0[:, idx], var)
 
-        return torch.Tensor(noised + x0)
+        return torch.Tensor(noised + x0) #, dtype=torch.float64)
     
     def compute_grad_vk(self, x, t, g, delta): #, eps=1e-12):
       ''' 
@@ -124,23 +124,22 @@ class HJ_MAD:
       standard_dev = np.sqrt(delta*t)
 
       n_features = x.shape[1]
-      y = self.noise_samples(x, delta, t)
+      y =  self.noise_samples(x, delta, t)
       
       exp_term = torch.exp(-g(y)/delta)
       phi_delta       = torch.mean(exp_term)
 
       # separate grad_v into two terms for numerical stability
-      # print(f'y: {y.shape} exp_term: {exp_term.shape}')
       numerator = y.t()*exp_term 
       numerator = torch.mean(numerator.t(), dim=0)      
       grad_vk = (x.squeeze() -  numerator/(phi_delta + self.small)) #.view(-1, 1) # the t gets canceled with the update formula
       
       hamiltonian = dynamics.hamiltonian(grad_vk, x)
-      hji_rcbrt_hamterm = torch.minimum(torch.Tensor([0]), hamiltonian)
+      hamterm = torch.minimum(torch.Tensor([0]), hamiltonian)
 
       vk       = -delta * torch.log(phi_delta+self.small)
 
-      hji_rcbrt = vk + hji_rcbrt_hamterm
+      hji_rcbrt = vk + hamterm
 
       return grad_vk, vk, hji_rcbrt
 
@@ -174,20 +173,18 @@ class HJ_MAD:
       return tk
 
     def run(self, x0):
-
       n_features            = x0.shape[0]
-      xk_hist               = []  #torch.zeros(int(self.max_iters), n_features)
-      xk_error_hist         = [] #torch.zeros(self.max_iters)
-      rel_grad_vk_norm_hist = [] #torch.zeros(self.max_iters)
-      gk_hist               = [] #torch.zeros(self.max_iters)
-      tk_hist               = [] #torch.zeros(self.max_iters)
+      xk_hist               = []  
+      xk_error_hist         = [] 
+      rel_grad_vk_norm_hist = [] 
+      gk_hist               = [] 
+      tk_hist               = [] 
       counter               = 1
       hji_rcbrt_term_hist   = []
 
       xk    = x0
       x_opt = xk
       t_now    = self.t_vec[0]
-      # t_max = self.t_vec[-1]
 
       first_moment, _, hji_rcbrt_term   = self.compute_grad_vk(xk, t_now, self.g, self.delta)
       rel_grad_vk_norm      = 1.0
@@ -201,7 +198,10 @@ class HJ_MAD:
       # for k in range(self.max_iters):
       t_now = self.t_vec[0]
       while (self.t_vec[1]  - t_now) > self.small * self.t_vec[1]:
+      # for t_now < self.small * self.t_vec[1]:
         time_step = f"{t_now:.2f}/{self.t_vec[-1]}"
+
+        xk_hist.append(torch.norm((xk.squeeze())))
 
         rel_grad_vk_norm_hist.append(rel_grad_vk_norm)
 
@@ -215,14 +215,14 @@ class HJ_MAD:
           print(fmt.format(t_now, gk_hist[-1], hji_rcbrt_term_hist[-1], xk_error_hist[-1], rel_grad_vk_norm_hist[-1], t_now))
 
 			  # How far to step?
-        t_vec = np.hstack([ t_now, min(self.t_vec[1], t_now + self.t_steps) ])
+        # t_vec = np.hstack([ t_now, min(self.t_vec[1], t_now + self.t_steps) ])
 
         if xk_error_hist[-1] < self.tol:
-          tk_hist = tk_hist[0:-1]
-          xk_hist = xk_hist[0:-1,:]
-          xk_error_hist = xk_error_hist[0:-1]
-          rel_grad_vk_norm_hist = rel_grad_vk_norm_hist[0:-1]
-          gk_hist               = gk_hist[0:-1]
+          tk_hist = tk_hist[0:]
+          xk_hist = xk_hist[0:,:]
+          xk_error_hist = xk_error_hist[0:]
+          rel_grad_vk_norm_hist = rel_grad_vk_norm_hist[0:]
+          gk_hist               = gk_hist[0:]
           print('HJ-MAD converged with rel grad norm {:6.2e}'.format(rel_grad_vk_norm_hist[-1]))
           print('iter = ', t_now, ', number of function evaluations = ', len(xk_error_hist)*self.int_samples)
           break
@@ -230,17 +230,18 @@ class HJ_MAD:
           print('HJ-MAD failed to converge with rel grad norm {:6.2e}'.format(rel_grad_vk_norm_hist[k]))
           print('iter = ', t_now, ', number of function evaluations = ', len(xk_error_hist)*self.int_samples)
           print('Used fixed time = ', self.fixed_time)
+          break 
 
         if t_now>0:
           if gk_hist[-1] < gk_hist[-2]:
             x_opt = xk 
 
+        t_now += self.t_steps
         xk -= self.alpha * first_moment # tk gets canceled out with gradient formula
         
         grad_vk, vk, hji_rcbrt_term = self.compute_grad_vk(xk, t_now, self.g, self.delta)
 
         # print(f'grad_vk: {grad_vk.shape} | hji_rcbrt_term2: {hji_rcbrt_term.shape}')
-        # time.sleep(40)
 
         if self.fixed_time == False:
           t_now = self.update_time(t_now, rel_grad_vk_norm)
