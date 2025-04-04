@@ -3,6 +3,8 @@ from torch.utils.data import Dataset
 
 import numpy as np
 
+import time 
+import argparse 
 import sys, os
 from gmm import GMM
 from os.path import join, expanduser 
@@ -14,6 +16,21 @@ mpl.use('Agg')
 
 import matplotlib.pyplot as plt
 
+parser = argparse.ArgumentParser(description='Hamilton-Jacobi Moreau Reachability Analysis')
+parser.add_argument('--silent', '-si', action='store_false', help='silent debug print outs' )
+parser.add_argument('--save', '-sv', action='store_false', help='save BRS/BRT at end of sim' )
+parser.add_argument('--visualize', '-vz', action='store_false', help='visualize level sets?' )
+parser.add_argument('--plot', '-lb', action='store_true', help='plot initial values?' )
+parser.add_argument('--benchmark', '-bm', action='store_true', help='Benchmark this computation?' )
+parser.add_argument('--stochastic', '-st', action='store_true', help='Run trajectories with stochastic dynamics?' )
+parser.add_argument('--compute_traj', '-ct', action='store_false', help='Run trajectories with stochastic dynamics?' )
+parser.add_argument('--verify', '-vf', action='store_true', default=True, help='visualize level sets?' )
+parser.add_argument('--seed', '-sd', type=int, default=123, help='Code seed.' )
+parser.add_argument('--elevation', '-el', type=float, default=5., help='elevation angle for target set plot.' )
+parser.add_argument('--direction', '-dr',  action='store_true',  help='direction to grow the level sets. Negative by default.' )
+parser.add_argument('--azimuth', '-az', type=float, default=15., help='azimuth angle for target set plot.' )
+parser.add_argument('--pause_time', '-pz', type=float, default=.3, help='pause time between successive updates of plots' )
+args = parser.parse_args()
 
 # ## Problem Statement and Numerical Setting
 
@@ -41,7 +58,7 @@ class HJ_MAD:
         problems via a zeroth-order sampling scheme.
         
         Inputs:
-          1)  g           = function to be minimized. Inputs have size (n_samples x n_features). Outputs have size n_samples
+          1)  dynamics     = Class that contains the dynamics of the agents, hamiltonian function and other auxiliary variables.
           2)  x_true       = true global minimizer [N X D] sized where N is total number of discretized points on the state space and D is the dim of the states.
           3)  delta        = coefficient of viscous term in the HJ equation
           4)  int_samples  = number of samples used to approximate expectation in heat equation solution
@@ -62,11 +79,11 @@ class HJ_MAD:
           4) fk_hist                  = function value history
           6) rel_grad_vk_norm_hist    = relative grad norm history of Moreau envelope
     '''
-    def __init__(self, g, x_true, delta=0.1, int_samples=100, t_vec = [1.0, 1e-3, 1e1], max_iters=5e4, 
+    def __init__(self, dynamics, x_true, delta=0.1, int_samples=100, t_vec = [1.0, 1e-3, 1e1], max_iters=5e4, 
                  tol=5e-2, psi=0.9, beta=[0.9], eta_vec = [0.9, 1.1], alpha=1.0, fixed_time=False, verbose=True):
       
       self.delta            = delta
-      self.g                = g
+      self.g                = dynamics.get_values
       self.int_samples      = int_samples
       self.max_iters        = max_iters
       self.tol              = tol
@@ -115,13 +132,17 @@ class HJ_MAD:
       # separate grad_v into two terms for numerical stability
       # print(f'y: {y.shape} exp_term: {exp_term.shape}')
       numerator = y.t()*exp_term 
-      numerator = torch.mean(numerator.t(), dim=0)
-      # print(f'x: {x.shape} | numerator: {numerator.shape}')
+      numerator = torch.mean(numerator.t(), dim=0)      
       grad_vk = (x.squeeze() -  numerator/(phi_delta + self.small)) #.view(-1, 1) # the t gets canceled with the update formula
+      
+      hamiltonian = dynamics.hamiltonian(grad_vk, x)
+      hji_rcbrt_hamterm = torch.minimum(torch.Tensor([0]), hamiltonian)
 
       vk       = -delta * torch.log(phi_delta+self.small)
 
-      return grad_vk, vk
+      hji_rcbrt = vk + hji_rcbrt_hamterm
+
+      return grad_vk, vk, hji_rcbrt
 
     def update_time(self, tk, rel_grad_vk_norm):
       '''
@@ -161,16 +182,17 @@ class HJ_MAD:
       gk_hist               = [] #torch.zeros(self.max_iters)
       tk_hist               = [] #torch.zeros(self.max_iters)
       counter               = 1
+      hji_rcbrt_term_hist   = []
 
       xk    = x0
       x_opt = xk
       t_now    = self.t_vec[0]
       # t_max = self.t_vec[-1]
 
-      first_moment, _       = self.compute_grad_vk(xk, t_now, self.g, self.delta)
+      first_moment, _, hji_rcbrt_term   = self.compute_grad_vk(xk, t_now, self.g, self.delta)
       rel_grad_vk_norm      = 1.0
 
-      fmt = '[{:3.4f}]: gk = {:6.2e} | xk_err = {:6.2e} '
+      fmt = '[{:3.4f}]: gk = {:6.2e} | xk_err = {:6.2e} | hj_term = {:2.2e} '
       fmt += ' | |grad_vk| = {:6.2e} | tk = {:6.2e}'
 
       print('-------------------------- RUNNING HJ-MAD ---------------------------')
@@ -187,9 +209,10 @@ class HJ_MAD:
         tk_hist.append(t_now)
 
         gk_hist.append(torch.linalg.norm(self.g(xk.squeeze()), 2))
+        hji_rcbrt_term_hist.append(torch.linalg.norm(hji_rcbrt_term, 2))
 
         if self.verbose:
-          print(fmt.format(t_now, gk_hist[-1], xk_error_hist[-1], rel_grad_vk_norm_hist[-1], t_now))
+          print(fmt.format(t_now, gk_hist[-1], hji_rcbrt_term_hist[-1], xk_error_hist[-1], rel_grad_vk_norm_hist[-1], t_now))
 
 			  # How far to step?
         t_vec = np.hstack([ t_now, min(self.t_vec[1], t_now + self.t_steps) ])
@@ -203,19 +226,21 @@ class HJ_MAD:
           print('HJ-MAD converged with rel grad norm {:6.2e}'.format(rel_grad_vk_norm_hist[-1]))
           print('iter = ', t_now, ', number of function evaluations = ', len(xk_error_hist)*self.int_samples)
           break
-        # elif k==self.max_iters-1:
-        #   print('HJ-MAD failed to converge with rel grad norm {:6.2e}'.format(rel_grad_vk_norm_hist[k]))
-        #   print('iter = ', k, ', number of function evaluations = ', len(xk_error_hist)*self.int_samples)
-        #   print('Used fixed time = ', self.fixed_time)
+        elif t_now>=self.small*self.t_vec[1]:
+          print('HJ-MAD failed to converge with rel grad norm {:6.2e}'.format(rel_grad_vk_norm_hist[k]))
+          print('iter = ', t_now, ', number of function evaluations = ', len(xk_error_hist)*self.int_samples)
+          print('Used fixed time = ', self.fixed_time)
 
         if t_now>0:
           if gk_hist[-1] < gk_hist[-2]:
             x_opt = xk 
 
-        print(f'xk: {xk.shape} | first_moment: {first_moment.shape}')
         xk -= self.alpha * first_moment # tk gets canceled out with gradient formula
         
-        grad_vk, _ = self.compute_grad_vk(xk, t_now, self.g, self.delta)
+        grad_vk, vk, hji_rcbrt_term = self.compute_grad_vk(xk, t_now, self.g, self.delta)
+
+        # print(f'grad_vk: {grad_vk.shape} | hji_rcbrt_term2: {hji_rcbrt_term.shape}')
+        # time.sleep(40)
 
         if self.fixed_time == False:
           t_now = self.update_time(t_now, rel_grad_vk_norm)
@@ -248,7 +273,7 @@ def main(dynamics, resolution=1000, seed=123):
 
   print(x0.shape, x_all.shape)
 
-  hj_mad_algo = HJ_MAD(dynamics.get_values, x_true, delta=0.1, int_samples=int_samples, t_vec = [0, 1.0], max_iters=int(5e4), 
+  hj_mad_algo = HJ_MAD(dynamics, x_true, delta=0.1, int_samples=int_samples, t_vec = [0, 1.0], max_iters=int(5e4), 
                   tol=5e-2, psi=0.9, beta=0.9, eta_vec = [0.9, 1.1], alpha=1.0, fixed_time=False, verbose=True)
 
   # run 30 times 
@@ -271,13 +296,14 @@ def main(dynamics, resolution=1000, seed=123):
 
 def plot_values(states, title="Initial values", fname=None, fontdict={'fontsize':16, 'fontweight':'bold'}):  
   X, Z, θ = states[:,0], states[:,1], states[:,2]
-  print(f'X: {X.shape} Z: {Z.shape} θ: {θ.shape}')
+  # print(f'X: {X.shape} Z: {Z.shape} θ: {θ.shape}')
   X, Z, θ =  torch.meshgrid(*(X, Z, θ ), indexing='ij') 
-  print(f'X: {X.shape} Z: {Z.shape} θ: {θ.shape}')
+  # print(f'X: {X.shape} Z: {Z.shape} θ: {θ.shape}')
 
   a = 32; g=32; u=1; 
   values =  torch.sqrt(a * torch.cos(θ)**2  + (a * torch.sin(θ) + \
                                      a + u * X - g)**2)
+  # values = torch.sqrt(X * X + θ * θ)
   # plot solution space in space time 
   fig = plt.figure(figsize=(16,9), )
   ax = fig.add_subplot(111, projection='3d')
@@ -301,20 +327,18 @@ def plot_values(states, title="Initial values", fname=None, fontdict={'fontsize'
 
 
 if __name__ == "__main__":
-  # main()
   
   resolution = 100; L = 100
   dynamics = RocketDynamics(1, 1, T=1, L=L, a=32, g=32, resolution=resolution)
   states =  dynamics.state_space
   print(f'states: {states.shape}')
-  # x0 = dynamics.get_initial_conditions()
-  values = dynamics.get_values(states)
-  print(f'values: {values.shape}')
 
-
-  save_dir = join(expanduser("~"), "Documents/Papers/MSRYeatrs/ProxSampReach/figures")
-  save_dir = join(expanduser("~"), "Downloads") #/Papers/MSRYeatrs/ProxSampReach/figures")
-  fname = join('init_values.jpg')
-  plot_values(states, fname=fname)
+  if args.plot:
+    save_dir = join(expanduser("~"), "Documents/Papers/MSRYeatrs/ProxSampReach/figures")
+    save_dir = join(expanduser("~"), "Downloads") #/Papers/MSRYeatrs/ProxSampReach/figures")
+    fname = join('init_values.jpg')
+    plot_values(dynamics.state_space, fname=fname)
+  else:
+    main(dynamics, resolution, seed=args.seed)
 
 

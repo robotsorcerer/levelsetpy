@@ -58,9 +58,12 @@ class RocketDynamics():
         self.t_steps = self.t_range[1] -  self.t_range[0]
 
         # inputs 
-        self.u = u_bound
-        self.w = w_bound
+        self.u = lambda u: u*u_bound
+        self.w = lambda w: w*w_bound
         self.a = a; self.g = g 
+
+        self.u_e = self.u(u_bound)
+        self.u_p = self.u(-u_bound)
 
         # generate the spatial domain whereupon v(t;x) is domiciled
         self.state_space = self.get_state_space(L, resolution)
@@ -120,7 +123,7 @@ class RocketDynamics():
             X, _, θ = states[:, 0], 0, states[:, 2]
 
         values = torch.sqrt(self.a * torch.cos(θ)**2  + (self.a * torch.sin(θ) + \
-                                     self.a + self.u * X - self.g)**2)
+                                     self.a + self.u_e * X - self.g)**2)
         # values = torch.sqrt(X * X + θ * θ)
 
         return values 
@@ -208,58 +211,59 @@ class RocketDynamics():
             value_derivs: Spatial derivatives (finite difference) of
                         value function computed with the Proximal operator
         """
-        p1, p2, p3 = value_derivs[0], value_derivs[1], value_derivs[2]
+        p1, p2, p3 = value_derivs[:, 0], value_derivs[:, 1], value_derivs[:, 2]
+        x, z, θ = state_compos[:, 0], state_compos[:, 1], state_compos[:, 2]
 
-        p1_coeff = -self.a*torch.cos(state_compos[2]) 
-        p2_coeff = self.g - self.a - self.a*torch.sin(state_compos[2])
-        p31_coeff = torch.abs(p1*state_compos[0] + p3)
-        p32_coeff = torch.abs(p2*state_compos[0] + p3)
+        p1_coeff = -self.a*torch.cos(x) 
+        p2_coeff = self.g - self.a - self.a*torch.sin( θ)
+        p31_coeff = torch.abs(p1*x + p3)
+        p32_coeff = torch.abs(p2*x + p3)
 
         Hxp = p1*p1_coeff + p2*p2_coeff - self.u_p*p31_coeff + self.u_p*p32_coeff
 
         return Hxp
         
-    def get_prox_innards(self, t, num_samples_per_dim=10, delta=1e-1, alpha=1.0):
-        """ 
-            Evaluate the innards of the proximal operator 
-            of the value function.
-            See equation (15) in the paper.
+    # def get_prox_innards(self, t, num_samples_per_dim=10, delta=1e-1, alpha=1.0):
+    #     """ 
+    #         Evaluate the innards of the proximal operator 
+    #         of the value function.
+    #         See equation (15) in the paper.
 
-            $$
-            Prox_{tg}(x) &= \mathbb{E}_{y\sim\mathcal{N}(x, \delta t)}[\bm{y} \cdot \exp(-\bm{g}(\bm{y})/\delta)]
-                            -------------------------------------------------------------------------------------
-                                {\mathbb{E}_{y\sim\mathcal{N}(x, \delta t)}[\exp(-\delta^{-1} \, \bm{g}(\bm{y}))]}
-            $$
+    #         $$
+    #         Prox_{tg}(x) &= \mathbb{E}_{y\sim\mathcal{N}(x, \delta t)}[\bm{y} \cdot \exp(-\bm{g}(\bm{y})/\delta)]
+    #                         -------------------------------------------------------------------------------------
+    #                             {\mathbb{E}_{y\sim\mathcal{N}(x, \delta t)}[\exp(-\delta^{-1} \, \bm{g}(\bm{y}))]}
+    #         $$
 
-            Arguments
-            =========
-                [x] - t (tensor): Time > 0
-                [x] - num_samples_per_dim: samples drawn per dimension of the state space at time $t$;
-                [x] - delta (float, optional):: coefficient of the variance, \delta t to mitigate against overflow.                           
-        """
+    #         Arguments
+    #         =========
+    #             [x] - t (tensor): Time > 0
+    #             [x] - num_samples_per_dim: samples drawn per dimension of the state space at time $t$;
+    #             [x] - delta (float, optional):: coefficient of the variance, \delta t to mitigate against overflow.                           
+    #     """
         
-        'precompute delta inverse'
-        delta_inv = 1/delta 
+    #     'precompute delta inverse'
+    #     delta_inv = 1/delta 
 
-        # get random sample points on the state space
-        state_samples = self.sample_states(num_samples_per_dim)
-        state_samples = torch.stack(state_samples, dim=1)
-        # print(f'state_samples:  {state_samples.shape}')
+    #     # get random sample points on the state space
+    #     state_samples = self.sample_states(num_samples_per_dim)
+    #     state_samples = torch.stack(state_samples, dim=1)
+    #     # print(f'state_samples:  {state_samples.shape}')
 
-        'get the terminal value corresponding to these sample points'
-        g_of_y = self.get_values(state_samples)
+    #     'get the terminal value corresponding to these sample points'
+    #     g_of_y = self.get_values(state_samples)
         
-        'denominator of rhs of Proximal expression -- the value within the expectation'
-        denom_expect = torch.exp(-delta_inv * g_of_y)
+    #     'denominator of rhs of Proximal expression -- the value within the expectation'
+    #     denom_expect = torch.exp(-delta_inv * g_of_y)
 
-        'numerator of rhs of Proximal expression -- the value within the expectation across all three dims'
-        # num_expect = [stata * denom_expect for stata in state_samples]
-        # print(f'state_samples: {state_samples.shape} | denom_expect: {denom_expect.shape}')
-        num_expect = torch.matmul(state_samples.T, denom_expect.unsqueeze(1))
-        # print(f'num_expect: {[x.shape for x in num_expect]} | denom_expect: {denom_expect.shape}')
-        # print(f'num_expect: {num_expect.shape} | denom_expect: {denom_expect.shape}')
+    #     'numerator of rhs of Proximal expression -- the value within the expectation across all three dims'
+    #     # num_expect = [stata * denom_expect for stata in state_samples]
+    #     # print(f'state_samples: {state_samples.shape} | denom_expect: {denom_expect.shape}')
+    #     num_expect = torch.matmul(state_samples.T, denom_expect.unsqueeze(1))
+    #     # print(f'num_expect: {[x.shape for x in num_expect]} | denom_expect: {denom_expect.shape}')
+    #     # print(f'num_expect: {num_expect.shape} | denom_expect: {denom_expect.shape}')
 
-        return num_expect, denom_expect
+    #     return num_expect, denom_expect
 
         
 class RocketDataset(Dataset):
