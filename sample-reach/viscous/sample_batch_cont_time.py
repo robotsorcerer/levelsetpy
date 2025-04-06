@@ -80,7 +80,7 @@ class HJ_MAD:
           6) rel_grad_vk_norm_hist    = relative grad norm history of Moreau envelope
     '''
     def __init__(self, dynamics, x_true, delta=0.1, int_samples=100, t_vec = [0, 1], max_iters=5e4, 
-                 tol=5e-2, psi=0.9, beta=[0.9], eta_vec = [0.9, 1.1], alpha=1.0, fixed_time=False, verbose=True):
+                 tol=5e-2, psi=0.9, beta=0.9, eta_vec = [0.9, 1.1], alpha=1.0, fixed_time=False, verbose=True):
       
       self.delta            = delta
       self.g                = dynamics.get_values
