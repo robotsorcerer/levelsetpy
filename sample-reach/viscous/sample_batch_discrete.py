@@ -114,7 +114,10 @@ class HJ_MAD:
       assert(alpha <= 1+np.sqrt(eta_vec[1]))
     
     def noise_samples(self, x_sampled, delta, t):
-        # kernel.shape 
+        """
+          Corrupt the samples drawn from the state space with some 
+          Gaussian noise.  
+        """
         var = delta * t
         x_sampled = x_sampled.numpy()
         noised = np.zeros_like(x_sampled)
@@ -134,7 +137,6 @@ class HJ_MAD:
       phi_delta       = torch.mean(exp_term)
 
       # separate grad_v into two terms for numerical stability
-      # print(f'y: {y.shape} exp_term: {exp_term.shape}')
       numerator = y.t()*exp_term 
       numerator = torch.mean(numerator.t(), dim=0)      
       grad_vk = (x.squeeze() -  numerator/(phi_delta + self.small)) #.view(-1, 1) # the t gets canceled with the update formula
@@ -162,27 +164,18 @@ class HJ_MAD:
         if rel grad norm too small, increase tk (with maximum T).
         else if rel grad norm is too "big", decrease tk with minimum (t_min)
       '''
-
-      eta_minus = self.eta_vec[0]
-      eta_plus = self.eta_vec[1]
-      T = self.t_vec[-1]
-      t_min = self.t_vec[0]
-
       if rel_grad_vk_norm <= self.psi:
         # increase t when relative gradient norm is smaller than psi
         logger.debug("Increasing time")
-        # tk = min(eta_plus*tk , T) 
         tk += self.t_steps
       else:
         logger.debug("Decreasing time")
         # decrease otherwise t when relative gradient norm is smaller than psi
-        # tk = max(eta_minus*tk, t_min)
         tk -= self.t_steps
 
       return tk
 
     def run(self):
-      # n_features            = x0.shape[0]
       xk_hist               = [torch.Tensor([0])]  
       xk_error_hist         = [] 
       rel_grad_vk_norm_hist = [] 
@@ -203,18 +196,15 @@ class HJ_MAD:
       fmt = '[{:3.4f}]: gk = {:6.2e} | xk_err = {:6.2e} | hj_term = {:2.2e} '
       fmt += ' | |grad_vk| = {:6.2e} | tk = {:6.2e}'
 
-      print('-------------------------- RUNNING HJ-MAD ---------------------------')
-      print('dimension = ', self.dim, 'n_samples = ', self.int_samples)
+      logger.info('-------------------------- RUNNING HJ-MAD ---------------------------')
+      logger.info('dimension = ', self.dim, 'n_samples = ', self.int_samples)
 
       for k in range(self.max_iters):
-      # while (self.t_vec[1]  - t_now) > self.small * self.t_vec[1]:
         t_now = self.t_vec[0]
 
         xk_hist.append(torch.norm((xk.squeeze())))
 
         rel_grad_vk_norm_hist.append(rel_grad_vk_norm)
-
-        # xk_error_hist.append(torch.norm((xk - self.x_true.squeeze())))
         xk_error_hist.append(torch.norm(xk_hist[-1]-xk_hist[-2], p=2))
         tk_hist.append(t_now)
 
@@ -234,13 +224,13 @@ class HJ_MAD:
           xk_error_hist = xk_error_hist[0:]
           rel_grad_vk_norm_hist = rel_grad_vk_norm_hist[0:]
           gk_hist               = gk_hist[0:]
-          print('HJ-MAD converged with rel grad norm {:6.2e}'.format(rel_grad_vk_norm_hist[-1]))
-          print('iter = ', t_now, ', number of function evaluations = ', len(xk_error_hist)*self.int_samples)
+          logger.info('HJ-MAD converged with rel grad norm {:6.2e}'.format(rel_grad_vk_norm_hist[-1]))
+          logger.info('iter = ', t_now, ', number of function evaluations = ', len(xk_error_hist)*self.int_samples)
           break
         elif t_now>=self.small*self.t_vec[1]:
-          print('HJ-MAD failed to converge with rel grad norm {:6.2e}'.format(rel_grad_vk_norm_hist[k]))
-          print('iter = ', t_now, ', number of function evaluations = ', len(xk_error_hist)*self.int_samples)
-          print('Used fixed time = ', self.fixed_time)
+          logger.info('HJ-MAD failed to converge with rel grad norm {:6.2e}'.format(rel_grad_vk_norm_hist[k]))
+          logger.info('iter = ', t_now, ', number of function evaluations = ', len(xk_error_hist)*self.int_samples)
+          logger.info('Used fixed time = ', self.fixed_time)
           break 
 
         if t_now>0:
@@ -295,12 +285,13 @@ def main(dynamics, resolution=1000, seed=123):
 
 
 
-  for trial in range(args.avg_trials):
+  for trial in range(args.trials):
     print(">>>Rolling on sample trial {trial}.")
+    # while (self.t_vec[1]  - t_now) > self.small * self.t_vec[1]:
     x_opt, xk_hist, tk_hist, xk_error_hist, \
       rel_grad_uk_norm_hist, globalk_hist = hj_mad_algo.run()
     avg_func_evals = avg_func_evals + len(xk_error_hist)*int_samples
-
+    print('\n\n')
   avg_func_evals = avg_func_evals/avg_trials
 
   print('\n\n avg_func_evals = ', avg_func_evals)
