@@ -7,7 +7,6 @@ import time
 import logging 
 import argparse 
 import sys, os
-from gmm import GMM
 from os.path import join, expanduser 
 import scipy.ndimage as sp_ndimage
 from rockets import RocketDynamics
@@ -18,43 +17,48 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser(description='Hamilton-Jacobi Moreau Reachability Analysis')
-parser.add_argument('--silent', '-si', action='store_false', help='silent debug print outs' )
+parser.add_argument('--verbose', '-vb', action='store_true', help='silent debug print outs' )
 parser.add_argument('--save', '-sv', action='store_false', help='save BRS/BRT at end of sim' )
-parser.add_argument('--visualize', '-vz', action='store_false', help='visualize level sets?' )
+parser.add_argument('--visualize', '-vz', action='store_true', help='visualize level sets?' )
 parser.add_argument('--plot', '-lb', action='store_true', help='plot initial values?' )
-parser.add_argument('--benchmark', '-bm', action='store_true', help='Benchmark this computation?' )
-parser.add_argument('--verify', '-vf', action='store_true', default=True, help='visualize level sets?' )
 parser.add_argument('--trials', '-tr', type=int, default=50, help='Code seed.' )
+parser.add_argument('--resolution', '-re', type=int, default=100, help='State space resolution.' )
+parser.add_argument('--time_upper', '-tu', type=int, default=1, help='Upper bound of the time interval.' )
+parser.add_argument('--spatial_bound', '-sb', type=int, default=64, help='Upper bound of the time interval.' )
 parser.add_argument('--seed', '-sd', type=int, default=123, help='Code seed.' )
+parser.add_argument('--num_samples', '-sa', type=int, default=100, help='Number of Gaussian Samples ber Batch.' )
 parser.add_argument('--pause_time', '-pz', type=float, default=.3, help='pause time between successive updates of plots' )
 args = parser.parse_args()
 
-if not args.silent:
-  logging.basicConfig(level=logging.DEBUG)
+print(args)
+
+if args.verbose:
+  logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 else:
-  logging.basicConfig(level=logging.INFO)
+  logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
-# ## Problem Statement and Numerical Setting
+## Problem Statement and Numerical Setting
 
 # Let $\Omega = [0,L]\subset \mathbb{R}$ be the spatial domain indicated by the variable $\omega$, and let $(0,T]\subset\mathbb{R}$ be the time domain with variable $t$.
 # We consider the three-dimensional HJ equation with homogeneous Dirichlet boundary conditions,
 # $$
 # \begin{align*}
-#     &\partial \bm{v}_t(t; \bm{x}) + \min\{0, \bm{H}\left(x, \partial \bm{v}_{\bm{x}}(t; \bm{x})\right)\} = 0, \qquad &\bm{v}(0; \bm{x}) = \bm{g}(0; \bm{x}) \nonumber \\
+#     &\partial \bm{v}_t(t; \bm{x}) + \min\{0, \bm{H}\left(x, \partial_{\bm{x}} \bm{v}(t; \bm{x})\right)\} = 0, \qquad &\bm{v}(0; \bm{x}) = \bm{g}(0; \bm{x}) \nonumber \\
 # %\bm{v}(0; \bm{x}) &= \bm{g}(0; \bm{x}) \\
 # %
-# &\approx \partial \bm{v}^\delta_t(t; \bm{x}) + \min\{0, 
-# \bm{H}^\delta\left(t; x, \partial \bm{v}^\delta_{\bm{x}}\right)\} = 0, \qquad &\bm{v}^\delta(0; \bm{x}) = \bm{g}(0; \bm{x}) \nonumber \\
+# &\approx \partial_t \bm{v}^\delta(t; \bm{x}) + \min\{0, 
+# \bm{H}^\delta\left(t; x, \partial_{\bm{x}} \bm{v}^\delta\right)\} = 0, \qquad &\bm{v}^\delta(0; \bm{x}) = \bm{g}(0; \bm{x}) \nonumber \\
 # %
-# &:= \partial \bm{v}^\delta_t(t; \bm{x}) + \min\bigg\{0, 
+# &:= \partial_t \bm{v}^\delta(t; \bm{x}) + \min\bigg\{0, 
 # \max_{\bm{u} \in \mathcal{U}} \min_{\bm{w} \in \mathcal{W}} \, \bigg\langle f(t; \bm{x}, \bm{u}, \bm{w}), \frac{1}{t}(\bm{x} - \text{prox}_{t\bm{g}}(\bm{x})) \bigg\rangle
 # \bigg\} = 0 \qquad &\bm{v}^\delta(0; \bm{x}) = \bm{g}(0; \bm{x}).
 # \end{align*}
 # $$
-# 
+
 # This is a model for a one-dimensional rod that conducts heat: the temperature at the ends of the rod are fixed at $0$ and heat is allowed to flow out of the rod through the ends.
+
 
 class HJ_MAD:
     ''' 
@@ -63,19 +67,17 @@ class HJ_MAD:
         
         Inputs:
           1)  dynamics     = Class that contains the dynamics of the agents, hamiltonian function and other auxiliary variables.
-          2)  x_init       = Initial sampled states [int_samples x D] where D is the dimension of the states space
-          3)  x_true       = true global minimizer [N X D] sized where N is total number of discretized points on the state space and D is the dim of the states.
-          3)  delta        = coefficient of viscous term in the HJ equation
-          4)  int_samples  = number of samples used to approximate expectation in heat equation solution
-          6)  t_vec        = time vector containig [initial time, minimum time allowed, maximum time]
-          7)  max_iters    = max number of iterations
-          8)  tol          = stopping tolerance
-          9)  psi          = parameter used to update tk
-          10) beta         = exponential averaging term for gradient beta (beta multiplies history, 1-beta multiplies current grad)
-          11) eta_vec      = vector containing [eta_minus, eta_plus], where eta_minus < 1 and eta_plus > 1 (part of time update)
-          11) alpha        = step size. has to be in between (1-sqrt(eta_minus), 1+sqrt(eta_plus))
-          12) fixed_time   = boolean for using adaptive time
-          13) verbose      = boolean for printing
+          2)  delta        = coefficient of viscous term in the HJ equation
+          3)  int_samples  = number of samples used to approximate expectation in heat equation solution
+          4)  t_span       = time vector containig [initial time, minimum time allowed, maximum time]
+          5)  max_iters    = max number of iterations
+          6)  tol          = stopping tolerance
+          7)  psi          = parameter used to update tk
+          8) beta          = exponential averaging term for gradient beta (beta multiplies history, 1-beta multiplies current grad)
+          9) eta_vec       = vector containing [eta_minus, eta_plus], where eta_minus < 1 and eta_plus > 1 (part of time update)
+          10) alpha        = step size. has to be in between (1-sqrt(eta_minus), 1+sqrt(eta_plus))
+          11) fixed_time   = boolean for using adaptive time
+          12) verbose      = boolean for printing
 
         Outputs:
           1) x_opt                    = optimal x_value approximation
@@ -84,18 +86,17 @@ class HJ_MAD:
           4) fk_hist                  = function value history
           6) rel_grad_vk_norm_hist    = relative grad norm history of Moreau envelope
     '''
-    def __init__(self, dynamics, delta=0.1, int_samples=100, t_vec = [0, 1], max_iters=5e4, 
-                 tol=5e-2, psi=0.9, beta=0.9, eta_vec = [0.9, 1.1], alpha=1.0, fixed_time=False, verbose=True):   
+    def __init__(self, dynamics, delta=0.1, int_samples=100, t_span = [0, 1], max_iters=5e4, 
+                 tol=5e-2, psi=0.3, beta=0.9, alpha=1.0, fixed_time=False, verbose=True):   
       self.delta            = delta
       self.g                = dynamics.get_values
       self.int_samples      = int_samples
       self.max_iters        = max_iters
       self.tol              = tol
-      self.t_vec            = t_vec
+      self.t_span           = t_span
       self.psi              = psi
       self.beta             = beta 
       self.alpha            = alpha 
-      self.eta_vec          = eta_vec
       self.fixed_time       = fixed_time
       self.verbose          = verbose
 
@@ -103,15 +104,16 @@ class HJ_MAD:
       self.states           = dynamics.state_space
       self.probs            = torch.ones(states.shape[0], dtype=torch.float) / states.shape[0]
       
-      'HJ hyperparams'
+      'HJI Hyperparameters.'
+      '--------------------'
       eps = sys.float_info.epsilon
-      self.t_steps = (t_vec[-1] - t_vec[0]) / 100
+      self.t_steps = (t_span[-1] - t_span[0]) / 10
       self.small = 100 * eps 
 
       self.dim = states.shape[1] 
       # check that alpha is in right interval
-      assert(alpha >= 1-np.sqrt(eta_vec[0]))
-      assert(alpha <= 1+np.sqrt(eta_vec[1]))
+      assert(alpha >= 1-np.sqrt(0.9))
+      assert(alpha <= 1+np.sqrt(1.1))
     
     def noise_samples(self, x_sampled, delta, t):
         """
@@ -130,16 +132,14 @@ class HJ_MAD:
       ''' 
           Compute the gradient of the Moreau envelope.
       '''
-      # corrupt them samples with some gaussian noise!
       y =  self.noise_samples(x, delta, t)
       
       exp_term = torch.exp(-g(y)/delta)
       phi_delta       = torch.mean(exp_term)
 
-      # separate grad_v into two terms for numerical stability
       numerator = y.t()*exp_term 
       numerator = torch.mean(numerator.t(), dim=0)      
-      grad_vk = (x.squeeze() -  numerator/(phi_delta + self.small)) #.view(-1, 1) # the t gets canceled with the update formula
+      grad_vk = (x.squeeze() -  numerator/(phi_delta + self.small)) 
       
       hamiltonian = dynamics.hamiltonian(grad_vk, x)
       hamterm = torch.minimum(torch.Tensor([0]), hamiltonian)
@@ -150,7 +150,7 @@ class HJ_MAD:
 
       return grad_vk, vk, hji_rcbrt
 
-    def update_time(self, tk, rel_grad_vk_norm):
+    def update_time(self, t_now, rel_grad_vk_norm):
       '''
         time step rule
 
@@ -167,24 +167,24 @@ class HJ_MAD:
       if rel_grad_vk_norm <= self.psi:
         # increase t when relative gradient norm is smaller than psi
         logger.debug("Increasing time")
-        tk += self.t_steps
+        t_now += self.t_steps
       else:
         logger.debug("Decreasing time")
         # decrease otherwise t when relative gradient norm is smaller than psi
-        tk -= self.t_steps
+        t_now -= self.t_steps
 
-      return tk
+      return t_now
 
     def run(self):
       xk_hist               = [torch.Tensor([0])]  
       xk_error_hist         = [] 
       rel_grad_vk_norm_hist = [] 
-      gk_hist               = [] 
+      gk_hist               = [1e9] 
       tk_hist               = [] 
       counter               = 0
       hji_rcbrt_term_hist   = []
 
-      t_now                 = self.t_vec[0]
+      t_now                 = self.t_span[0]
 
       sample_idces = self.probs.multinomial(self.int_samples, replacement=True)
       xk     = self.states[sample_idces, :]
@@ -193,14 +193,14 @@ class HJ_MAD:
       first_moment, _, hji_rcbrt_term   = self.compute_grad_vk(xk, t_now, self.g, self.delta)
       rel_grad_vk_norm      = 1.0
 
-      fmt = '[{:3.4f}]: gk = {:6.2e} | xk_err = {:6.2e} | hj_term = {:2.2e} '
-      fmt += ' | |grad_vk| = {:6.2e} | tk = {:6.2e}'
+      fmt = '[{:2.2f}] | gk = {:3.4e} | xk_err = {:3.4e} | hj_term = {:2.2e} '
+      fmt += ' | |grad_vk| = {:3.4e} | tnow = {:2.4e}'
 
       logger.info('-------------------------- RUNNING HJ-MAD ---------------------------')
-      logger.info('dimension = ', self.dim, 'n_samples = ', self.int_samples)
+      logger.info(f'dimension = f{self.dim}, n_samples = {self.int_samples}')
 
-      for k in range(self.max_iters):
-        t_now = self.t_vec[0]
+      while (self.t_span[1]  - t_now) > self.small * self.t_span[1]:  
+        t_now = self.t_span[0]
 
         xk_hist.append(torch.norm((xk.squeeze())))
 
@@ -215,10 +215,9 @@ class HJ_MAD:
           print(fmt.format(t_now, gk_hist[-1], hji_rcbrt_term_hist[-1], xk_hist[-1], rel_grad_vk_norm_hist[-1], t_now))
 
 			  # How far to step?
-        # t_vec = np.hstack([ t_now, min(self.t_vec[1], t_now + self.t_steps) ])
+        self.t_span = np.hstack([ t_now, min(self.t_span[1], t_now + self.t_steps) ])
 
         if (counter > 5) and np.all(np.all(np.abs(xk_error_hist[:-3]))<self.tol):
-          # if delta_xk < self.tol:
           tk_hist = tk_hist[0:]
           xk_hist = xk_hist[0:]
           xk_error_hist = xk_error_hist[0:]
@@ -227,7 +226,7 @@ class HJ_MAD:
           logger.info('HJ-MAD converged with rel grad norm {:6.2e}'.format(rel_grad_vk_norm_hist[-1]))
           logger.info('iter = ', t_now, ', number of function evaluations = ', len(xk_error_hist)*self.int_samples)
           break
-        elif t_now>=self.small*self.t_vec[1]:
+        elif t_now>=self.small*self.t_span[1]:
           logger.info('HJ-MAD failed to converge with rel grad norm {:6.2e}'.format(rel_grad_vk_norm_hist[k]))
           logger.info('iter = ', t_now, ', number of function evaluations = ', len(xk_error_hist)*self.int_samples)
           logger.info('Used fixed time = ', self.fixed_time)
@@ -243,9 +242,7 @@ class HJ_MAD:
         
         grad_vk, vk, hji_rcbrt_term = self.compute_grad_vk(xk, t_now, self.g, self.delta)
 
-        # print(f'grad_vk: {grad_vk.shape} | hji_rcbrt_term2: {hji_rcbrt_term.shape}')
-
-        if self.fixed_time == False:
+        if not self.fixed_time:
           t_now = self.update_time(t_now, rel_grad_vk_norm)
 
         grad_vk_norm_old = torch.norm(first_moment)
@@ -256,7 +253,41 @@ class HJ_MAD:
 
       return x_opt, xk_hist, xk_error_hist, tk_hist, rel_grad_vk_norm_hist, gk_hist
 
+
+def plot_values(states, title="Initial values", fname=None, fontdict={'fontsize':16, 'fontweight':'bold'}):  
+  X, Z, θ = states[:,0], states[:,1], states[:,2]
+  X, Z, θ =  torch.meshgrid(*(X, Z, θ ), indexing='ij') 
+
+  a = 32; g=32; u=1; 
+  values =  torch.sqrt(a * torch.cos(θ)**2  + (a * torch.sin(θ) + \
+                                     a + u * X - g)**2)
+  # plot solution space in space time 
+  fig = plt.figure(figsize=(16,9), )
+  ax = fig.add_subplot(111, projection='3d')
+  ax.axes.get_xaxis().set_ticks([])
+  ax.axes.get_yaxis().set_ticks([])
+  ax.axes.get_zaxis().set_ticks([])
+
+  cdata = ax.scatter(X, Z, θ, c=values, cmap="magma") 
+  plt.colorbar(cdata, ax=ax, extend="both", shrink=0.5)
+  ax.set_xlabel(r"Horz. $x$ (ft)", fontdict=fontdict)
+  ax.set_ylabel(r"Vert. $z$ (ft)", fontdict=fontdict)
+  ax.set_zlabel(r"Orientation: $\theta$ (rad)", fontdict=fontdict)
+  ax.set_title(title, fontdict=fontdict)
+
+  fig.suptitle("Rockets Relative Dynamics' Values", fontsize=16)
+  if args.visualize:
+    plt.show()
+  plt.savefig(fname, bbox_inches='tight',facecolor='None', dpi=76)
+
+
 def main(dynamics, resolution=1000, seed=123):  
+
+  if args.plot:
+    save_dir = join(expanduser("~"), "Documents/Papers/MSRYeatrs/ProxSampReach/figures")
+    save_dir = join(expanduser("~"), "Downloads") #/Papers/MSRYeatrs/ProxSampReach/figures")
+    fname = join('init_values.jpg')
+    plot_values(dynamics.state_space, fname=fname)
 
   torch.manual_seed(seed)
   np.random.seed(seed)
@@ -271,79 +302,49 @@ def main(dynamics, resolution=1000, seed=123):
   x_true[:target_region_size, 1] = x_all[:target_region_size, 1]
   x_true[:target_region_size, 2] = x_all[:target_region_size, 2]
 
-  int_samples     = 100
   max_iters       = int(5e4)
 
-  # print(x0.shape, x_all.shape)
-
-  hj_mad_algo = HJ_MAD(dynamics, delta=0.1, int_samples=int_samples, t_vec = [0, 1.0], max_iters=int(5e4), 
-                  tol=5e-2, psi=0.9, beta=0.9, eta_vec = [0.9, 1.1], alpha=1.0, fixed_time=False, verbose=True)
+  eps= sys.float_info.epsilon
+  t_span = [0+eps, 1.0]
+  hj_mad_algo = HJ_MAD(dynamics, delta=0.1, int_samples=args.num_samples, t_span = t_span, max_iters=max_iters, 
+                                      tol=5e-2, psi=0.1, beta=0.9, alpha=1.0, fixed_time=False, verbose=True)
 
   # run 30 times 
-  avg_trials      = 30
   avg_func_evals  = 0
 
-
-
+  x_opt_list, xk_hist_list, tk_hist_list, xk_error_hist_list, \
+      rel_grad_uk_norm_hist_list, globalk_hist_list = [[np.nan for x in range(args.trials)]]*6
+  
+  # no elems
+  x_opt_list, xk_hist_list, tk_hist_list, xk_error_hist_list, \
+      rel_grad_uk_norm_hist_list, globalk_hist_list = [[]]*6
+  
   for trial in range(args.trials):
-    print(">>>Rolling on sample trial {trial}.")
-    # while (self.t_vec[1]  - t_now) > self.small * self.t_vec[1]:
+    print(f">>>Rolling on sample trial {trial}/{args.trials}.")
     x_opt, xk_hist, tk_hist, xk_error_hist, \
       rel_grad_uk_norm_hist, globalk_hist = hj_mad_algo.run()
-    avg_func_evals = avg_func_evals + len(xk_error_hist)*int_samples
+    
+    # stack em results
+    x_opt_list += x_opt 
+    xk_hist_list += xk_hist
+    tk_hist_list += tk_hist
+    xk_error_hist_list += xk_error_hist
+    rel_grad_uk_norm_hist_list += rel_grad_uk_norm_hist
+    globalk_hist_list += globalk_hist
+
+
+    avg_func_evals += len(xk_error_hist)*args.num_samples
     print('\n\n')
-  avg_func_evals = avg_func_evals/avg_trials
+  avg_func_evals = avg_func_evals/args.trials
 
   print('\n\n avg_func_evals = ', avg_func_evals)
-
-
-
-
-def plot_values(states, title="Initial values", fname=None, fontdict={'fontsize':16, 'fontweight':'bold'}):  
-  X, Z, θ = states[:,0], states[:,1], states[:,2]
-  # print(f'X: {X.shape} Z: {Z.shape} θ: {θ.shape}')
-  X, Z, θ =  torch.meshgrid(*(X, Z, θ ), indexing='ij') 
-  # print(f'X: {X.shape} Z: {Z.shape} θ: {θ.shape}')
-
-  a = 32; g=32; u=1; 
-  values =  torch.sqrt(a * torch.cos(θ)**2  + (a * torch.sin(θ) + \
-                                     a + u * X - g)**2)
-  # values = torch.sqrt(X * X + θ * θ)
-  # plot solution space in space time 
-  fig = plt.figure(figsize=(16,9), )
-  ax = fig.add_subplot(111, projection='3d')
-  ax.axes.get_xaxis().set_ticks([])
-  ax.axes.get_yaxis().set_ticks([])
-  ax.axes.get_zaxis().set_ticks([])
-  # Plot a few snapshots.
-  # color = iter(plt.cm.viridis(np.linspace(.25, 1, 5)))
-
-
-  cdata = ax.scatter(X, Z, θ, c=values, cmap="magma") #, shading="nearest", 
-  plt.colorbar(cdata, ax=ax, extend="both", shrink=0.5)
-  ax.set_xlabel(r"Horz. $x$ (ft)", fontdict=fontdict)
-  ax.set_ylabel(r"Vert. $z$ (ft)", fontdict=fontdict)
-  ax.set_zlabel(r"Orientation: $\theta$ (rad)", fontdict=fontdict)
-  ax.set_title(title, fontdict=fontdict)
-
-  fig.suptitle("Rockets Relative Dynamics' Values", fontsize=16)
-  # plt.show()
-  plt.savefig(fname, bbox_inches='tight',facecolor='None', dpi=76)
-
 
 if __name__ == "__main__":
   
   resolution = 100; L = 100
-  dynamics = RocketDynamics(1, 1, T=1, L=L, a=32, g=32, resolution=resolution)
+  dynamics = RocketDynamics(1, 1, T=args.time_upper, L=args.spatial_bound, a=32, g=32, resolution=args.resolution)
   states =  dynamics.state_space
   print(f'states: {states.shape}')
-
-  if args.plot:
-    save_dir = join(expanduser("~"), "Documents/Papers/MSRYeatrs/ProxSampReach/figures")
-    save_dir = join(expanduser("~"), "Downloads") #/Papers/MSRYeatrs/ProxSampReach/figures")
-    fname = join('init_values.jpg')
-    plot_values(dynamics.state_space, fname=fname)
-  else:
-    main(dynamics, resolution, seed=args.seed)
+  main(dynamics, resolution, seed=args.seed)
 
 

@@ -3,12 +3,10 @@ __all__ = ["RocketDynamics"]
 import sys 
 import torch 
 import numpy as np 
-from torch.utils.data import Dataset, DataLoader
-from gmm import GMM 
 
 
 class RocketDynamics():
-    def __init__(self, u_bound=1, w_bound=1, T=1, L=64, a=32, g=32, resolution=100, rank='cpu'):    
+    def __init__(self, u_bound=1, w_bound=1, T=1, L=64, a=1, g=32, resolution=100, rank='cpu'):    
         """
             Rockets Dynamics in relative coordinates.
             The equations of motion are adopted from Dreyfus' construction as follows:
@@ -73,15 +71,21 @@ class RocketDynamics():
 
         self.state_dim = self.state_space[0].shape[0]
 
-        self.gmm = GMM(device=rank)
-        self.gmm_denom = GMM(device=rank)
-
     def get_state_space(self, L, D):  
         '''
             given a spatial domain length, L and a resolution, 
             compute the spatial components x, z, θ.
 
             Returns D x N tensor where N is the dimension of the state space, here 3.
+
+            Params
+            ======
+            u_bound: (Default 1 ft/sec) -- The maximum torque on the evader rocket's input.
+            w_bound: (Default 1 ft/sec) -- The maximum torque on the pursuer rocket's input.
+            T: (Default 1 sec)       -- Upper interval of the time bound on which to solve reachability the problem.
+            L: (Default 64)      -- Spatial bounds [-L, +L] of the states along x, and z.
+            a: (Default 1 ft/sec^2) -- Acceleration of each of the rockets.
+            g: (Default 32 ft/sec^2) -- Gravitational acceleration.
         '''      
         # State components, $(x, z, \θ)$
         state_x = torch.linspace(-L, +L, D).to(self.device)  # x spatial grid.
@@ -145,61 +149,6 @@ class RocketDynamics():
 
         return value
     
-    def dynamics(self, xdot):
-        pass 
-    
-    def runge_kutta4(self, xdot, M=50, h = 0.2):
-        """
-           A Runge-Kutta integration scheme.
-
-           Parameters
-           ----------
-            [x] xdot: right hand side of the ode
-            [x] M: Integration horizon.
-            [x] h: step size.
-        """
-        # assert not np.any(cur_state), "current state cannot be empty."
-        X = torch.Tensor(xdot) if isinstance(xdot, list) else xdot
-
-        for j in range(M):
-            k1 = self.dynamics(X)
-            k2 = self.dynamics(X + h/2 * k1)
-            k3 = self.dynamics(X + h/2 * k2)
-            k4 = self.dynamics(X + h * k3)
-
-            X  = X+(h/6)*(k1 +2*k2 +2*k3 +k4)
-
-        return X
-    
-    def sample_states(self, num_samples_per_dim=10):
-        """ 
-            Sample from the state space, compute the values that correspond to these samples,
-            and then return the sampled states and values.
-
-            Parameters
-            ==========
-            - [x] num_samples_per_dim: number of samples per dimension of each state component of the problem.
-        """
-
-        X, Z, θ = self.state_space[:,0], self.state_space[:,1], self.state_space[:,2]
-        
-        num_samples_all_dims = num_samples_per_dim 
-        
-        assert num_samples_all_dims <= self.state_space.shape[0]-1, "samples along all dims cannot be equal to or greater than the dim of each state component"
-
-        X_flat = X.reshape(-1)
-        # X_flat, Z_flat, θ_flat = X.reshape(-1), Z.reshape(-1), θ.reshape(-1)
-
-        probs = torch.ones_like(X_flat, dtype=torch.float) / X_flat.numel()
-        
-        idx = probs.multinomial(num_samples_all_dims, replacement=True); 
-
-        x_samp = X.reshape(-1)[idx].reshape(num_samples_per_dim) #, num_samples_per_dim, num_samples_per_dim) 
-        z_samp = Z.reshape(-1)[idx].reshape(num_samples_per_dim) #, num_samples_per_dim, num_samples_per_dim) 
-        θ_samp = θ.reshape(-1)[idx].reshape(num_samples_per_dim) #, num_samples_per_dim, num_samples_per_dim) 
-
-        return torch.stack([x_samp, z_samp, θ_samp], axis=1)
-
     def hamiltonian(self, value_derivs, state_compos):
         """
             H = p_1 [u_e - u_p cos(x_3)] - p_2 [u_p sin x_3] \
@@ -223,102 +172,3 @@ class RocketDynamics():
 
         return Hxp
         
-    # def get_prox_innards(self, t, num_samples_per_dim=10, delta=1e-1, alpha=1.0):
-    #     """ 
-    #         Evaluate the innards of the proximal operator 
-    #         of the value function.
-    #         See equation (15) in the paper.
-
-    #         $$
-    #         Prox_{tg}(x) &= \mathbb{E}_{y\sim\mathcal{N}(x, \delta t)}[\bm{y} \cdot \exp(-\bm{g}(\bm{y})/\delta)]
-    #                         -------------------------------------------------------------------------------------
-    #                             {\mathbb{E}_{y\sim\mathcal{N}(x, \delta t)}[\exp(-\delta^{-1} \, \bm{g}(\bm{y}))]}
-    #         $$
-
-    #         Arguments
-    #         =========
-    #             [x] - t (tensor): Time > 0
-    #             [x] - num_samples_per_dim: samples drawn per dimension of the state space at time $t$;
-    #             [x] - delta (float, optional):: coefficient of the variance, \delta t to mitigate against overflow.                           
-    #     """
-        
-    #     'precompute delta inverse'
-    #     delta_inv = 1/delta 
-
-    #     # get random sample points on the state space
-    #     state_samples = self.sample_states(num_samples_per_dim)
-    #     state_samples = torch.stack(state_samples, dim=1)
-    #     # print(f'state_samples:  {state_samples.shape}')
-
-    #     'get the terminal value corresponding to these sample points'
-    #     g_of_y = self.get_values(state_samples)
-        
-    #     'denominator of rhs of Proximal expression -- the value within the expectation'
-    #     denom_expect = torch.exp(-delta_inv * g_of_y)
-
-    #     'numerator of rhs of Proximal expression -- the value within the expectation across all three dims'
-    #     # num_expect = [stata * denom_expect for stata in state_samples]
-    #     # print(f'state_samples: {state_samples.shape} | denom_expect: {denom_expect.shape}')
-    #     num_expect = torch.matmul(state_samples.T, denom_expect.unsqueeze(1))
-    #     # print(f'num_expect: {[x.shape for x in num_expect]} | denom_expect: {denom_expect.shape}')
-    #     # print(f'num_expect: {num_expect.shape} | denom_expect: {denom_expect.shape}')
-
-    #     return num_expect, denom_expect
-
-        
-class RocketDataset(Dataset):
-    def __init__(self, u_bound=1, w_bound=1, T=1, L=100, a=1, g=32, resolution=100):
-        """
-            This class subsumes the Rocket Dynamics class in a polymorphism.
-            The goal is to abstract away the statistical K-means clustering 
-            and the normal inverse Wishart Prior of the states that are used 
-            in evaluating the proximal operator in Equation (15) in the paper
-            so that we have a neater way to estimate the proximal operator as 
-            a surrogate for the spatial gradient of the value function.
-        """
-        super(self).__init__()
-        
-        # self._min_samp = self._hyperparams['min_samples_per_cluster']
-        # self._max_samples = self._hyperparams['max_samples']
-        # self._max_clusters = self._hyperparams['max_clusters']
-        # self._strength = self._hyperparams['strength']
-
-        self.dynamics = RocketDynamics(u_bound, w_bound, T, L, a, g, resolution)
-
-        # values = signed distance to target
-        X_all, Z_all, θ_all = self.dynamics.state_space
-        values = self.dynamics.values
-
-        num_samples_per_dim = 20
-        x_sample, z_sample, θ_sample = self.dynamics.sample_states(num_samples_per_dim=num_samples_per_dim)
-
-        # self.dynamics.get_prox_innards(t=0, num_samples_per_dim=10, delta=1e-1, alpha=1.0)
-        self.dynamics.compute_proximal(t=0, num_samples_per_dim=10, delta=1e-1, alpha=1.0)
-
-    def compute_proximal(self, t, num_samples_per_dim=10, delta=1e-1, alpha=1.0):
-        """ 
-            First compute the innards of the expectation given in equation 15. 
-            Then draw Gaussian samples from each numerator and denominator.
-
-            Compute the expectation by smooshing the drawn Gaussian with a simple MLP Mixer network
-        """
-        numerator, denom = self.get_prox_innards(t, num_samples_per_dim=10, delta=1e-1, alpha=1.0)
-
-        # Obtain Normal-inverse-Wishart prior.
-        mu0, Phi, m, n0 = self.gmm.inference(numerator)
-
-        print('mu0, Phi, m, n0  ', mu0, Phi, m, n0 )
-        # Multiply Phi by m (since it was normalized before).
-        Phi *= m
-    
-        mu0_den, Phi_den, m_den, n0_den = self.gmm_denom.inference(denom)
-        # Multiply Phi by m (since it was normalized before).
-        Phi_den *= m_den
-
-        # proximal = (num_expectation/denom_expectation)
-    
-    def __len__(self):
-        return len(self.dynamics.values.shape[0])
-
-    def __getitem__(self, idx):
-        pass 
