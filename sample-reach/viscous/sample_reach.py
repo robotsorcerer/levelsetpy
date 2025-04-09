@@ -350,4 +350,4 @@ if __name__ == "__main__":
   main(dynamics, resolution, seed=args.seed)
 
 
-# python sample_reach.py --resolution 1000 --num_samples 40
+# python sample_reach.py --num_trials 1 --num_samples 100/150/200/250
