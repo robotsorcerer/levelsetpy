@@ -7,9 +7,10 @@ import time
 import logging 
 import argparse 
 import sys, os
-from os.path import join, expanduser 
+from datetime import datetime 
 import scipy.ndimage as sp_ndimage
 from rockets import RocketDynamics
+from os.path import join, expanduser 
 
 import matplotlib as mpl
 mpl.use('Agg')
@@ -29,6 +30,7 @@ parser.add_argument('--spatial_bound', '-sb', type=int, default=64, help='Upper 
 parser.add_argument('--seed', '-sd', type=int, default=123, help='Code seed.' )
 parser.add_argument('--num_samples', '-sa', type=int, default=100, help='Number of Gaussian Samples ber Batch.' )
 parser.add_argument('--data_dir', '-dd', type=str, default="/opt/hj_reach", help='Number of Gaussian Samples ber Batch.' )
+parser.add_argument('--experiment', '-ex', type=str, default="prox_reach", help='Number of Gaussian Samples ber Batch.' )
 parser.add_argument('--num_trials', '-nt', type=int, default=50, help='Number of Gaussian Samples ber Batch.' )
 parser.add_argument('--pause_time', '-pz', type=float, default=.3, help='pause time between successive updates of plots' )
 args = parser.parse_args()
@@ -193,8 +195,8 @@ class HJ_MAD:
       xk     = self.states[sample_idces, :]
       x_opt = xk
 
-      first_moment, _, hji_rcbrt_term   = self.compute_grad_vk(xk, t_now, self.g, self.delta)
-      rel_grad_vk_norm      = 1.0
+      first_moment, vk, hji_rcbrt_term   = self.compute_grad_vk(xk, t_now, self.g, self.delta)
+      rel_grad_vk_norm      = torch.norm(vk, p=2).item() #1.0
 
       fmt = '[{:3d}] |  t_now = {:2.4f} | gk = {:3.4f} | xk_err = {:3.4f} '
       fmt += ' | |grad_vk| = {:3.4f} | hj_term = {:2.2f} '
@@ -207,18 +209,19 @@ class HJ_MAD:
       while converged and (self.t_span[1]  - t_now) > self.small * self.t_span[1]:  
         
         xk_norm = torch.norm(xk, p=2, dim=0)
-        xk_hist.append(xk_norm)
-
-        rel_grad_vk_norm_hist.append(rel_grad_vk_norm)
-        xk_error_hist.append(torch.norm(xk_hist[-1]-xk_hist[-2], p=2).item())
-        tk_hist.append(t_now)
 
         func_eval = self.g(xk)
-        gk_hist.append(torch.norm(torch.norm(func_eval,  2, dim=0), p=2).item())
-        hji_rcbrt_term_hist.append(torch.norm(hji_rcbrt_term, p=2, dim=0).item())
-
+        
         counter += 1
         t_now = t_now + self.t_steps
+
+        rel_grad_vk_norm = rel_grad_vk_norm.item() if isinstance(rel_grad_vk_norm, torch.Tensor) else rel_grad_vk_norm
+        xk_hist.append(xk_norm.numpy())
+        rel_grad_vk_norm_hist.append(rel_grad_vk_norm)
+        xk_error_hist.append(np.linalg.norm(xk_hist[-1]-xk_hist[-2], ord=2))
+        tk_hist.append(t_now)
+        gk_hist.append(torch.norm(torch.norm(func_eval,  2, dim=0), p=2).item())
+        hji_rcbrt_term_hist.append(torch.norm(hji_rcbrt_term, p=2, dim=0).item())
 
         if self.verbose:
           print(fmt.format(counter, t_now, gk_hist[-1], torch.norm(xk_hist[-1], p=2).item(), rel_grad_vk_norm_hist[-1], hji_rcbrt_term_hist[-1]))
@@ -308,7 +311,7 @@ def main(dynamics, resolution=1000, seed=123):
   eps= sys.float_info.epsilon
   t_span = [0+eps, 1.0]
   hj_mad_algo = HJ_MAD(dynamics, delta=0.1, int_samples=args.num_samples, t_span = t_span, max_iters=max_iters, 
-                                      tol=5e-2, psi=0.1, beta=0.9, alpha=1.0, adapt_time=True, verbose=True)
+                                      tol=5e-2, psi=0.01, beta=0.9, alpha=1.0, adapt_time=True, verbose=True)
 
   # run 30 times 
   avg_func_evals  = 0
@@ -318,15 +321,16 @@ def main(dynamics, resolution=1000, seed=123):
   
   # no elems
   x_opt_list, xk_hist_list, tk_hist_list, xk_error_hist_list, \
-      rel_grad_uk_norm_hist_list, globalk_hist_list = [[]]*6
+      rel_grad_uk_norm_hist_list, gk_hist_list = [[]]*6
   
-  if not os.path.exists(join(args.data_dir, args.experiment)):
-    os.makedirs(join(args.data_dir, args.experiment))
+  save_path = join(args.data_dir, args.experiment)
+  if not os.path.exists(save_path):
+    os.makedirs(save_path)
 
   for trial in range(args.num_trials):
     print(f">>>Rolling on sample trial {trial}/{args.num_trials}.")
     x_opt, xk_hist, tk_hist, xk_error_hist, \
-      rel_grad_uk_norm_hist, globalk_hist = hj_mad_algo.run()
+      rel_grad_uk_norm_hist, gk_hist = hj_mad_algo.run()
     
     # stack em results
     x_opt_list += x_opt 
@@ -334,9 +338,14 @@ def main(dynamics, resolution=1000, seed=123):
     tk_hist_list += tk_hist
     xk_error_hist_list += xk_error_hist
     rel_grad_uk_norm_hist_list += rel_grad_uk_norm_hist
-    globalk_hist_list += globalk_hist
+    gk_hist_list += gk_hist
 
     avg_func_evals += len(xk_error_hist)*args.num_samples
+
+    fname = join(save_path, datetime.strftime(datetime.now(), '%m_%d_%y-%H_%M_%S')+'.npz')
+    print([type(A) for A in (tk_hist[-1], xk_hist[-1], xk_error_hist[-1], rel_grad_uk_norm_hist[-1], gk_hist[-1])])
+    np.savez_compressed(fname, t_hist=np.asarray(tk_hist), x_hist=np.asarray(xk_hist), \
+                        delta_x=np.asarray(xk_error_hist), heat_kernel=np.asarray(rel_grad_uk_norm_hist), value_func=np.asarray(gk_hist))
 
   avg_func_evals = avg_func_evals/args.num_trials
 

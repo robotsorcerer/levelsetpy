@@ -1,0 +1,16 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Background}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Notations and Terminologies}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Lower value of the differential game}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Robustly Controlled Backward Reachable Set and Tube}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{Cole-Hopf Transformation and the Heat Equation}{section.2}% 6
+\BOOKMARK [1][-]{section.3}{Methods}{}% 7
+\BOOKMARK [2][-]{subsection.3.1}{Operators and Envelopes of HJ Equations}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.2}{The Kernel of the HJ PDE and its proximity operator}{section.3}% 9
+\BOOKMARK [2][-]{subsection.3.3}{Hamilton-Jacobi\205Proximity Operator Relation}{section.3}% 10
+\BOOKMARK [2][-]{subsection.3.4}{Problem Algorithmics}{section.3}% 11
+\BOOKMARK [1][-]{section.4}{Numerical Results}{}% 12
+\BOOKMARK [2][-]{subsection.4.1}{The Rockets Launch Problem}{section.4}% 13
+\BOOKMARK [2][-]{subsection.4.2}{Numerical Integration Considerations}{section.4}% 14
+\BOOKMARK [1][-]{section.5}{Conclude}{}% 15
+\BOOKMARK [1][-]{section*.23}{References}{}% 16

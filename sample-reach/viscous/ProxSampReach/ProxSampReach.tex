@@ -1,0 +1,97 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%2345678901234567890123456789012345678901234567890123456789012345678901234567890
+%        1         2         3         4         5         6         7         8
+
+\documentclass[letterpaper, 10 pt, conference]{ieeeconf} 
+
+\IEEEoverridecommandlockouts                              % This command is only
+                                                          % needed if you want to
+                                                          % use the \thanks command
+\overrideIEEEmargins
+% See the \addtolength command later in the file to balance the column lengths
+% on the last page of the document
+
+\usepackage{bm}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{cite}
+%\usepackage{dsfont}
+\usepackage{textcomp}
+\usepackage{upgreek}
+\usepackage{footnote}
+\usepackage{verbatim}
+\usepackage{mathrsfs} 
+\usepackage{graphicx}
+\usepackage{paralist}
+\usepackage{algorithm}
+%\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{tcolorbox}
+\newcommand{\tcb}[2]
+{
+	\begin{tcolorbox}[title=\text{#2}]
+		#1
+	\end{tcolorbox}
+}
+\algrenewcommand\textproc{} % to change function names to lower case
+\usepackage{amssymb, amsmath, times}
+\usepackage[pagebackref=true,breaklinks=true,colorlinks=true, citecolor=blue,linkcolor=magenta,urlcolor=blue,bookmarks=true]{hyperref}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+		T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\title{\LARGE \bf
+Towards Scalable Reachability: Global Nonconvex Optimization of Viscous Hamilton-Jacobi PDEs
+}
+
+\author{Lekan Molu$^\dagger$, Haoxiang You$^\ddagger$, and Ian Abraham$^\ddagger$ %<-this % stops a space
+%\thanks{This work was not supported by any organization}% <-this % stops a space
+%\\
+%\href{https://github.com/robotsorcerer/levelsetpy/blob/sample-reach/sample-reach/viscous/sample_reach.ipynb}{\texttt{https://github.com/robotsorcerer/levelsetpy/viscous/sample-reach.ipynb}}
+\thanks{$^\dagger$Microsoft Research,
+        300 Lafayette Street, NYC. $^\ddagger$ Mechanical Engineering Department, Yale University.
+        {\tt\small Emails: lekanmolu@microsoft.com, \{haoxiang.you,ian.abraham\}@yale.edu.}}%
+}
+
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}{}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+
+\begin{document}
+
+
+
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{sections/def}
+\input{sections/abstract}
+\input{sections/intro}
+\input{sections/back}
+\input{sections/methods}
+\input{sections/results}
+\input{sections/conclude}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\addtolength{\textheight}{-3cm}   % This command serves to balance the column lengths
+                                  % on the last page of the document manually. It shortens
+                                  % the textheight of the last page by a suitable amount.
+                                  % This command does not take effect until the next page
+                                  % so it should come on the page before the last. Make
+                                  % sure that you do not shorten the textheight too much.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{IEEEtran}
+\bibliography{../TOMS/levtoms.bib}
+\end{document}

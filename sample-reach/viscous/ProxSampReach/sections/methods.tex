@@ -1,0 +1,283 @@
+\section{Methods} % of the HJI Reachability Problem}
+\label{sec:methods}
+%
+%We first regurgitate a set of PDE tools and recent first-order optimization results related to HJ problems. We then derive the sequential optimization steps for resolving the \eqref{eq:rcbrt}. %optimization 
+We now cast the computation of the optimal ``controllable"\footnote{We use this term because the agents in the differential game system have control inputs} reachable set into a form that leverages the Moreau envelope \eqref{eq:Moreau} in a successive approximation scheme so that the reachable set can be obtained via the subdifferential operator of the problem.
+
+\subsection{Operators and Envelopes of HJ Equations}
+%\noindent \textbf{Problem Statement} In a reachability context, we are interested in 
+Monotone operator theory has had a huge impact on partial differential equations and nonlinear systems~\cite{Zarantonello71, BotAndHendrich2014}, reducing nonlinear analyses to problems of the form
+%
+\begin{align}
+\text{ determine } \state \in \text{ zer } \bm{Q} = \{\state \in \hilbert \, | \, 0 \in \bm{Q} \state \}.
+\end{align}
+%
+%\begin{definition}%[The Subdifferential Operator]
+	The subdifferential operator~(see~\cite[\S 16]{BauschkeCombettes}), $\subdifferential: \hilbert \rightarrow 2^{\hilbert}$, of $\bm{g}(\state)$ at $\bar{\state}$ is the set of all $\subdiffset$ that satisfies
+%
+\begin{align}
+\{\subdiffset\in \hilbert \mid (\forall \state \in \hilbert) \langle \state - \bar{\state} , \subdiffset\rangle + \term(\bar{\state}) \le \term(\state)\}.
+\label{eq:subdifferential}
+\end{align}
+%
+That is, $\term$ is subdifferentiable at $\state$ if $\subdifferential(\state) \neq \emptyset$; hence, elements of $\subdifferential(\state)$ are the subgradients of $\term$ at $\state$.
+%\end{definition}
+
+An optimization implication of \eqref{eq:subdifferential} is Fermat's rule, which states that for $\term: \hilbert \rightarrow (0, T)$~\cite{Moreau65},
+%
+\begin{align}
+\argmin \,\, \term = \zeroes \subdifferential.
+\end{align}
+%
+The proximity operator of $\term(\state)$ at a time, $t \in (0, T]$ is the minimizers set~\cite{MoreauDualCvxProxPts} 
+%
+\begin{align}
+\prox_{t\term}(\state) \triangleq \arg \min_{\bm{z} \in \hilbert }  \left(\term(\bm{z}) + \frac{1}{2t}\| \bm{z} - \state \|^2\right)
+\tag{Prox-Op}
+\label{eq:proximal}
+\end{align}
+%
+that define the Moreau envelope $\valuefunc(\cdot, t)$, defined as~\cite{Moreau}
+%
+\begin{align}
+\valuefunc(\state, t) = \min_{\bm{z} \in \hilbert }  \left(\term(\bm{z}) + \frac{1}{2t}\| \bm{z} - \state\|^2\right).
+\tag{Moreau-Env}
+\label{eq:Moreau}
+\end{align}
+%
+
+The envelope $\valuefunc$ expands troughs of $\term(\state)$ and its local minimizers concur with those of $\term$~\cite{Chaudhari2018}. 
+%
+\begin{lemma}
+	Suppose that $\term(\state)$ is BUC, its subdifferential exists, the set $\mc{S}_\alpha \triangleq \{z \in \ren: \term(\bm{z}) \le \inf \term + \alpha \}$ is compact, $\zeroes \subdifferential$ exists and $\state \in \mc{S}_\alpha$. An important result established in~\cite[Lemma A.3]{HJMAD} relates the spatial gradients of the solution to \eqref{eq:ivp} to the proximity operator of $\term(\state)$ at time $t$ as  
+	%
+	%\begin{subequations}
+		\begin{align}
+		\prox_{t\term}(\state) &= \state - t \partial  \valuefunc_{\state}(t; \state) :\approx \state -  t \cdot \partial\valuefunc_x^\delta(t; \state).
+		%\label{eq:prox-hj-approx}
+		\end{align}
+		\label{eq:prox-hj}
+	%\end{subequations}
+\end{lemma}
+%
+Our goal now is to leverage the Proximity operator in the minimization \eqref{eq:distance} while playing the zero-sum two-player differential game \eqref{eq:HJI-RCBRAT}  to optimize for the RCBRT~\eqref{eq:rcbrt} and the zero levelset~\eqref{eq:reachables}. In this light, we can replace $\valuefunc(\state, t)$~\eqref{eq:ivp} by its viscous and smooth proxy~\eqref{eq:ivp-viscous}, evaluate the minimizer \eqref{eq:distance} using the proximal operator result~\eqref{eq:prox-hj} and solve for the \texttt{inf-sup} optimal control problem in \eqref{eq:value_lower}. %  $\valuefunc(\state, t)$. 
+%Let us state the following preliminary result in the build up to our results.
+%%
+%\begin{lemma}
+%	The minimizers of $\term(\state)$ are the zeros of its subdifferential \ie $\Argmin \term(x) = \zeroes \subdifferential :\triangleq \{\state \in \hilbert \mid 0 \in \subdifferential (x)\}$. 
+%\end{lemma}
+%%
+%The above is a statement of Fermat's Rule~\cite[Theorem 16.1]{BauschkeCombettes}.
+%
+%An intertwined relation between the subdifferential operator and the monotone proximal operator~\eqref{eq:proximal} is now stated.
+%\begin{proposition}
+% For all $ (\state, p) \in \hilbert$  %~\cite{CombettesMonoOpTheory}, \ie 
+%	%
+%	\begin{align}
+%	 \prox_{tf}(\state + \subdiffset) 	\Leftrightarrow  (\forall \state \in \hilbert) \,	(\forall \subdiffset \in \hilbert), \,\,\subdiffset \in \subdifferential
+%	\end{align}
+%	%
+%	or
+%	\begin{align}
+%	p \in \prox_{t\term}(\state) \Leftrightarrow 	%\text{prox}_{tf}(\state - p) 
+%	(\state - p) \in \subdifferential(p). 
+%	\end{align}
+%	%
+%	Proposition \ref{prop:prox_sub} is a restatement of Proposition 16.34 in~\cite{BauschkeCombettes}. 
+%	This will enable us to reformulate the HJI equality~\eqref{eq:Reach-HJ} as a successive approximation problem when finding the extremas of $\valuefunc(\state, t)$ via optimization  for
+%	%
+%	\begin{align}
+%	\state_0 \in \hilbert \text{ such that  } \forall\, k \in \bb{N}, \,\, \state_{k+1} = \prox_{t\term}(\state_k).
+%	\end{align}
+%	\label{prop:prox_sub}
+%\end{proposition}
+%%
+%%This will be shown to allow us solve a structured optimization problem using proximal operators of the functions present in the HJI equality \eqref{eq:Reach-HJ}.
+%\begin{proposition}[Prop 16.21~\cite{CombettesMonoOpTheory}]
+%	For a BUC $\term(\state)$, a fixed point of the proximity values of $\term(\state)$ is equivalent to the zeroes of the proximity operator of $\term(\state)$, \ie 
+%	%
+%	\begin{align}
+%		\Argmin \term(x) = \zeroes \subdifferential = \subdifferential^\star(0)  = \text{Fix} \prox_{t\term} = \zeroes \prox_{t\term^\star}.
+%	\end{align}
+%\end{proposition}
+
+\subsection{The Kernel of the HJ PDE and its proximity operator}
+%
+Consider the kernel $\colehopf^\delta(\state, t)$ in \eqref{eq:Cole-Hopf} which corresponds to the solution of \eqref{eq:ivp-viscous}. Resolving the convolution \eqref{eq:heat_sol} is intractable for large $n$ and time step $t$. However, it is same as the probability density of a Gaussian distribution with mean $\state$ and variance $\delta t$ (as derived in~\cite[Appendix B]{HJMAD}), \ie
+%
+\begin{align}
+\partial \colehopf_{\state}^\delta(t; \state) = -\dfrac{1}{\delta t} \cdot \bb{E}_{y\sim\mc{N}(\state, \delta t)} \left[(\state - \bm{y})\,\exp(\term(\bm{y})/\delta)\right].
+\label{eq:heat_gaussian}
+\end{align}
+%
+Plugging \eqref{eq:heat_sol_expect} and \eqref{eq:heat_gaussian} into \eqref{eq:spatial_cole_hopf}, we find that 
+%
+\begin{align}
+t \cdot \partial \valuefunc_{\state}^\delta(t; \state) %&=  \dfrac{\bb{E}_{y\sim\mc{N}(\state, \delta t)} \left[(\state - \bm{y})\,\exp(\term(\bm{y})/\delta)\right]}{\bb{E}_{y\sim\mc{N}(\state, \delta t)}\left[\exp(-\delta^{-1} \, \term(\bm{y}))\right]}  \\
+%
+&=  \state -\dfrac{\bb{E}_{y\sim\mc{N}(\state, \delta t)} \left[ \bm{y}\,\exp(-\term(\bm{y})/\delta)\right]}{\bb{E}_{y\sim\mc{N}(\state, \delta t)}\left[\exp(-\delta^{-1} \, \term(\bm{y}))\right]}
+\label{eq:value_grad_expect}
+\end{align}
+%
+provides the time-scaled spatial gradients of $\valuefunc(t; \state)$ in \eqref{eq:hji_prox_pre} without the need for unstableschemes employed in upwinding methods within grid discretization numerical reachable sets' computational algorithms~\cite{levpyconf, LevelSetTOMS, MitchellLSToolbox}.
+
+Substituting the r.h.s of \eqref{eq:value_grad_expect} into \eqref{eq:prox-hj}, we find that 
+%%
+%\begin{align}
+%t \cdot \nabla_{\state}\valuefunc^\delta(t; \state) = \state - \prox_{t\term}(\state)
+%\label{eq:prox-hj-rearranged}
+%\end{align}
+%
+%which upon substitution into \eqref{eq:value_grad_expect} implies that 
+%
+\tcb{
+	\begin{align}
+	%t \cdot \partial \valuefunc_{\state}^\delta(t; \state) 
+	\prox_{t\term}(\state) &=   \dfrac{\bb{E}_{y\sim\mc{N}(\state, \delta t)} \left[\bm{y} \cdot \exp(-\term(\bm{y})/\delta)\right]}{\bb{E}_{y\sim\mc{N}(\state, \delta t)}\left[\exp(-\delta^{-1} \, \term(\bm{y}))\right]} %\nonumber \\
+	%
+	%&:= \prox_{t\term}(\state).
+	\label{eq:prox_value_grad}
+	\end{align}
+}{Proximal Operator for $\partial_{\state} \valuefunc^\delta(t; \state)$}
+
+
+\subsection{Hamilton-Jacobi--Proximity Operator Relation}
+%
+Now consider the HJI PDEs~\eqref{eq:HJ-RCBRT} and ~\eqref{eq:HJI-RCBRAT} in light of \eqref{eq:prox_value_grad}. We can write the domain of these PDEs in light of the proximal expression \eqref{eq:prox_value_grad} as 
+%
+\begin{align}
+&\partial \valuefunc_t(t; \state) + \min\{0, \hamfunc\left(x, \partial \valuefunc_{\state}(t; \state)\right)\} = 0, \nonumber \\
+%\valuefunc(0; \state) &= \bm{g}(0; \state) \\
+%
+&\approx \partial \valuefunc^\delta_t(t; \state) + \min\{0, %
+\hamfunc^\delta\left(t; x, \partial \valuefunc^\delta_{\state}\right)\} = 0, \nonumber \\
+%
+&:= \partial \valuefunc^\delta_t(t; \state) + \min\bigg\{0, %
+\max_{\control \in \mathcal{U}} \min_{\disturb \in \mathcal{W}} \, \bigg\langle f(t; \state, \bm{u}, \bm{w}), \nonumber \\
+%
+& \qquad\quad  \frac{1}{t}(\state - \prox_{t\term}(\state)) \bigg\rangle
+\bigg\} = 0,
+\end{align}
+%
+for \eqref{eq:HJ-RCBRT}.
+%
+Similarly, the right-hand-side of the variational inequality for \eqref{eq:HJI-RCBRAT} can be written as %in terms of \eqref{eq:prox-hj-rearranged} as 
+%
+%\begin{subequations}
+	\begin{align}
+	&\min\{\partial \valuefunc_t(t; \state) + \hamfunc\left(t; x, \partial \valuefunc_{\state}\right), \bm{g}(\state, t) - \valuefunc(t; \state)\}, \nonumber \\
+	%
+	&\approx \min\{\partial \valuefunc^\delta_t(t; \state) + \hamfunc^\delta\left(t; x, \partial \valuefunc^\delta_{\state}\right), \bm{g}(\state, t) - \valuefunc^\delta(t; \state)\}, \nonumber \\
+	%
+	%&:= \min\{\valuefunc^\delta_t(t; \state) + \hamfunc^\delta\left(t; x, \partial \valuefunc^\delta_{\state}\right), \bm{g}(\state, t) - \valuefunc^\delta(t; \state)\} \nonumber \\
+	%
+	&:= \min\{\partial \valuefunc^\delta_t(t; \state) +  \max_{\control \in \mathcal{U}} \min_{\disturb \in \mathcal{W}} \, \langle f(t; \state, \bm{u}, \bm{w}), \partial \valuefunc_{\state}^\delta  \rangle, \nonumber \\
+	%
+	&\qquad\qquad\qquad\qquad \bm{g}(t; \state) - \valuefunc^\delta(t; \state)\}. 
+	\label{eq:hji_prox_pre}
+	\end{align} 
+%\end{subequations}
+%
+Thus, evaluating the spatial gradient of $\valuefunc^\delta$ in \eqref{eq:hji_prox_pre} amounts to drawing samples using the proximity expression above and using \eqref{eq:heat_sol_expect} to evaluate $\valuefunc^\delta$. We can now write  \eqref{eq:HJI-RCBRAT}  as
+%
+\begin{subequations}
+	\begin{align}
+	\min&\bigg\{\partial \valuefunc^\delta_t(t; \state) + \max_{\control \in \mathcal{U}} \min_{\disturb \in \mathcal{W}}\, \bigg\langle f(t; \state, \bm{u}, \bm{w}), \nonumber \\
+	%
+	& \qquad\quad  \frac{1}{t}(\state - \prox_{t\term}(\state)) \bigg\rangle,  \\ %(1/t)\prox_{t\term}(\state) \rangle, \nonumber \\
+	\bm{g}(\state, t) &+ \delta \log \bb{E}_{\bm{y}\sim \mc{N}(\state, \delta t)}\left[\exp(-\delta^{-1} \term(\bm{y}))\right]\bigg\} \le 0 \nonumber \\
+	%
+	\valuefunc(0; \state) &= \term(0; \state).
+	\end{align}
+\end{subequations}
+%%
+%\begin{subequations}
+%	\begin{align}
+%	\min&\bigg\{\partial \valuefunc^\delta_t(t; \state) + \max_{\control \in \mathcal{U}} \min_{\disturb \in \mathcal{W}}\, \bigg\langle f(t; \state, \bm{u}, \bm{w}), \nonumber \\
+%	%
+%	& \qquad\quad  \dfrac{\bb{E}_{y\sim\mc{N}(\state, \delta t)} \left[\bm{y} \cdot \exp(-\term(\bm{y})/\delta)\right]}{\bb{E}_{y\sim\mc{N}(\state, \delta t)}\left[\exp(-\delta^{-1} \, \term(\bm{y}))\right]} \bigg\rangle,  \\ %(1/t)\prox_{t\term}(\state) \rangle, \nonumber \\
+%	 \bm{g}(\state, t) &+ \delta \log \bb{E}_{\bm{y}\sim \mc{N}(\state, \delta t)}\left[\exp(-\delta^{-1} \term(\bm{y}))\right]\bigg\} \le 0 \nonumber \\
+%	%
+%	\valuefunc(0; \state) &= \term(0; \state).
+%	\end{align}
+%\end{subequations}
+
+\subsection{Problem Algorithmics} % samples for Robust Reachable Sets Computation}
+
+We now cast the solution of the variational HJI computational problem as a Monte Carlo algorithmics. Towards finding global solutions to the optimization problem, we adapt the Hamilton-Jacobi Moreau adaptive descent algorithm of~\cite{HJMAD} to the computation of the HJI\eqref{eq:HJ-RCBRT} and \eqref{eq:HJI-RCBRAT}. %Looking at equation \eqref{eq:prox_value_grad}, since we are working in a sampling-based values spatial derivative setting, we must avoid using too large samples to mitigate against time inefficiency while solving the problem. 
+
+\begin{figure}[t!]
+	\centering
+	\includegraphics[width=.65\columnwidth]{../../Safety/DDPReach/figures/rocket/rocket.eps}
+	\caption{Motion of two rockets on a Cartesian $\bm{xz}$-plane with a thrust inclination in relative coordinates given by $\theta:=u_p- u_e$.}
+	\label{fig:rocket_relative}
+\end{figure}
+The Moreau adaptive descent algorithm works by minimizing the Moreau envelope~\eqref{eq:Moreau} of the HJ PDE in a nonconvex optimization scheme via a zeroth-order sampling scheme. In its native form, within a set convergence loop, it works by 
+%
+\begin{itemize}
+	\item first computing the spatial gradient of $\valuefunc^\delta(t; \state)$; then
+	%
+	\item updating the states of the dynamic system in a gradient descent scheme (under an appropriate step size); and lastly
+	%
+	\item uses an adaptive forward-backward time-update scheme to update the index of time.
+	%
+\end{itemize}
+%
+\begin{savenotes}
+	\begin{algorithm}[tb!]
+		\caption{Learning scheme for the RCBRT	\label{alg:rcbrt-sample}}
+		\begin{algorithmic}
+			\Function{\texttt{\textbf{ProxReach}}}{$\state, \, t; \alpha, \term, \delta, T$}
+			\While{	$\tau < T$}
+			%\For{$i \in \bb{N}$}
+			\State Sample $\bm{y}_i\sim \mc{N}(\state, \delta)$
+			\State $\bm{z}_i \leftarrow \term(\bm{y}(\tau))$	
+			\State $\term[\tau] \leftarrow\partial_{\state} \valuefunc(t)	$	
+			\State $\state[\tau + \Delta t] \leftarrow \state[\tau] - \alpha \tau \term[\tau]$	
+			\State $\tau+\Delta t	\leftarrow \text{TimeAdjuster}	(\tau, \term[\tau], \term[\tau-\Delta t]; T])$
+			%\EndFor
+			%	\State $\prox_{t\term}(\state), t \leftarrow \text{ MLP}(-\bm{z}/\delta, [\bm{y}^1,\cdots, \bm{y}^N])^\top$	
+			\EndWhile
+			\EndFunction
+		\end{algorithmic}
+	\end{algorithm}
+\end{savenotes}
+%
+After convergence, the solution(s) $\{\state\}$ that minimize the value function are returned. We now adaopt the HJ-MAD algorithm to the resolution of HJ problems with adversarial control inputs in a two-player differential game. This is delineated in Algorithm~\ref{alg:rcbrt-sample}.
+%While a weighted moving average of the gradient was mentioned in~\cite{HJMAD}, no incorporation of prior data was imposed on the computational scheme. In this work, we incorporate a data-driven prior to every successive sample by first fitting Gaussian models to the numerator and denominator in \eqref{eq:prox_value_grad}. Preventing large samples being used to compute the proximal operator then amounts to conditioning the Gaussian model as $(\prox_{(t+1)\term}|\prox_{t\term})$ at each time step $t$. This is similar to linear regression with the advantage of allowing us to integrate prior information in the form of a Gaussian-inverse-Wishart distribution model. 
+After the optimization of the extrema of the value function, finding the safe set is equivalent to executing a search algorithm within the optimized value function to evaluate where the condition \eqref{eq:reachables} are fulfilled. In the next section, we will connect the scheme we have presented so far to the safe reachability resolution problem of two rockets on a cartesian grid as originally used in our previous paper~\cite{levpyconf}.
+%For an \textit{equivalent sample size} $\kappa_0$ and its belief, $\nu_0$ on the prior variance, $\Sigma_0$ that is associated with the precision $\Lambda_0 = \Sigma_0^{-1}$ of a dataset $D$, suppose that the mean and variance of the normal-inverse-Wishart natural conjugate prior~\cite{WishartPrior} are, 
+%%
+%\begin{align}
+%	\Sigma \sim IW_{\nu_0}(\Lambda_0^{-1}), \quad \mu\mid \Sigma \sim \mc{N}(\mu_0, \Sigma/\kappa_0)
+%\end{align} 
+%%
+%with associated empirical estimates $\hat{\Sigma}$ and $\hat{\mu}$. Then, the natural conjugate prior of the normal-inverse-Wishart is given as $	p(\mu, \Sigma) \triangleq NIW(\mu_0, \kappa_0, \Lambda_0, \nu_0)$.
+%%
+%%\begin{subequations}
+%%	\begin{align}
+%%		p(\mu, \Sigma) \triangleq NIW(\mu_0, \kappa_0, \Lambda_0, \nu_0).
+%%	\end{align}
+%%\end{subequations}
+%We are concerned with its maximum-a-posteriori 
+%%
+%\begin{align}
+%	p(\mu,& \Sigma | D, \mu_0, \kappa_0, \Lambda_0, \nu_0) =  NIW(\mu, \Sigma | \mu_n, \kappa_n, \Lambda_n, \nu_n), \nonumber \\
+%	 \kappa_n &= \kappa_0 + n, \,\, \nu_n = \nu_0 + n  
+%\end{align}
+%%
+%where 
+%\begin{subequations}
+%	\begin{align}
+%		\mu_n &= \dfrac{\kappa_0\mu_0}{\kappa_0 + n} + \dfrac{n}{\kappa_0 + n}\hat{\mu}, \\
+%		%
+%		\Lambda_n &= \Lambda_0 +S +\dfrac{ \kappa_0 n (\kappa_0 + n) (\hat{\mu} - \mu_0)(\hat{\mu}-\mu_0)^\top}{\kappa_0 + n}, \\
+%		%
+%		S &= \sum_{i=1}^{n} (\state - \bar{\state})(\state - \bar{\state})^\top.
+%	\end{align}
+%	\label{eq:normal_inv_wishart}
+%\end{subequations}
+% %Suppose that we set $\hat{\Lambda}t$ as the empirical variance of the computed proximity operator, and $\hat{\mu}$ as the empirical mean. For prior parameters, $\Phi, \mu_0, n_0$, and $m$, the normal-inverse Wishart prior
+%
+%We recursively incorporate new samples by leveraging the MAP parameters given in \eqref{eq:normal_inv_wishart} to new samples drawn from \eqref{eq:prox_value_grad}. 
+

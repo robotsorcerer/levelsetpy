@@ -1,0 +1,193 @@
+\section{Background}
+\label{sec:back}
+
+We first introduce the notations that are commonly througout this article. Reachable sets within the context of  two person games~\cite{Isaacs1965} and their accompanying  ``viscous" terminal HJI \pde~\cite{Evans1984}\ are then  introduced. This is followed by the HJ-Isaacs PDEs commonly used to characterize reachable sets. %We then conclude this section by relating HJ PDE solution to recent results in envelopes and proximal operators.
+
+\subsection{Notations and Terminologies}
+\label{sec:back::notations}
+%We adopt standard vector-matrix notations throughout. 
+Conventions: Bold font upper-case and lower-case Roman letters are matrices and vectors, respectively; calligraphic letters are sets. Exception: the subdifferential \textit{set} of a BUC function, $\term(\state)$, is denoted $\subdiffset$. Time variables \eg $t, \tau, T$ will always be real positive numbers. The $n$-dimensional Euclidean space is  $\reline^n$; the set of natural numbers is $\bb{N}$. The natural log of $T$ is denoted $\log T$. The dot product is  $\langle \cdot, \cdot \rangle$. The partial time derivative of $\valuefunc$ is  $\partial \valuefunc_t$ while its partial spatial derivative is denoted $\partial \valuefunc_{\state}$. For a function $f(x(t), y(t))$ with every argument parameterized by $t$,  we simply write $f(t; x, y)$. We represent the real-valued Hilbert space with $\hilbert$; denote $2^{\hilbert}$ by its power set, \ie the family of all subsets of $\hilbert$. Associated with $\hilbert$ is the maximally monotone set-valued operator, $\bm{Q}: \hilbert \rightarrow 2^{\hilbert}$. The zeroes of $\bm{Q}$ are denoted $\text{zer } \bm{Q} = \{\state \in \hilbert \mid 0 \in \bm{Q} \state\}$. The set of global minimizers of $\term(\state)$ is denoted $\texttt{Argmin } \term(\state)$. It is written as $\argmin \, \term(x)$ when the set is a singleton. The set of fixed point of operator $S: \hilbert\rightarrow \hilbert$ is $\text{ Fix } S = \{\state \in H \mid S \state = \state\}$.
+
+The unique solution $\state \in \ren$ of the dynamical system $\dot{\state}(\tau) = f(t; \state,  \control, \bm{w})$ is influenced by a pursuing player $\pursuer$ (with control $\bm{w} \in \mc{W}  \subseteq \reline^p$) and its evading pair $\evader$ (with control $\control \in \mc{U} \subseteq \bb{R}^m$). System trajectories $\traj_{\state, \tau}^{\control, \bm{w}}$ emanate from $\dot{\state}(\tau)$ by minimizing a scalar-valued objective 
+%
+\begin{align}
+	\mc{J}(\tau; \state, \control, \bm{w}) = \min_{\tau \in [t, T]} \term(\traj_{\state,t}^{\control, \bm{w}}(\tau))
+	\tag{Target set cost}
+	\label{eq:distance}
+\end{align} 
+%
+within a two-person differential game for a fixed $T \ge \tau > t$. The controllers belong in compact sets which are  measurable functions
+%
+\begin{align}
+\bar{\mc{U}} \equiv \bm{u}: [t, T] & \rightarrow \mathcal{U}, \qquad \bar{\mc{W}} \equiv  \bm{w}: [t, T] \rightarrow \mathcal{W}.
+\end{align}
+%
+%which are compact sets. %The pursuer's mapping strategy is $\beta: \mathcal{\bar{U}}({t}) \rightarrow \mathcal{\bar{W}}({t})$. % and both players are governed by the dynamics,
+%
+%\begin{subequations}
+%\begin{align} 
+%\dot{\state}(\tau) &= f(\tau, \state(\tau), \bm{u}(t), \bm{w}(t)), t \le \tau \le T, \state(t) = \state,
+%\label{eq:sys_dyn}
+%\end{align}
+%%\end{subequations}
+%%
+%\noindent where $f(\tau, \cdot, \cdot, \cdot)$ is uniformly continuous and $\state(\cdot)$ is the unique solution of system \eqref{eq:sys_dyn}. 
+%
+
+\subsection{Lower value of the differential game}
+For a (possibly infinite) \textit{terminal time} $T$, a constant $k$,  $\bm{u}\in \mathcal{U}$, $\disturb \in \mathcal{W}$ and all $\hat{\state}, \, \state \in \reline^n$,, let the system possess a  BUC payoff functional $\bm{g}(\state(T))$ %for the problem of Bolza, 
+%
+that satisfies $\bm{g}: \bb{R}^n \rightarrow \bb{R}$. The differential game's \textit{lower value}~\cite{Souganidis}
+%
+\begin{subequations}
+	\begin{align}
+	\label{eq:value_lower}
+	\lowervalue(\state, t) &=  \inf_{\beta \in \mathcal{B}(t)} \sup_{\bm{u} \in \mathcal{U}(t)} \mc{J}(t; \state, \control, \bm{w})  \\ %\bm{g}\left(\bm{x}(T)\right). \\
+	&\triangleq  \inf_{\beta \in \mathcal{B}(t)} \sup_{\bm{u} \in \mathcal{U}(t)} \min_{\tau \in [t, T]} \term(\traj_{\state,t}^{\control, \bm{w}}(\tau)).  %\tau \in (0, T].  
+	\end{align}
+\end{subequations}
+%
+ is the viscosity solution to \eqref{eq:ivp}~\cite[Lemma 2.1]{Souganidis} 	with Hamiltonian, 
+%
+\begin{align}
+	&\lowerham (t, \state, \bm{u}, \bm{w}, p) = \max_{\control \in \mathcal{U}} \min_{\disturb \in \mathcal{W}} \, \langle f(t, \state, \bm{u}, \bm{w}), p  \rangle.
+	\label{eq:lower_visc_ham}
+\end{align}
+%
+Notice in \eqref{eq:value_lower} that the pursuer possesses a non-anticipative strategy $\mc{B}(t)$ that is aware of all (maximizing) controls of the evading player up until time $t$. In what follows, we drop the negative superscript to refer to the value of the game in the context of reachability analysis.
+
+
+\subsection{Robustly Controlled Backward Reachable Set and Tube}
+%It is often desirable to consider all conditions under which trajectories of the system may enter a user-defined target set within a time interval $(0, T]$.  This could be desirable in goal-regions of the phase space (safe sets) or undesirable configurations (unsafe sets). 
+Suppose that the goal of $\evader$ is to reach a user-specified target region $\targetset_0(\tau)$ within $\tau\le T$ time steps of playing the game; %, $(0,T]$  on $\ren \times \reline$; 
+while the  $\pursuer$ simultaneously seeks to prevent this from happening. Since we are in a two-player best-response scenario, the invariant set $\targetset_0$ obtained at $T$
+\begin{align}
+\mathcal{L}_0(T) = \{ \state \in {\bb{R}}^n \,|\, \bm{g}(0; \state) \le 0 \}
+\tag{Target-Set}
+\label{eq:target_set}
+\end{align}
+%
+is ``\textit{robustly controlled}" for the ``\textit{distance-to-target-set}" cost $\bm{g}(0; \state)$, with constraints $| \bm{g}(0; \state) | \le k, \,\,
+| \bm{g}(0; \state) - \bm{g}(t; \hat{\state}) \mid \le k | \state - \hat{\state} \mid$
+%
+where $k>0$ is a  constant, and  all  $-T \le t \le 0$, $\{\hat{\state}, \, \state \in \reline^n\}$\footnote{Time is reversed in BRT computational scenarios.}. The distance to $\targetset_0(\tau)$ is typically found by optimizing $\term(\state, t)$ as in \eqref{eq:distance}. % = \min_{\tau \in [t, T]} \term(\traj_{\state,t}^{\control, \bm{w}}(\tau))$.
+%
+The HJI  PDE \eqref{eq:value_lower} and Hamiltonian \eqref{eq:lower_visc_ham} for this set admit the form
+%
+\begin{align}
+\valuefunc_t(t; \state) &+ \min\{0, \hamfunc\left(x, \partial \valuefunc_{\state}(t; \state)\right)\} = 0, \nonumber \\
+\valuefunc(0; \state) &= \bm{g}(0; \state).
+\tag{HJI-RCBRT}
+\label{eq:HJ-RCBRT}
+\end{align}  %For a target set construction problem, a differential game's (lower) value is equivalent to a solution of \eqref{eq:sys_dyn} for $\bm{u}(t)$ and $\bm{v}(t) = \beta[\control](t)$ i.e.,
+%
+%\begin{align}
+%&\valuefunc(\state, t) = \inf_{\beta \in \mathcal{B}(t)} \sup_{\bm{u} \in \mathcal{U}(t)} 
+%\min_{t\in[-T,0]}
+%g\left(0; t, \bm{x}, \control(\cdot), \disturb(\cdot)\right). %
+%\label{eq:value_lower}
+%\end{align}
+%Optimal trajectories emanating from an initial phase $(\state,-T)$ where the value function is non-negative will maintain non-negative cost over an entire time horizon, thereby avoiding the target set and vice versa.  Optimal trajectories from initial phases where the value function is negative will enter the target set at some point within the time horizon. 
+
+For the safety problem setup in \eqref{eq:value_lower},  the corresponding \textit{robustly controlled backward reachable \textbf{tube}} (RCBRT) on $(0, T]$ %for $\tau \in [-T, 0]$
+is the closure of the open set~\cite{Mitchell2020}
+%
+\begin{align}
+	\mathcal{L}([\tau, 0], \mathcal{L}_0) &= \{\state \in \ren \,| \, \exists \, \beta \in \mathcal{\bar{W}}(t) \,  \forall \, \bm{u} \in \mathcal{U}(t), \exists \,\nonumber \\
+	&   \quad  \tau \in [-T, 0], \bm{\xi}(\bar{t})%\left(t; \state_0, t_0, \bm{u}(\cdot), \beta[\bm{u}](\cdot) \right)
+	\in  \mathcal{L}_0 \}. %\,\bar{t} \in \left[-T, 0\right].
+	\tag{Target-Tube}
+	\label{eq:rcbrt}
+\end{align}
+%
+Read: The set of states from which the strategies of $\pursuer$ and for all controls of $\evader$ imply that we \textit{reach and remain in the target set} in the interval $[-T, 0]$.  Following Lemma 2 of \cite{Mitchell2005}, the states in the reachable set admit the following properties w.r.t the value function $\lowervalue$:
+%
+\begin{subequations}
+	\begin{align}
+		\state(t)&\in \mathcal{L}(\cdot) \implies \valuefunc(\state, t) \le 0, \\
+		\valuefunc(\state, t) &\le 0 \implies \state(t) \in \mathcal{L}(\cdot). 
+		\tag{Zero Levelset}
+	\end{align}
+	\label{eq:reachables} 
+\end{subequations}
+%
+In backward reach avoid tubes where the agent must avoid the unsafe region at all times, we can write \eqref{eq:HJ-RCBRT} as the HJI variational inequality for a \textit{robustly controlled backward reach-avoid tube} (RCBRAT) as follows,
+%
+\begin{align}
+\min\{\valuefunc_t(t; \state) +& \hamfunc\left(t; x, \partial \valuefunc_{\state}\right), \bm{g}(\state, t) - \valuefunc(t; \state)\} \le 0, \nonumber \\
+\valuefunc(0; \state) &= \bm{g}(0; \state).
+\tag{HJI-RCBRAT}
+\label{eq:HJI-RCBRAT}
+\end{align} 
+
+\noindent \textbf{Challenges in optimizing the RCBRT/RCBRAT}: 
+Computing the RCBRT presents a host of challenges for optimization because 
+%
+\begin{inparaenum}[(a)]
+	\item the dynamics $f(\cdot)$ is usually nonlinear with coupled states in most problems of interest; 
+	\item although  $\mc{L}([\tau, 0], \mathcal{L}_0)$ is mostly smooth, it possesses discontinuous ``shocks" at solution crossover points (see~\cite{Mitchell2020}); this makes global gradient-based optimization impossible for resolving $\valuefunc$;
+	\item more than one trajectory can emanate from the RCBRT's boundary that end up at the same point on the target set -- this makes sampling-based optimization difficult, but not insurmountable; and
+	\item the RCBRT is nonconvex.
+\end{inparaenum}
+
+To mitigate these challenges above, we introduce a set of tools that allow us to circumvent these challenges in an optimization context.
+
+\subsection{Cole-Hopf Transformation and the Heat Equation} % of the HJI Reachability Problem}
+
+For the BUC function $\valueterm(t; \state): \ren \rightarrow \reline$ from \eqref{eq:ivp}, consider the  transformation $\colehopf^\delta(\state) = \exp\left({-\valuefunc^\delta}/{\delta}\right)$ originally attributed to Cole and Hopf~\cite[\S 4.4.1]{EvansPDEBook}. Applying the Cole-Hopf transformation to  \eqref{eq:ivp-viscous}, we can write
+%
+%\begin{subequations}
+\begin{align}
+\partial \colehopf^\delta_t(\state, t) &- \dfrac{\delta}{2} \colehopf^\delta(\state, t) = 0  \text{ in } \ren \times (0, T] \nonumber \\
+\colehopf^\delta(\state, t) &= \exp\left({-\bm{g}}/{\delta}\right)   \text{ on } \ren \times \{t=0\}\footnote{Where we have dropped the arguments for ease of readability.}.
+\tag{Heat-Kernel}
+\label{eq:Cole-Hopf}
+\end{align}
+%
+The fundamental solution, $\fundamentalsol_{\delta t}$ to \eqref{eq:Cole-Hopf} at time $t$ is~\cite{EvansPDEBook}
+%
+\begin{align}
+\fundamentalsol_{\delta t}(\state) = \begin{cases}
+(2 \pi \delta t )^{n/2} & \exp\left(-\dfrac{|\state|^2}{2 \delta t}\right) \text{ in } \ren \times (0, T], \\
+\qquad 0 & \text{ otherwise }.
+\end{cases}
+\nonumber
+\end{align} 
+%
+
+The heat equation \eqref{eq:Cole-Hopf} admits the following explicit formulae (as a convolution, an integral expression, and a Gaussian expectation; see derivation in \cite[Appendix B]{HJMAD}),
+%
+\begin{subequations}
+	\begin{align}
+	%\tag{Cole-Hopf}
+	\colehopf^\delta(t; \state) &= \left(\fundamentalsol_{\delta t} \star \exp(-\bm{g}/\delta)\right)(\state), 
+	\label{eq:heat_sol_conv}\\
+	&\equiv \int_{\ren} \left(\fundamentalsol_{\delta t}(\state-\bm{y})  \exp(-\bm{g}(\bm{y})/\delta)\right)d\bm{y}, \\
+	%
+	&=\bb{E}_{y\sim\mc{N}(\state, \delta t)}\left[\exp(-\delta^{-1} \, \term(\bm{y}))\right].
+	\label{eq:heat_sol_expect}
+	\end{align}
+	\label{eq:heat_sol}
+\end{subequations}
+%
+The equation \eqref{eq:Cole-Hopf} transforms solutions to the heat equation~\cite{EvansPDEBook, HJProx} to those of the viscous HJ PDE. It has enjoyed use in studying the energy landscape of neural networks~\cite{BaldassiLocalEntropy, Chaudhari2018} and viscous HJ loss functions~\cite{HJMAD}. 
+%
+Inspecting \eqref{eq:Cole-Hopf}, we may write
+%
+\begin{subequations}
+	\begin{align}
+	\localentropy &:= \valuefunc^\delta(t; \state) \\
+	&= -\delta \log \left(\colehopf^\delta(t; \state)\right)(\state) \text{ in } \ren \times (0, T],
+	\end{align}  
+\end{subequations}
+%
+from which we can write
+%
+\begin{align}
+	\partial\valuefunc_{\state}^\delta(t; \state) = - \delta \cdot \dfrac{	\partial \colehopf_{\state}^\delta(t; \state)}{\colehopf^\delta(t; \state)}.
+	\label{eq:spatial_cole_hopf}
+\end{align}
+%
+Chaudhari et al.~\cite{Chaudhari2018} called $\localentropy$ the local entropy and postulated a stochastic differential equation (SDE) scheme that leverages $\localentropy$ in SGD contexts in resolving the viscous  HJ PDE. Recent publications treat HJ PDE optimization~\cite{HJProx} in light of this local entropy function %with proximal operators and Moreau envelopes provide
+by combining Moreau envelopes~\cite{Moreau} and proximal operator~\cite{BauschkeCombettes} algorithmics to establish zero-order optimization schemes for the viscous HJ loss function (with guaranteed convergence to global optima).
+
