@@ -1,5 +1,13 @@
 __all__ = ["RocketDynamics"]
 
+__copyright__ 	= "2025, Hamilton-Jacobi Analysis in Python"
+__comment__     = "Adaptive gradient descent on the Moreau envelope of the viscous HJ value function."
+__credits__  	= "Haoxiang You, Ian Abraham."
+__license__ 	= "Microsoft License"
+__maintainer__ 	= "Lekan Molu"
+__email__ 		= "lekanmolu@microsoft.com"
+__status__ 		= "Completed"
+
 import sys 
 import torch 
 import numpy as np 
@@ -48,7 +56,6 @@ class RocketDynamics():
         self.small   = 100*eps
         self.device  = rank
 
-
         torch.manual_seed(123)
 
         self.t_range = torch.linspace(0, T, k)
@@ -91,7 +98,6 @@ class RocketDynamics():
         state_x = torch.linspace(-L, +L, D).to(self.device)  # x spatial grid.
         state_z = torch.linspace(-L, +L, D).to(self.device)  # z spatial grid.
         state_orient = torch.linspace(-torch.pi/2, +torch.pi/2, D).to(self.device)  # x spatial grid.
-        # X_all, Z_all, θ_all = torch.meshgrid(*(state_x, state_z, state_orient), indexing='ij') 
         
         state = torch.stack([state_x, state_z, state_orient], dim=1)
 
@@ -128,7 +134,6 @@ class RocketDynamics():
 
         values = torch.sqrt(self.a * torch.cos(θ)**2  + (self.a * torch.sin(θ) + \
                                      self.a + self.u_e * X - self.g)**2)
-        # values = torch.sqrt(X * X + θ * θ)
 
         return values 
     
@@ -145,7 +150,6 @@ class RocketDynamics():
 
         value = torch.sqrt(self.a * torch.cos(θ)**2  + (self.a * torch.sin(θ) + \
                                      self.a + self.u * X - self.g)**2)
-        # value = torch.sqrt(X * X + θ * θ)
 
         return value
     
