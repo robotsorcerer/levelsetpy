@@ -204,14 +204,33 @@ Thus, evaluating the spatial gradient of $\valuefunc^\delta$ in \eqref{eq:hji_pr
 
 \subsection{Problem Algorithmics} % samples for Robust Reachable Sets Computation}
 
+%
+\begin{savenotes}
+	\begin{algorithm}[t!]
+		\caption{Sampling-based RCBRT descent.\label{alg:rcbrt-sample}}
+		\begin{algorithmic}
+			\State Given $\{\epsilon, \delta\}>0$, and initial step size $\alpha$.
+			\Function{\texttt{\textbf{ProxReach}}}{$\state, \term, \eta, t_0, T$} \Comment{Sample size, $\eta$.}
+			%\State $\quad$ \Comment{value function, and interval $(t_0, T]$.}
+			\State \texttt{Set $\tau= t_0, \, t_s = (T-t_0)/k$}.
+			%\State $\bm{y}[\tau] \leftarrow \mc{N}(\state, \delta)$ \Comment{Draw initial samples from $\state$.}
+			\While{	$T - \tau > \epsilon T$}
+			%\For{$i \in \bb{N}$}
+			\State $\bm{y}[\tau] \leftarrow \mc{N}(\state, \delta)$ \Comment{Draw finite samples from $\state$.} \label{alg:rcbrt::sample}
+			\State $\bm{z}[\tau] \leftarrow \term(\bm{y}[\tau])$; \Comment{See equation \eqref{eq:value_as_colehopf}.}%; \,\,\term[\tau] \leftarrow\partial_{\state} \valuefunc(t)$	
+			\State $\partial_{\bm{z}}\valuefunc(\tau; \bm{z}) \leftarrow \texttt{Prox}_{\tau\term}(\bm{z}, \delta)$ \Comment{Eq. \eqref{eq:proximal}.} \label{alg:rcbrt:prox_update}
+			\State $\tau \leftarrow \tau + t_s$
+			\State $\statez[\tau + t_s] \leftarrow \statez[\tau] - \alpha \cdot \term[\tau]$	
+			\State $\tau \leftarrow \texttt{Adjuster}	(\tau, \term[\tau], \term[\tau-\Delta t])$
+			%\EndFor
+			%	\State $\prox_{t\term}(\state), t \leftarrow \text{ MLP}(-\bm{z}/\delta, [\bm{y}^1,\cdots, \bm{y}^N])^\top$	
+			\EndWhile
+			\EndFunction
+		\end{algorithmic}
+	\end{algorithm}
+\end{savenotes}
 We now cast the solution of the variational HJI computational problem as a Monte Carlo algorithmics. Towards finding global solutions to the optimization problem, we adapt the Hamilton-Jacobi Moreau adaptive descent algorithm of~\cite{HJMAD} to the computation of the HJI\eqref{eq:HJ-RCBRT} and \eqref{eq:HJI-RCBRAT}. %Looking at equation \eqref{eq:prox_value_grad}, since we are working in a sampling-based values spatial derivative setting, we must avoid using too large samples to mitigate against time inefficiency while solving the problem. 
 
-\begin{figure}[t!]
-	\centering
-	\includegraphics[width=.65\columnwidth]{../../Safety/DDPReach/figures/rocket/rocket.eps}
-	\caption{Motion of two rockets on a Cartesian $\bm{xz}$-plane with a thrust inclination in relative coordinates given by $\theta:=u_p- u_e$.}
-	\label{fig:rocket_relative}
-\end{figure}
 The Moreau adaptive descent algorithm works by minimizing the Moreau envelope~\eqref{eq:Moreau} of the HJ PDE in a nonconvex optimization scheme via a zeroth-order sampling scheme. In its native form, within a set convergence loop, it works by 
 %
 \begin{itemize}
@@ -223,26 +242,9 @@ The Moreau adaptive descent algorithm works by minimizing the Moreau envelope~\e
 	%
 \end{itemize}
 %
-\begin{savenotes}
-	\begin{algorithm}[tb!]
-		\caption{Learning scheme for the RCBRT	\label{alg:rcbrt-sample}}
-		\begin{algorithmic}
-			\Function{\texttt{\textbf{ProxReach}}}{$\state, \, t; \alpha, \term, \delta, T$}
-			\While{	$\tau < T$}
-			%\For{$i \in \bb{N}$}
-			\State Sample $\bm{y}_i\sim \mc{N}(\state, \delta)$
-			\State $\bm{z}_i \leftarrow \term(\bm{y}(\tau))$	
-			\State $\term[\tau] \leftarrow\partial_{\state} \valuefunc(t)	$	
-			\State $\state[\tau + \Delta t] \leftarrow \state[\tau] - \alpha \tau \term[\tau]$	
-			\State $\tau+\Delta t	\leftarrow \text{TimeAdjuster}	(\tau, \term[\tau], \term[\tau-\Delta t]; T])$
-			%\EndFor
-			%	\State $\prox_{t\term}(\state), t \leftarrow \text{ MLP}(-\bm{z}/\delta, [\bm{y}^1,\cdots, \bm{y}^N])^\top$	
-			\EndWhile
-			\EndFunction
-		\end{algorithmic}
-	\end{algorithm}
-\end{savenotes}
-%
+
+The algorithm is succintly described in Algorithm \autoref{alg:rcbrt-sample}. Given a large initial step size $\alpha$, time interval $(t_0, T]$ and the state values for a given froblem $\state$, the algorithm proceeds in a reactive sampling-based gradient descent fashion by drawing finite samples of size $\eta$ from the (potentially large) state space $\state \in \ren$. The samples on Line \ref{alg:rcbrt::sample} are draw from a multinomial Gaussian filter for a total of $\eta$ samples whose  mean and variance are $\state$ and $\delta t$, respectively in every iteration of the algorithm. Within line \ref{alg:rcbrt:prox_update}, the Hamiltonian for the system is computed but negated to make the computational scheme conform tot he backward reachable setting (since the iterative loop proceeds forward in the index of time in \autoref{alg:rcbrt-sample}). In all our implementations, the time index within the loop is adaptively adjusted based on a version of the Armijo-Goldstein condition~\cite{Armijo1966minimization} to ensure that an appropriate time step is taken in every iteration as we seek the minimum value of the Moreau envelope.
+
 After convergence, the solution(s) $\{\state\}$ that minimize the value function are returned. We now adaopt the HJ-MAD algorithm to the resolution of HJ problems with adversarial control inputs in a two-player differential game. This is delineated in Algorithm~\ref{alg:rcbrt-sample}.
 %While a weighted moving average of the gradient was mentioned in~\cite{HJMAD}, no incorporation of prior data was imposed on the computational scheme. In this work, we incorporate a data-driven prior to every successive sample by first fitting Gaussian models to the numerator and denominator in \eqref{eq:prox_value_grad}. Preventing large samples being used to compute the proximal operator then amounts to conditioning the Gaussian model as $(\prox_{(t+1)\term}|\prox_{t\term})$ at each time step $t$. This is similar to linear regression with the advantage of allowing us to integrate prior information in the form of a Gaussian-inverse-Wishart distribution model. 
 After the optimization of the extrema of the value function, finding the safe set is equivalent to executing a search algorithm within the optimized value function to evaluate where the condition \eqref{eq:reachables} are fulfilled. In the next section, we will connect the scheme we have presented so far to the safe reachability resolution problem of two rockets on a cartesian grid as originally used in our previous paper~\cite{levpyconf}.

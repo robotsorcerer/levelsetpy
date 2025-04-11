@@ -8,7 +8,14 @@ In this section, we provide a representative problem  and amend it to the viscou
 %
 We consider the rocket launch problem of Dreyfus~\cite{Dreyfus1966} which was amended to a differential game between two identical rockets, $\pursuer$ and $\evader$, on an $(x,z)$ cross-section of a Cartesian plane in~\cite{levpyconf, LevelSetTOMS}. We want to compute  the usable part~\cite{Isaacs1965} or RCBRT~\cite{Mitchell2005} of the \textit{approximate} terminal surface's boundary for a predefined target set over a target tube.  The usable part entails the regions of the state-space for which the min-max operation over either strategy of $\pursuer$ and $\evader$ is below zero and where the boundary of the usable part (BUP) constitute where \eqref{eq:HJI-RCBRAT} is exactly zero.   
 
-\begin{figure}[tb!]
+\begin{figure}[t!]
+	\centering
+	\includegraphics[width=.65\columnwidth]{../../Safety/DDPReach/figures/rocket/rocket.eps}
+	\caption{Motion of two rockets on a Cartesian $\bm{xz}$-plane with a thrust inclination in relative coordinates given by $\theta:=u_p- u_e$.}
+	\label{fig:rocket_relative}
+\end{figure}
+%
+\begin{figure}[t!]
 	\centering 
 	\includegraphics[width=\columnwidth]{figures/init_values.jpg}
 	\caption{\footnotesize{Representation of the initial values as a heat map for the two rockets described in \autoref{fig:rocket_relative} and  \eqref{eq:rocket_spatial_bounds}.}}

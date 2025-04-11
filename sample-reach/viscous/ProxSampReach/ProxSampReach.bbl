@@ -145,6 +145,11 @@ J.~J. Moreau, ``Dual convex functions and proximal points in a hilbert space,''
 I.~Mitchell, ``A toolbox of level set methods, version 1.0,'' \emph{The
   University of British Columbia, UBC CS TR-2004-09}, pp. 1--94, July 2004.
 
+\bibitem{Armijo1966minimization}
+L.~Armijo, ``Minimization of functions having lipschitz continuous first
+  partial derivatives,'' \emph{Pacific Journal of mathematics}, vol.~16, no.~1,
+  pp. 1--3, 1966.
+
 \bibitem{Dreyfus1966}
 S.~E. Dreyfus, ``{Control Problems With Linear Dynamics, Quadratic Criterion,
   and Linear Terminal Constraints},'' Rand Corp, Santa Monica Calif, Tech.
