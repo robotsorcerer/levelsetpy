@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class HJ_MAD:
     ''' 
-        Hamilton-Jacobi Moreau Adaptive Descent (HJ_MAD) is used to solve nonconvex minimization
+        Hamilton-Jacobi Moreau Stochastic Gradient Descent  is used to solve nonconvex minimization
         problems via a zeroth-order sampling scheme.
         
         Inputs:
