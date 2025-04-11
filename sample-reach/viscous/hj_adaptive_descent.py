@@ -98,7 +98,7 @@ class HJ_MAD:
       grad_vk = (x.squeeze() -  numerator/(phi_delta + self.small)) 
       
       hamiltonian = self.dynamics.hamiltonian(grad_vk, x)
-      hamterm = torch.minimum(torch.Tensor([0]), hamiltonian)
+      hamterm = torch.minimum(torch.Tensor([0]), -1*hamiltonian)
 
       vk       = -delta * torch.log(phi_delta+self.small)
 
@@ -141,6 +141,7 @@ class HJ_MAD:
       tk_hist               = [] 
       counter               = 0
       hji_rcbrt_term_hist   = []
+      val_func              = []
 
       t_now                 = self.t_span[0]
 
@@ -149,6 +150,7 @@ class HJ_MAD:
       x_opt = xk
 
       first_moment, vk, hji_rcbrt_term   = self.compute_grad_vk(xk, t_now, self.g, self.delta)
+      val_func.append(vk)
       rel_grad_vk_norm      = torch.norm(vk, p=2).item() #1.0
 
       fmt = '[{:3d}] |  t_now = {:2.4f} | gk = {:3.4f} | xk_err = {:3.4f} '
@@ -196,6 +198,7 @@ class HJ_MAD:
         xk -= self.alpha * first_moment 
         
         grad_vk, vk, hji_rcbrt_term = self.compute_grad_vk(xk, t_now, self.g, self.delta)
+        val_func.append(vk)
 
         if  self.adapt_time:
           t_now = self.update_time(t_now, rel_grad_vk_norm)
@@ -206,5 +209,5 @@ class HJ_MAD:
         grad_vk_norm = torch.norm(first_moment)
         rel_grad_vk_norm = grad_vk_norm/(grad_vk_norm_old + 1e-12)
 
-      return x_opt, xk_hist, xk_error_hist, tk_hist, rel_grad_vk_norm_hist, gk_hist
+      return x_opt, xk_hist, xk_error_hist, tk_hist, rel_grad_vk_norm_hist, gk_hist, val_func
 

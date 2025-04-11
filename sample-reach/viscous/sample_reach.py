@@ -120,8 +120,6 @@ def main(dynamics, resolution=1000, seed=123):
   x_true[:target_region_size, 1] = x_all[:target_region_size, 1]
   x_true[:target_region_size, 2] = x_all[:target_region_size, 2]
 
-  max_iters       = int(5e4)
-
   eps= sys.float_info.epsilon
   t_span = [0+eps, 1.0]
   hj_mad_algo = HJ_MAD(dynamics, delta=0.1, int_samples=args.num_samples, t_span = t_span, tol=5e-2, 
@@ -141,7 +139,7 @@ def main(dynamics, resolution=1000, seed=123):
   for trial in range(args.num_trials):
     print(f">>>Rolling on sample trial {trial}/{args.num_trials}.")
     x_opt, xk_hist, tk_hist, xk_error_hist, \
-      rel_grad_uk_norm_hist, gk_hist = hj_mad_algo.run()
+      rel_grad_uk_norm_hist, gk_hist, val_func_hist = hj_mad_algo.run()
     
     # # stack em results
     # x_opt_list += x_opt 
@@ -158,9 +156,12 @@ def main(dynamics, resolution=1000, seed=123):
 
     fname = join(fdir, f'trial_{trial:0>1}_evals_{avg_func_evals}.npz')
     print(f'Saving to {fname}')
-    # print([type(A) for A in (tk_hist, xk_hist xk_error_hist[-1], rel_grad_uk_norm_hist[-1], gk_hist[-1])])
+
+    val_func = torch.cat(val_func_hist, dim=0)
     np.savez_compressed(fname, t_hist=np.asarray(tk_hist), x_hist=xk_hist,  
-                        delta_x=np.asarray(xk_error_hist), heat_kernel=np.asarray(rel_grad_uk_norm_hist), value_func=np.asarray(gk_hist))
+                        delta_x=np.asarray(xk_error_hist), \
+                        heat_kernel=np.asarray(rel_grad_uk_norm_hist), \
+                        value_func=np.asarray(gk_hist))
     
 
   avg_func_evals = avg_func_evals/args.num_trials
