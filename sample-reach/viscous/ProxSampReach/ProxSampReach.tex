@@ -1,22 +1,49 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%2345678901234567890123456789012345678901234567890123456789012345678901234567890
-%        1         2         3         4         5         6         7         8
+\documentclass{article}
 
-\documentclass[letterpaper, 10 pt, conference]{ieeeconf} 
 
-\IEEEoverridecommandlockouts                              % This command is only
-                                                          % needed if you want to
-                                                          % use the \thanks command
-\overrideIEEEmargins
-% See the \addtolength command later in the file to balance the column lengths
-% on the last page of the document
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2025
 
+
+% ready for submission
+\usepackage{neurips_2025}
+%\usepackage[preprint]{neurips_2025} % for arxiv
+%\usepackage[final]{neurips_2025} % after acceptance
+
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+%     \usepackage[preprint]{neurips_2025}
+
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+%     \usepackage[final]{neurips_2025}
+
+
+% to avoid loading the natbib package, add option nonatbib:
+%    \usepackage[nonatbib]{neurips_2025}
+
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+\usepackage{natbib}
+\PassOptionsToPackage{square,sort, comma,numbers}{natbib}
 \usepackage{bm}
 \usepackage{url}
 \usepackage{tikz}
 \usepackage{cite}
 %\usepackage{dsfont}
-\usepackage{textcomp}
+%\usepackage{textcomp}
 \usepackage{upgreek}
 \usepackage{footnote}
 \usepackage{verbatim}
@@ -35,36 +62,75 @@
 }
 \algrenewcommand\textproc{} % to change function names to lower case
 \usepackage{amssymb, amsmath, times}
-\usepackage[pagebackref=true,breaklinks=true,colorlinks=true, citecolor=blue,linkcolor=magenta,urlcolor=blue,bookmarks=true]{hyperref}
-\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
-		T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+%\usepackage[pagebackref=true,breaklinks=true,colorlinks=true, citecolor=blue,linkcolor=magenta,urlcolor=blue,bookmarks=true]{hyperref}
+%\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+%		T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
-\title{\LARGE \bf
-Towards Scalable Reachability: Global Nonconvex Optimization of Viscous Hamilton-Jacobi PDEs
-}
 
-\author{Lekan Molu$^\dagger$, Haoxiang You$^\ddagger$, and Ian Abraham$^\ddagger$ %<-this % stops a space
-%\thanks{This work was not supported by any organization}% <-this % stops a space
-%\\
-%\href{https://github.com/robotsorcerer/levelsetpy/blob/sample-reach/sample-reach/viscous/sample_reach.ipynb}{\texttt{https://github.com/robotsorcerer/levelsetpy/viscous/sample-reach.ipynb}}
-\thanks{$^\dagger$Microsoft Research,
-        300 Lafayette Street, NYC. $^\ddagger$ Mechanical Engineering Department, Yale University.
-        {\tt\small Emails: lekanmolu@microsoft.com, \{haoxiang.you,ian.abraham\}@yale.edu.}}%
+\title{Globally Optimal Nonconvex Optimization of Smoothed Hamilton-Jacobi PDEs for Scaled Reachability}
+
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+\author{%
+	Lekan Molu$^\dagger$, Haoxiang You$^\ddagger$, and Ian Abraham$^\ddagger$ %<-this % stops a space
+  %David S.~Hippocampus\thanks{Use footnote for providing further information
+  %  about author (webpage, alternative address)---\emph{not} for acknowledging
+  %  funding agencies.} \\
+	\thanks{$^\dagger$Microsoft Research,
+	300 Lafayette Street, NYC. $^\ddagger$ Mechanical Engineering Department, Yale University.} \\
+  Department of Computer Science\\
+%  Cranberry-Lemon University\\
+%  Pittsburgh, PA 15213 \\
+%  \texttt{hippo@cs.cranberry-lemon.edu} \\
+	\tt\small {lekanmolu@microsoft.com, \{haoxiang.you,ian.abraham\}@yale.edu}. \\%
+  % examples of more authors
+  % \And
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+  % \AND
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+  % \And
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+  % \And
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
 }
 
 
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}{}
 \newtheorem{definition}{Definition}
-\newtheorem{assumption}{Assumption}
+\newtheorem{corollary}{Corollary}
 \newtheorem{proposition}{Proposition}
+%\newtheorem{proof}{Proof}
 \newtheorem{remark}{Remark}
+
+%\AtAppendix{\counterwithin{proof}{section}}
 
 \begin{document}
 
 
-
 \maketitle
+
+
 \thispagestyle{empty}
 \pagestyle{empty}
 
@@ -78,20 +144,49 @@ Towards Scalable Reachability: Global Nonconvex Optimization of Viscous Hamilton
 \input{sections/results}
 \input{sections/conclude}
 
+%\begin{table}
+%  \caption{Sample table title}
+%  \label{sample-table}
+%  \centering
+%  \begin{tabular}{lll}
+%    \toprule
+%    \multicolumn{2}{c}{Part}                   \\
+%    \cmidrule(r){1-2}
+%    Name     & Description     & Size ($\mu$m) \\
+%    \midrule
+%    Dendrite & Input terminal  & $\sim$100     \\
+%    Axon     & Output terminal & $\sim$10      \\
+%    Soma     & Cell body       & up to $10^6$  \\
+%    \bottomrule
+%  \end{tabular}
+%\end{table}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{ack}
+A vote of thanks to Namhoon Lee and Venkatraman Regamanathan of Cranfield University for many fruitful discussions.
+Do {\bf not} include this section in the anonymized submission, only in the final paper. You can use the \texttt{ack} environment provided in the style file to automatically hide this section in the anonymized submission.
+\end{ack}
 
-
-
-\addtolength{\textheight}{-3cm}   % This command serves to balance the column lengths
-                                  % on the last page of the document manually. It shortens
-                                  % the textheight of the last page by a suitable amount.
-                                  % This command does not take effect until the next page
-                                  % so it should come on the page before the last. Make
-                                  % sure that you do not shorten the textheight too much.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliographystyle{IEEEtran}
+\medskip
+{
+\small
+%\bibliographystyle{alpha}
 \bibliography{../TOMS/levtoms.bib}
+%\bibliography{ProxSampReachProxSampReach.bib}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\appendix
+
+\input{sections/proofs}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{sections/checklist.tex}
+
+
+
 \end{document}

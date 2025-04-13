@@ -70,15 +70,15 @@
 % NOTE: The recommended LaTeX command to invoke a control entry type is:
 % 
 %\makeatletter
-%\def\bstctlcite#1{\@bsphack
-%  \@for\@citeb:=#1\do{%
-%    \edef\@citeb{\expandafter\@firstofone\@citeb}%
-%    \if@filesw\immediate\write\@auxout{\string\citation{\@citeb}}\fi}%
+%\def\bstctlcitet#1{\@bsphack
+%  \@for\@citetb:=#1\do{%
+%    \edef\@citetb{\expandafter\@firstofone\@citetb}%
+%    \if@filesw\immediate\write\@auxout{\string\citation{\@citetb}}\fi}%
 %  \@esphack}
 %\makeatother
 %
-% It is called at the start of the document, before the first \cite, like:
-% \bstctlcite{IEEEexample:BSTcontrol}
+% It is called at the start of the document, before the first \citet, like:
+% \bstctlcitet{IEEEexample:BSTcontrol}
 %
 % IEEEtran.cls V1.6 and later does provide this command.
 
@@ -525,7 +525,7 @@ FUNCTION {yes.no.to.int}
     { duplicate$ "no" =
         { pop$ #0 }
         { "unknown boolean " quote$ * swap$ * quote$ *
-          " in " * cite$ * warning$
+          " in " * citet$ * warning$
           #0
         }
       if$
@@ -561,7 +561,7 @@ FUNCTION {char.to.integer}
   is.num
     { chr.to.int$ "0" chr.to.int$ - }
     {"noninteger character " quote$ * swap$ * quote$ *
-          " in integer field of " * cite$ * warning$
+          " in integer field of " * citet$ * warning$
     #0
     }
   if$
@@ -642,7 +642,7 @@ FUNCTION {output}
 FUNCTION {output.warn}
 { 't :=
   duplicate$ empty$
-    { pop$ "empty " t * " in " * cite$ * warning$ }
+    { pop$ "empty " t * " in " * citet$ * warning$ }
     'output.nonnull
   if$
 }
@@ -747,7 +747,7 @@ FUNCTION {empty.field.to.null.string}
 FUNCTION {either.or.check}
 { empty$
     { pop$ }
-    { "can't use both " swap$ * " fields in " * cite$ * warning$ }
+    { "can't use both " swap$ * " fields in " * citet$ * warning$ }
   if$
 }
 
@@ -755,7 +755,7 @@ FUNCTION {empty.entry.warn}
 { author empty$ title empty$ howpublished empty$
   month empty$ year empty$ note empty$ url empty$
   and and and and and and
-    { "all relevant fields are empty in " cite$ * warning$ }
+    { "all relevant fields are empty in " citet$ * warning$ }
     'skip$
   if$
 }
@@ -790,9 +790,9 @@ FUNCTION {bibinfo.check}
 
 FUNCTION {bibinfo.warn}
 { swap$ duplicate$ missing$
-    { swap$ "missing " swap$ * " in " * cite$ * warning$ pop$ "" }
+    { swap$ "missing " swap$ * " in " * citet$ * warning$ pop$ "" }
     { duplicate$ empty$
-        { swap$ "empty " swap$ * " in " * cite$ * warning$ }
+        { swap$ "empty " swap$ * " in " * citet$ * warning$ }
         { swap$ pop$ }
       if$
     }
@@ -994,7 +994,7 @@ FUNCTION {convert.edition}
           duplicate$ #1 #1 substring$ is.num
             { num.to.ordinal }
             { "edition ordinal word " quote$ * edition * quote$ *
-              " may be too high (or improper) for conversion" * " in " * cite$ * warning$
+              " may be too high (or improper) for conversion" * " in " * citet$ * warning$
             }
           if$
         }
@@ -1013,7 +1013,7 @@ FUNCTION {convert.edition}
 FUNCTION {start.entry}
 { newline$
   "\bibitem{" write$
-  cite$ write$
+  citet$ write$
   "}" write$
   newline$
   ""
@@ -1124,7 +1124,7 @@ FUNCTION {format.address.org.or.pub.date}
 { 't :=
   ""
   year empty$
-    { "empty year in " cite$ * warning$ }
+    { "empty year in " citet$ * warning$ }
     { skip$ }
   if$
   address empty$ t empty$ and
@@ -1273,7 +1273,7 @@ FUNCTION {format.date}
         { this.to.prev.status
           this.status.std
           cap.status.std
-         "there's a month but no year in " cite$ * warning$ }
+         "there's a month but no year in " citet$ * warning$ }
       if$
       *
     }
@@ -1296,7 +1296,7 @@ FUNCTION {format.date.electronic}
   year  "year" bibinfo.check duplicate$ empty$
     { swap$ 
         { pop$ }
-        { "there's a month but no year in " cite$ * warning$
+        { "there's a month but no year in " citet$ * warning$
         pop$ ")" * "(" swap$ *
         this.to.prev.status
         punct.no 'this.status.punct :=
@@ -1427,7 +1427,7 @@ FUNCTION {format.article.title.electronic}
 FUNCTION {format.book.title.edition}
 { title "title" bibinfo.check
   duplicate$ empty$
-    { "empty title in " cite$ * warning$ }
+    { "empty title in " citet$ * warning$ }
     { this.to.prev.status
       this.status.std
       select.language
@@ -1733,7 +1733,7 @@ FUNCTION {format.patent.date}
         { "dayfiled" bibinfo.check pop$ "" * }
         { "dayfiled" bibinfo.check 
           monthfiled empty$ 
-             { "dayfiled without a monthfiled in " cite$ * warning$
+             { "dayfiled without a monthfiled in " citet$ * warning$
                * 
              }
              { " " swap$ * * }
@@ -1741,7 +1741,7 @@ FUNCTION {format.patent.date}
         }
       if$
       yearfiled empty$
-        { "no year or yearfiled in " cite$ * warning$ }
+        { "no year or yearfiled in " citet$ * warning$ }
         { yearfiled "yearfiled" bibinfo.check 
           swap$
           duplicate$ empty$
@@ -1759,7 +1759,7 @@ FUNCTION {format.patent.date}
         { "day" bibinfo.check pop$ "" * }
         { "day" bibinfo.check 
           month empty$ 
-             { "day without a month in " cite$ * warning$
+             { "day without a month in " citet$ * warning$
                * 
              }
              { " " swap$ * * }
@@ -2239,7 +2239,7 @@ FUNCTION {unpublished}
 % BST controls
 FUNCTION {IEEEtranBSTCTL}
 { is.print.banners.to.terminal
-    { "** IEEEtran BST control entry " quote$ * cite$ * quote$ * " detected." *
+    { "** IEEEtran BST control entry " quote$ * citet$ * quote$ * " detected." *
       top$
     }
     { skip$ }
@@ -2327,7 +2327,7 @@ FUNCTION {IEEEtranBSTCTL}
   
   
   num.names.shown.with.forced.et.al max.num.names.before.forced.et.al >
-    { "CTLnames_show_etal cannot be greater than CTLmax_names_forced_etal in " cite$ * warning$ 
+    { "CTLnames_show_etal cannot be greater than CTLmax_names_forced_etal in " citet$ * warning$ 
       max.num.names.before.forced.et.al 'num.names.shown.with.forced.et.al :=
     }
     { skip$ }
