@@ -16,8 +16,8 @@ import logging
 import argparse 
 import sys, os
 from datetime import datetime 
-from rockets import RocketDynamics
-from hj_adaptive_descent import HJ_MAD
+from rockets_sample import RocketSampleDynamics
+from hj_adaptive_descent import HJ_Moreau_SGD
 from os.path import join, expanduser 
 
 import matplotlib as mpl
@@ -121,13 +121,7 @@ def main(dynamics, resolution=1000, seed=123):
   x_true[:target_region_size, 2] = x_all[:target_region_size, 2]
 
   eps= sys.float_info.epsilon
-
-  # run 30 times 
   avg_func_evals  = 0
-
-  # no elems
-  x_opt_list, xk_hist_list, tk_hist_list, xk_error_hist_list, \
-      rel_grad_uk_norm_hist_list, gk_hist_list = [[]]*6
   
   save_path = join(args.data_dir, args.experiment)
   if not os.path.exists(save_path):
@@ -138,28 +132,25 @@ def main(dynamics, resolution=1000, seed=123):
 
   for trial in range(args.num_trials):
     t_span = [eps, 1.0]
-    int_sample = (trial+1)*args.num_samples
-    hj_mad_algo = HJ_MAD(dynamics, delta=0.1, int_samples=3, t_span = t_span, tol=5e-2, 
+    num_samples = (trial+1)*args.num_samples
+    hj_sgd_algo = HJ_Moreau_SGD(dynamics, delta=0.1, num_samples=num_samples, t_span = t_span, tol=1e-10, 
                                   psi=0.01, beta=0.9, alpha=1.0, adapt_time=True, verbose=True)
-    print(f">>>Rolling on sample trial {trial}/{args.num_trials}.")
-    x_opt, xk_hist, tk_hist, xk_error_hist, \
-      rel_grad_uk_norm_hist, gk_hist, val_func_hist = hj_mad_algo.run()
     
-    avg_func_evals += len(xk_error_hist)*args.num_samples
+    print(f">>>Rolling on sample trial {trial}/{args.num_trials}.")
+    x_opt, xk_hist, tk_hist, rel_grad_vk_norm_hist, \
+      gk_hist, val_norm_hist = hj_sgd_algo.run()
+    
+    avg_func_evals += len(xk_hist)*args.num_samples
 
 
     fname = join(fdir, f'trial_{trial:0>1}_evals_{avg_func_evals}.npz')
     print(f'Saving to {fname}')
 
-    # print(f'val_func_hist: {val_func_hist}')
-    val_func = torch.stack(val_func_hist, dim=0)
-    print(f'val_func: {val_func.shape}')
-
-    # time.sleep(400)
-    np.savez_compressed(fname, t_hist=np.asarray(tk_hist), x_hist=xk_hist,  
-                        delta_x=np.asarray(xk_error_hist), \
-                        heat_kernel=np.asarray(rel_grad_uk_norm_hist), \
-                        value_func=np.asarray(gk_hist))
+    val_func = torch.stack(val_norm_hist, dim=0)
+    if args.save:
+      np.savez_compressed(fname, t_hist=np.asarray(tk_hist), x_hist=xk_hist,  
+                          heat_kernel=np.asarray(rel_grad_vk_norm_hist), \
+                          value_func=np.asarray(gk_hist))
     
 
   avg_func_evals = avg_func_evals/args.num_trials
@@ -169,7 +160,7 @@ def main(dynamics, resolution=1000, seed=123):
 if __name__ == "__main__":
   
   resolution = 1000; L = 100
-  dynamics = RocketDynamics(1, 1, T=args.time_upper, L=args.spatial_bound, a=32, g=32, resolution=args.resolution)
+  dynamics = RocketSampleDynamics(1, 1, T=args.time_upper, L=args.spatial_bound, a=32, g=32, resolution=args.resolution)
   states =  dynamics.state_space
   main(dynamics, resolution, seed=args.seed)
 

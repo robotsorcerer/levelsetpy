@@ -1,4 +1,4 @@
-__all__ = ["HJ_MAD"]
+__all__ = ["HJ_Moreau_SGD"]
 __copyright__ 	= "2025, Hamilton-Jacobi Analysis in Python"
 __comment__     = "Adaptive gradient descent on the Moreau envelope of the viscous HJ value function."
 __credits__  	= "Haoxiang You, Ian Abraham."
@@ -16,23 +16,22 @@ import scipy.ndimage as sp_ndimage
 logger = logging.getLogger(__name__)
 
 
-class HJ_MAD:
+class HJ_Moreau_SGD:
     ''' 
-        Hamilton-Jacobi Moreau Stochastic Gradient Descent  is used to solve nonconvex minimization
-        problems via a zeroth-order sampling scheme.
+        Hamilton-Jacobi Moreau Stochastic Gradient Descent solves the nonconvex minimization
+        of the Hamilton-Jacobi-Isaacs Equation via a zeroth-order sampling scheme.
         
         Inputs:
           1)  dynamics     = Class that contains the dynamics of the agents, hamiltonian function and other auxiliary variables.
           2)  delta        = coefficient of viscous term in the HJ equation
-          3)  int_samples  = number of samples used to approximate expectation in heat equation solution
+          3)  num_samples  = number of samples used to approximate expectation in heat equation solution
           4)  t_span       = time vector containig [initial time, minimum time allowed, maximum time]
           6)  tol          = stopping tolerance
           7)  psi          = parameter used to update tk
-          8) beta          = exponential averaging term for gradient beta (beta multiplies history, 1-beta multiplies current grad)
-          9) eta_vec       = vector containing [eta_minus, eta_plus], where eta_minus < 1 and eta_plus > 1 (part of time update)
-          10) alpha        = step size. has to be in between (1-sqrt(eta_minus), 1+sqrt(eta_plus))
-          11) fixed_time   = boolean for using adaptive time
-          12) verbose      = boolean for printing
+          8)  beta         = exponential averaging term for gradient beta (beta multiplies history, 1-beta multiplies current grad)
+          9) alpha        = step size. has to be in between (1-sqrt(eta_minus), 1+sqrt(eta_plus))
+          10) adapt_time   = boolean for using adaptive time
+          11) verbose      = boolean for printing
 
         Outputs:
           1) x_opt                    = optimal x_value approximation
@@ -41,11 +40,11 @@ class HJ_MAD:
           4) fk_hist                  = function value history
           6) rel_grad_vk_norm_hist    = relative grad norm history of Moreau envelope
     '''
-    def __init__(self, dynamics, delta=0.1, int_samples=100, t_span = [0, 1],  
-                 tol=5e-2, psi=0.3, beta=0.9, alpha=1.0, adapt_time=False, verbose=True):   
+    def __init__(self, dynamics, delta=0.1, num_samples=100, t_span = [0, 1],  
+                 tol=1e-10, psi=0.3, beta=0.9, alpha=1.0, adapt_time=False, verbose=True):   
       self.delta            = delta
       self.g                = dynamics.get_values
-      self.int_samples      = int_samples
+      self.num_samples      = num_samples
       self.tol              = tol
       self.t_span           = t_span
       self.psi              = psi
@@ -145,7 +144,7 @@ class HJ_MAD:
 
       t_now                 = self.t_span[0]
 
-      sample_idces = self.probs.multinomial(self.int_samples, replacement=True)
+      sample_idces = self.probs.multinomial(self.num_samples, replacement=True)
       xk     = self.states[sample_idces, :]
       x_opt = xk
 
@@ -158,7 +157,7 @@ class HJ_MAD:
 
       print('\n')
       logger.info('-------------------------- RUNNING HJ-MAD ---------------------------')
-      logger.info(f'dimension = f{self.dim}, n_samples = {self.int_samples}')
+      logger.info(f'dimension = f{self.dim}, n_samples = {self.num_samples}')
 
       converged = True
       while converged and (self.t_span[1]  - t_now) > self.small * self.t_span[1]:  
@@ -182,18 +181,19 @@ class HJ_MAD:
         if self.verbose:
           print(fmt.format(counter, t_now, gk_hist[-1], np.linalg.norm(xk_hist[-1]).item(), rel_grad_vk_norm_hist[-1], hji_rcbrt_term_hist[-1]))
 
-        if np.all(np.all(np.abs(xk_error_hist[:-3]))<self.tol):
+        if np.all(np.all(np.abs(gk_hist[:-3]))<self.tol):
           tk_hist = tk_hist[1:]
           xk_hist = xk_hist[1:]
           xk_error_hist = xk_error_hist[1:]
           rel_grad_vk_norm_hist = rel_grad_vk_norm_hist[1:]
           gk_hist               = gk_hist[1:]
           logger.info('HJ-MAD converged with rel grad norm {:6.2e}'.format(rel_grad_vk_norm_hist[-1]))
-          logger.info(f'iter = ', t_now, ', number of function evaluations: {len(xk_error_hist)*self.int_samples}')
+          logger.info(f'iter = ', t_now, ', number of function evaluations: {len(xk_error_hist)*self.num_samples}')
+          x_opt = xk 
           converged = False  
 
-        if counter>10 and (gk_hist[-1] < gk_hist[-2]) and (gk_hist[-2] < gk_hist[-3]):
-          x_opt = xk 
+        # if counter>10 and (gk_hist[-1] < gk_hist[-2]) and (gk_hist[-2] < gk_hist[-3]):
+        #   x_opt = xk 
 
         xk -= self.alpha * first_moment 
         
@@ -209,5 +209,5 @@ class HJ_MAD:
         grad_vk_norm = torch.norm(first_moment)
         rel_grad_vk_norm = grad_vk_norm/(grad_vk_norm_old + 1e-12)
 
-      return x_opt, xk_hist, xk_error_hist, tk_hist, rel_grad_vk_norm_hist, gk_hist, val_func
+      return x_opt, xk_hist, tk_hist, rel_grad_vk_norm_hist, gk_hist, val_func
 
