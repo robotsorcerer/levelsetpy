@@ -1,4 +1,4 @@
-__all__ = ["RocketDynamics"]
+__all__ = ["RocketSampleDynamics"]
 
 __copyright__ 	= "2025, Hamilton-Jacobi Analysis in Python"
 __comment__     = "Adaptive gradient descent on the Moreau envelope of the viscous HJ value function."
@@ -13,7 +13,7 @@ import torch
 import numpy as np 
 
 
-class RocketDynamics():
+class RocketSampleDynamics():
     def __init__(self, u_bound=1, w_bound=1, T=1, L=64, a=1, g=32, resolution=100, rank='cpu'):    
         """
             Rockets Dynamics in relative coordinates.
