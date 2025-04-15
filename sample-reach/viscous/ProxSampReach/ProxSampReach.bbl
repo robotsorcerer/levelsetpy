@@ -1,153 +1,230 @@
-\begin{thebibliography}{10}
-\providecommand{\url}[1]{#1}
-\csname url@rmstyle\endcsname
-\providecommand{\newblock}{\relax}
-\providecommand{\bibinfo}[2]{#2}
-\providecommand\BIBentrySTDinterwordspacing{\spaceskip=0pt\relax}
-\providecommand\BIBentryALTinterwordstretchfactor{4}
-\providecommand\BIBentryALTinterwordspacing{\spaceskip=\fontdimen2\font plus
-\BIBentryALTinterwordstretchfactor\fontdimen3\font minus
-  \fontdimen4\font\relax}
-\providecommand\BIBforeignlanguage[2]{{%
-\expandafter\ifx\csname l@#1\endcsname\relax
-\typeout{** WARNING: IEEEtran.bst: No hyphenation pattern has been}%
-\typeout{** loaded for the language `#1'. Using the pattern for}%
-\typeout{** the default language instead.}%
-\else
-\language=\csname l@#1\endcsname
-\fi
-#2}}
+\begin{thebibliography}{33}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
-\bibitem{EvansPDEBook}
-L.~C. Evans, \emph{{Partial Differential Equations}}.\hskip 1em plus 0.5em
-  minus 0.4em\relax American Mathematical Society, 2022, vol.~19.
+\bibitem[Evans(2022)]{EvansPDEBook}
+Lawrence~C Evans.
+\newblock \emph{{Partial Differential Equations}}, volume~19.
+\newblock American Mathematical Society, 2022.
 
-\bibitem{KerianneHobbs}
-K.~L. Hobbs, M.~L. Mote, M.~C. Abate, S.~D. Coogan, and E.~M. Feron, ``Runtime
-  assurance for safety-critical systems,'' \emph{IEEE Control Systems
-  Magazine}, vol.~43, pp. 28--65, 2023.
+\bibitem[Hobbs et~al.(2023)Hobbs, Mote, Abate, Coogan, and
+  Feron]{KerianneHobbs}
+Kerianne~L. Hobbs, Mark~L. Mote, Matthew~C.L. Abate, Samuel~D. Coogan, and
+  Eric~M. Feron.
+\newblock Runtime assurance for safety-critical systems.
+\newblock \emph{IEEE Control Systems Magazine}, 43:\penalty0 28--65, 2023.
 
-\bibitem{LygerosReachability}
-J.~Lygeros, ``On reachability and minimum cost optimal control,''
-  \emph{Automatica}, vol.~40, no.~6, pp. 917--927, 2004.
+\bibitem[Lygeros(2004)]{LygerosReachability}
+John Lygeros.
+\newblock On reachability and minimum cost optimal control.
+\newblock \emph{Automatica}, 40\penalty0 (6):\penalty0 917--927, 2004.
 
-\bibitem{Mitchell2005}
-I.~M. Mitchell, A.~M. Bayen, and C.~J. Tomlin, ``{A Time-Dependent
-  Hamilton-Jacobi Formulation of Reachable Sets for Continuous Dynamic
-  Games},'' \emph{IEEE Transactions on Automatic Control}, vol.~50, no.~7, pp.
-  947--957, 2005.
+\bibitem[Mitchell et~al.(2005)Mitchell, Bayen, and Tomlin]{Mitchell2005}
+Ian~M. Mitchell, Alexandre~M. Bayen, and Claire~J. Tomlin.
+\newblock {A Time-Dependent Hamilton-Jacobi Formulation of Reachable Sets for
+  Continuous Dynamic Games}.
+\newblock \emph{IEEE Transactions on Automatic Control}, 50\penalty0
+  (7):\penalty0 947--957, 2005.
+\newblock ISSN 00189286.
 
-\bibitem{levpyconf}
-``The python levelset toolbox (levelsetpy),'' in \emph{IEEE 63rd Conference on
-  Decision and Control (CDC)}, 2024, pp. 8938--8945.
+\bibitem[Molu(2024)]{MoluxLevPyCDC}
+Lekan Molu.
+\newblock The python levelset toolbox (levelsetpy).
+\newblock In \emph{IEEE 63rd Conference on Decision and Control (CDC)}, pages
+  8938--8945, 2024.
+\newblock \doi{10.1109/CDC56724.2024.10886640}.
 
-\bibitem{LevelSetTOMS}
-L.~Molu, ``The python levelset software package,'' \emph{The ACM Transactions
-  on Mathematical Software}, 2025.
+\bibitem[Molu(2025)]{LevelSetTOMS}
+Lekan Molu.
+\newblock {LevelSetPy: A GPU-Accelerated Package for Hyperbolic Hamilton-Jacobi
+  Partial Differential Equations' Solubility}.
+\newblock \emph{The ACM Transactions on Mathematical Software}, 2025.
 
-\bibitem{CrandallTwoApprox}
-M.~G. Crandall and P.-L. Lions, ``{Two Approximations of Solutions of
-  Hamilton-Jacobi Equations},'' \emph{{Mathematics of Computation}}, vol.~43,
-  no. 167, pp. 1--19, 1984.
+\bibitem[Crandall and Lions(1984)]{CrandallTwoApprox}
+Michael~G Crandall and P-L Lions.
+\newblock {Two Approximations of Solutions of Hamilton-Jacobi Equations}.
+\newblock \emph{{Mathematics of Computation}}, 43\penalty0 (167):\penalty0
+  1--19, 1984.
 
-\bibitem{OsherShuENO}
-S.~Osher and C.-W. Shu, ``{High-Order Essentially Nonoscillatory Schemes for
-  Hamilton-Jacobi Equations},'' \emph{SIAM Journal of Numerical Analysis},
-  vol.~28, no.~4, pp. 907--922, 1991.
+\bibitem[Crandall and Majda(1980{\natexlab{a}})]{CrandallMethodFracSteps}
+Michael Crandall and Andrew Majda.
+\newblock {The method of fractional steps for conservation laws}.
+\newblock \emph{Numerische Mathematik}, 34\penalty0 (3):\penalty0 285--314,
+  1980{\natexlab{a}}.
+\newblock ISSN 0029599X.
 
-\bibitem{CrandallMethodFracSteps}
-M.~Crandall and A.~Majda, ``{The method of fractional steps for conservation
-  laws},'' \emph{Numerische Mathematik}, vol.~34, no.~3, pp. 285--314, 1980.
+\bibitem[Osher and Fedkiw(2004)]{LevelSetsBook}
+S~Osher and R~Fedkiw.
+\newblock {Level Set Methods and Dynamic Implicit Surfaces}.
+\newblock \emph{Applied Mechanics Reviews}, 57\penalty0 (3):\penalty0 B15--B15,
+  2004.
+\newblock ISSN 0003-6900.
 
-\bibitem{LevelSetsBook}
-S.~Osher and R.~Fedkiw, ``{Level Set Methods and Dynamic Implicit Surfaces},''
-  \emph{Applied Mechanics Reviews}, vol.~57, no.~3, pp. B15--B15, 2004.
+\bibitem[Heaton et~al.(2024)Heaton, Wu~Fung, and Osher]{HJMAD}
+Howard Heaton, Samy Wu~Fung, and Stanley Osher.
+\newblock Global solutions to nonconvex problems by evolution of
+  hamilton-jacobi pdes.
+\newblock \emph{Communications on Applied Mathematics and Computation},
+  6\penalty0 (2):\penalty0 790--810, 2024.
 
-\bibitem{HJMAD}
-H.~Heaton, S.~Wu~Fung, and S.~Osher, ``Global solutions to nonconvex problems
-  by evolution of hamilton-jacobi pdes,'' \emph{Communications on Applied
-  Mathematics and Computation}, vol.~6, no.~2, pp. 790--810, 2024.
+\bibitem[Crandall and Lions(2023)]{HJProx}
+Michael~G Crandall and P-L Lions.
+\newblock A hamilton-jacobi-based proximal operator.
+\newblock \emph{Mathematics of computation}, 43\penalty0 (167):\penalty0 1--19,
+  2023.
 
-\bibitem{HJProx}
-M.~G. Crandall and P.-L. Lions, ``A hamilton-jacobi-based proximal operator,''
-  \emph{Mathematics of computation}, vol.~43, no. 167, pp. 1--19, 2023.
-
-\bibitem{Chaudhari2018}
-P.~Chaudhari, A.~Oberman, S.~Osher, S.~Soatto, and G.~Carlier, ``Deep
-  relaxation: partial differential equations for optimizing deep neural
-  networks,'' \emph{Research in the Mathematical Sciences}, vol.~5, pp. 1--30,
+\bibitem[Chaudhari et~al.(2018)Chaudhari, Oberman, Osher, Soatto, and
+  Carlier]{Chaudhari2018}
+Pratik Chaudhari, Adam Oberman, Stanley Osher, Stefano Soatto, and Guillaume
+  Carlier.
+\newblock Deep relaxation: partial differential equations for optimizing deep
+  neural networks.
+\newblock \emph{Research in the Mathematical Sciences}, 5:\penalty0 1--30,
   2018.
 
-\bibitem{ChaudhariEntropy}
-P.~Chaudhari, A.~Choromanska, S.~Soatto, Y.~LeCun, C.~Baldassi, C.~Borgs,
-  J.~Chayes, L.~Sagun, and R.~Zecchina, ``Entropy-sgd: Biasing gradient descent
-  into wide valleys,'' \emph{Journal of Statistical Mechanics: Theory and
-  Experiment}, vol. 2019, no.~12, p. 124018, 2019.
+\bibitem[Chaudhari et~al.(2019)Chaudhari, Choromanska, Soatto, LeCun, Baldassi,
+  Borgs, Chayes, Sagun, and Zecchina]{ChaudhariEntropy}
+Pratik Chaudhari, Anna Choromanska, Stefano Soatto, Yann LeCun, Carlo Baldassi,
+  Christian Borgs, Jennifer Chayes, Levent Sagun, and Riccardo Zecchina.
+\newblock Entropy-sgd: Biasing gradient descent into wide valleys.
+\newblock \emph{Journal of Statistical Mechanics: Theory and Experiment},
+  2019\penalty0 (12):\penalty0 124018, 2019.
 
-\bibitem{Mitchell2020}
-I.~Mitchell, ``{A Robust Controlled Backward Reach Tube with (Almost) Analytic
-  Solution for Two Dubins Cars},'' \emph{{EPiC Series in Computing}}, vol.~74,
-  pp. 242--258, 2020.
+\bibitem[Osher and Shu(1991)]{OsherShuENO}
+Stanley Osher and Chi-Wang Shu.
+\newblock {High-Order Essentially Nonoscillatory Schemes for Hamilton-Jacobi
+  Equations}.
+\newblock \emph{SIAM Journal of Numerical Analysis}, 28\penalty0 (4):\penalty0
+  907--922, 1991.
+\newblock ISSN 15333868.
 
-\bibitem{Isaacs1965}
-R.~Isaacs, \emph{Differential Games: A Mathematical Theory with Applications to
-  Warfare and Pursuit, Control and Optimization.}\hskip 1em plus 0.5em minus
-  0.4em\relax Kreiger, Huntigton, NY, 1999.
+\bibitem[Mitchell(2020)]{Mitchell2020}
+Ian Mitchell.
+\newblock {A Robust Controlled Backward Reach Tube with (Almost) Analytic
+  Solution for Two Dubins Cars}.
+\newblock \emph{{EPiC Series in Computing}}, 74:\penalty0 242--258, 2020.
 
-\bibitem{Evans1984}
-L.~Evans and P.~E. Souganidis, ``{Differential Games And Representation
-  Formulas For Solutions Of Hamilton-Jacobi-Isaacs Equations},'' \emph{Indiana
-  Univ. Math. J}, vol.~33, no.~5, pp. 773--797, 1984.
+\bibitem[Isaacs(1999)]{Isaacs1965}
+R~Isaacs.
+\newblock \emph{Differential Games: A Mathematical Theory with Applications to
+  Warfare and Pursuit, Control and Optimization.}
+\newblock Kreiger, Huntigton, NY, 1999.
 
-\bibitem{Souganidis}
-------, ``{Differential games and representation formulas for solutions of
-  Hamilton-Jacobi-Isaacs equations},'' \emph{Indiana Univ. Math. J}, vol.~33,
-  no.~5, pp. 773--797, 1984.
+\bibitem[Evans and Souganidis(1984{\natexlab{a}})]{Evans1984}
+L.C. Evans and Panagiotis~E. Souganidis.
+\newblock {Differential Games And Representation Formulas For Solutions Of
+  Hamilton-Jacobi-Isaacs Equations}.
+\newblock \emph{Indiana Univ. Math. J}, 33\penalty0 (5):\penalty0 773--797,
+  1984{\natexlab{a}}.
+\newblock ISSN 0022-2518.
 
-\bibitem{BaldassiLocalEntropy}
-C.~Baldassi, A.~Ingrosso, C.~Lucibello, L.~Saglietti, and R.~Zecchina, ``Local
-  entropy as a measure for sampling solutions in constraint satisfaction
-  problems,'' \emph{Journal of Statistical Mechanics: Theory and Experiment},
-  vol. 2016, no.~2, p. 023301, 2016.
+\bibitem[Evans and Souganidis(1984{\natexlab{b}})]{Souganidis}
+L.C. Evans and Panagiotis~E. Souganidis.
+\newblock {Differential games and representation formulas for solutions of
+  Hamilton-Jacobi-Isaacs equations}.
+\newblock \emph{Indiana Univ. Math. J}, 33\penalty0 (5):\penalty0 773--797,
+  1984{\natexlab{b}}.
+\newblock ISSN 0022-2518.
 
-\bibitem{Moreau}
-J.~Moreau, ``{Décomposition Orthogonale d’un Espace Hilbertien Selon deux
-  Cônes Mutuelleent Polaires},'' \emph{{Comptes rendus hebdomadaires des
-  séances de l’Académie des sciences}}, vol. 255, p. 238–240, 1962.
+\bibitem[Zarantonello(1971)]{Zarantonello71}
+Eduardo~H Zarantonello.
+\newblock {Projections on Convex Sets in Hilbert Space and Spectral Theory}.
+\newblock In \emph{Contributions to Nonlinear Functional Analysis}, pages
+  237--424. Elsevier, 1971.
 
-\bibitem{BauschkeCombettes}
-H.~H. Bauschke, P.~L. Combettes, H.~H. Bauschke, and P.~L. Combettes,
-  \emph{{Convex analysis and monotone operator theory in Hilbert
-  spaces}}.\hskip 1em plus 0.5em minus 0.4em\relax Springer, 2017.
+\bibitem[Bo{\c{t}} and Hendrich(2014)]{BotAndHendrich2014}
+Radu~Ioan Bo{\c{t}} and Christopher Hendrich.
+\newblock {Convergence Analysis for a Primal-dual Monotone + Skew Splitting
+  Algorithm with Applications to Total Variation Minimization}.
+\newblock \emph{Journal of mathematical imaging and vision}, 49\penalty0
+  (3):\penalty0 551--568, 2014.
 
-\bibitem{Zarantonello71}
-E.~H. Zarantonello, ``{Projections on Convex Sets in Hilbert Space and Spectral
-  Theory},'' in \emph{Contributions to Nonlinear Functional Analysis}.\hskip
-  1em plus 0.5em minus 0.4em\relax Elsevier, 1971, pp. 237--424.
+\bibitem[Bauschke et~al.(2017)Bauschke, Combettes, Bauschke, and
+  Combettes]{BauschkeCombettes}
+Heinz~H Bauschke, Patrick~L Combettes, Heinz~H Bauschke, and Patrick~L
+  Combettes.
+\newblock \emph{{Convex analysis and monotone operator theory in Hilbert
+  spaces}}.
+\newblock Springer, 2017.
 
-\bibitem{BotAndHendrich2014}
-R.~I. Bo{\c{t}} and C.~Hendrich, ``{Convergence Analysis for a Primal-dual
-  Monotone + Skew Splitting Algorithm with Applications to Total Variation
-  Minimization},'' \emph{Journal of mathematical imaging and vision}, vol.~49,
-  no.~3, pp. 551--568, 2014.
-
-\bibitem{Moreau65}
-J.-J. Moreau, ``{Proximity and Duality in a Hilbertian space},''
-  \emph{{Bulletin of the Mathematical Society of France}}, vol.~93, pp.
+\bibitem[Moreau(1965)]{Moreau65}
+Jean-Jacques Moreau.
+\newblock {Proximity and Duality in a Hilbertian space}.
+\newblock \emph{{Bulletin of the Mathematical Society of France}}, 93:\penalty0
   273--299, 1965.
 
-\bibitem{MoreauDualCvxProxPts}
-J.~J. Moreau, ``Dual convex functions and proximal points in a hilbert space,''
-  \emph{Weekly reports of the sessions of the Academy of Sciences}, vol. 255,
-  pp. 2897--2899, 1962.
+\bibitem[Moreau(1962{\natexlab{a}})]{MoreauDualCvxProxPts}
+Jean~Jacques Moreau.
+\newblock Dual convex functions and proximal points in a hilbert space.
+\newblock \emph{Weekly reports of the sessions of the Academy of Sciences},
+  255:\penalty0 2897--2899, 1962{\natexlab{a}}.
 
-\bibitem{MitchellLSToolbox}
-I.~Mitchell, ``A toolbox of level set methods, version 1.0,'' \emph{The
-  University of British Columbia, UBC CS TR-2004-09}, pp. 1--94, July 2004.
+\bibitem[Moreau(1962{\natexlab{b}})]{Moreau}
+JJ~Moreau.
+\newblock {Décomposition Orthogonale d’un Espace Hilbertien Selon deux
+  Cônes Mutuelleent Polaires}.
+\newblock \emph{{Comptes rendus hebdomadaires des séances de l’Académie des
+  sciences}}, 255:\penalty0 238–240, 1962{\natexlab{b}}.
 
-\bibitem{Dreyfus1966}
-S.~E. Dreyfus, ``{Control Problems With Linear Dynamics, Quadratic Criterion,
-  and Linear Terminal Constraints},'' Rand Corp, Santa Monica Calif, Tech.
-  Rep., 1966.
+\bibitem[Mitchell(2004)]{MitchellLSToolbox}
+Ian Mitchell.
+\newblock A toolbox of level set methods, version 1.0.
+\newblock \emph{The University of British Columbia, UBC CS TR-2004-09}, pages
+  1--94, July 2004.
+
+\bibitem[Armijo(1966)]{Armijo1966minimization}
+Larry Armijo.
+\newblock Minimization of functions having lipschitz continuous first partial
+  derivatives.
+\newblock \emph{Pacific Journal of mathematics}, 16\penalty0 (1):\penalty0
+  1--3, 1966.
+
+\bibitem[Dreyfus(1966)]{Dreyfus1966}
+Stuart~E Dreyfus.
+\newblock {Control Problems With Linear Dynamics, Quadratic Criterion, and
+  Linear Terminal Constraints}.
+\newblock Technical report, Rand Corp, Santa Monica Calif, 1966.
+
+\bibitem[Lions(1982)]{Lions1982}
+Pierre-Louis Lions.
+\newblock \emph{Generalized solutions of Hamilton-Jacobi equations}, volume~69.
+\newblock London Pitman, 1982.
+
+\bibitem[Crandall et~al.(1984)Crandall, Evans, and Lions]{Crandall1984}
+M.~G. Crandall, L.~C. Evans, and P.~L. Lions.
+\newblock {Some Properties of Viscosity Solutions of Hamilton-Jacobi
+  Equations}.
+\newblock \emph{Transactions of the American Mathematical Society},
+  282\penalty0 (2):\penalty0 487, 1984.
+\newblock ISSN 00029947.
+
+\bibitem[Crandall and Majda(1980{\natexlab{b}})]{CrandallLaxFriedrichs}
+Michael~G Crandall and Andrew Majda.
+\newblock {Monotone Difference Approximations For Scalar Conservation Laws}.
+\newblock \emph{Mathematics of Computation}, 34\penalty0 (149):\penalty0 1--21,
+  1980{\natexlab{b}}.
+
+\bibitem[Crandall and Lions(1983)]{Crandall1983viscosity}
+Michael~G Crandall and Pierre-Louis Lions.
+\newblock Viscosity solutions of hamilton-jacobi equations.
+\newblock \emph{Transactions of the American mathematical society},
+  277\penalty0 (1):\penalty0 1--42, 1983.
+
+\bibitem[Osher and Sethian(1988)]{OsherFronts}
+Stanley Osher and James~A. Sethian.
+\newblock {Fronts Propagating with Curvature-Dependent Speed: Algorithms based
+  on Hamilton-Jacobi Formulations}.
+\newblock \emph{{Journal of Computational Physics}}, 79\penalty0 (1):\penalty0
+  12--49, 1988.
+\newblock ISSN 10902716.
+
+\bibitem[Merz(1972)]{Merz1972}
+AW~Merz.
+\newblock The game of two identical cars.
+\newblock \emph{Journal of Optimization Theory and Applications}, 9\penalty0
+  (5):\penalty0 324--343, 1972.
 
 \end{thebibliography}

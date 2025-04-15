@@ -1,0 +1,107 @@
+\section{Nonlinear HJI PDE Transformation}
+\label{app:proof_sol_hj_ivp}
+
+%\newcounter{appidx}
+\setcounter{appidx}{2}
+%\renewcommand\theequation{\Alph{appidx}.\arabic{equation}}
+\setcounter{equation}{0}
+
+In this section, we construct the linearization and sampling machinery we use in building our results.
+
+\subsection{Unique Solution to the viscous HJ Equation}
+Let us now construct the solution to the viscous intial-value-HJ problem.
+%\begin{lemma}[Smoothed HJ Solution]
+%	%
+%	The unique solution to the smoothed version of the Hamilton-Jacobi equation \eqref{eq:ivp-viscous} is 
+%	\begin{align}
+%		\label{eq:ivp-viscous-solution}
+%		\valuefunc^\delta(t; \state) = -\frac{\delta}{2} \log \bigg\{(2\pi\delta t)^{-n/2}\int_{\ren} \exp \left(-\frac{1}{2\delta t}\cdot |\state-\bm{y}|^2\right) \exp \left(-\frac{2}{\delta}\cdot \valuefunc^\delta(\bm{y})\right) d\bm{y} \bigg\}. %, \state \in \ren, t > 0
+%	\end{align}
+%	\label{lemma:hj_solution}
+%\end{lemma}
+%
+\begin{proof}[Proof of Lemma \ref{lemma:hj_solution}]
+	Recall from \eqref{eq:ivp-viscous} that 
+	%
+	\begin{align}
+		\valuefunc_t^\delta -\dfrac{\delta}{2} \Delta \valuefunc^\delta  + \hamfunc(t; \state, \partial_x \valuefunc^\delta) = 0\text{   in   } \ren \times (0, T], \quad
+		\valuefunc^\delta(0; \state) = \bm{g}(\state) \text{ on } \ren \times \{t=0\}.
+	\end{align}
+%
+Let $\colehopf^\delta(t; \state) = \openset(\valuefunc^\delta(t; \state))$, where $\openset: \ren \rightarrow \reline$ is a smooth function. Our goal is to choose $\openset$ so that $\colehopf^\delta$ solves a linear partial differential equation. Differentiating, we find that $\colehopf^\delta_t = \openset^\prime(\valuefunc^\delta) \valuefunc^\delta_t$ and $\Delta \colehopf^\delta = \openset(\valuefunc^\delta) \Delta \valuefunc^\delta + \openset^{\prime\prime}(\valuefunc^\delta) \hamfunc(t; \state \partial_{\state}) \valuefunc^\delta)$. Thus, \eqref{eq:ivp-viscous} implies 
+%
+\begin{subequations}
+\begin{align}
+\colehopf^\delta_t = \openset^\prime \valuefunc_t^\delta &\triangleq \openset^\prime (\valuefunc^\delta) \bigg(\frac{\delta}{2} \Delta \valuefunc^\delta - \hamfunc(t; \state, \partial_{\state})\valuefunc^\delta)\bigg) \\
+			%
+			&= \frac{\delta}{2} \bigg(\Delta \colehopf^\delta - \openset^{\prime\prime}(\valuefunc^\delta) \hamfunc(t; \state \partial_{\state}) \valuefunc^\delta) \bigg) - \openset^\prime(\valuefunc^\delta)  \hamfunc(t; \state, \partial_{\state})\valuefunc^\delta) \\
+			%
+			&= \frac{\delta}{2} \Delta \colehopf^\delta - \bigg(\frac{\delta}{2} \openset^{\prime\prime}(\valuefunc^\delta) + \openset^\prime(\valuefunc^\delta) \bigg)   \hamfunc(t; \state, \partial_{\state})\valuefunc^\delta).  % \\
+\end{align}
+\end{subequations}
+%
+We thus have 
+%
+\begin{align}
+	\colehopf^\delta_t \triangleq \frac{\delta}{2} \Delta \colehopf^\delta
+	\label{eq:cole-hopf-time-deriv}
+\end{align}
+%
+ if we set the differential equation $\frac{\delta}{2} \openset^{\prime\prime}(\valuefunc^\delta) + \openset^\prime(\valuefunc^\delta)$ to $0$ --- this is possible if we choose 
+ %
+ \begin{align}
+ 	\openset(\valuefunc^\delta) = \exp\left(-\frac{2 \lambda}{\delta}\right). 
+ 	\label{eq:linear_trans}
+ \end{align}
+%
+ Whence, if $\valuefunc^\delta$ solves the partial differential equation \eqref{eq:ivp-viscous}, we must have \eqref{eq:cole-hopf} \ie 
+%
+\begin{align}
+	\colehopf^\delta = \exp(-2\valuefunc^\delta/\delta).
+\end{align}
+Equation \eqref{eq:cole-hopf} is the so-called Cole-Hopf transformation~\citet[\S 4.4.1]{EvansPDEBook}; it serves as the solution to the initial-value problem for the heat equation (with conductivity $\delta/2$), 
+%
+\begin{align}
+	\partial_t \colehopf^\delta(t; \state) &- \dfrac{\delta}{2} \colehopf^\delta(t; \state) = 0  &\text{ in } \quad \ren \times (0, T] \nonumber \\
+	\colehopf^\delta(t; \state) &= \exp\left({-2\valuefunc^\delta}/{\delta}\right)  & \text{ on } \quad \ren \times \{t=0\}. %\footnote{Where we have dropped the arguments for ease of readability.}.
+	\label{eq:Heat-Equation}
+	\tag{Heat-Equation}
+\end{align}
+%
+Whence, the unique bounded solution to \eqref{eq:cole-hopf} is
+%
+\begin{align}
+\colehopf^\delta(t; \state) = (2 \pi \delta t )^{(-n/2)} \int_{\ren} \exp \left(-\frac{1}{2 \delta t} \mid \state - \bm{y} \mid^2\right) \exp \left(-\frac{2}{\delta}\valuefunc^\delta(\bm{y})\right) d\bm{y}, \,\, \state \in \ren, t > 0. 
+\end{align} 
+%
+And since we can write $\valuefunc^\delta = (\delta/2) \log \colehopf^\delta$, it follows that the unique bounded solution to the initial-value \eqref{eq:ivp-viscous} is \eqref{eq:ivp-viscous-solution},\ie 
+%
+\begin{align}
+	\valuefunc^\delta(t; \state) &= -\frac{\delta}{2} \log \bigg\{(2\pi\delta t)^{-n/2}\int_{\ren} \exp \left(-\frac{1}{2\delta t}\cdot |\state-\bm{y}|^2\right) \exp \left(-\frac{2}{\delta}\cdot \valuefunc^\delta(\bm{y})\right) d\bm{y} \bigg\}
+\end{align}
+%
+% It is trivial to establish that the case for the boundary is  $\valuefunc^\delta(t; \state) = 0$.
+\end{proof}
+
+
+\begin{proof}[Proof of Corollary \ref{cor:expectation}]
+	The proof is straightforward. Examining the solution \eqref{eq:ivp-viscous-solution},and reordering \eqref{eq:cole-hopf}, it is obvious that the right-hand-side is a form of the multivariate Gaussian distribution if we set the mean to $\state$ and the variance to $\delta t$. \textit{A fortiori}, the solution to the HJ equation can be obtained by sampling from the multivariate Gaussian distribution \eqref{eq:ivp-viscous-expectation}.
+\end{proof}
+
+%\begin{proof}[Time and Spatial Gradients]
+%	To derive the formula for $\valuefunc_t$, recall that $\colehopf_t^\delta = \openset^\prime(\valuefunc^\delta) \valuefunc^\delta_t$, where $\openset^\prime = -(2/\delta) \exp\left(-\frac{2}{\delta}\valuefunc^\delta\right)$ is the derivative obtained from the linear transformation \eqref{eq:linear_trans}. It follows that 
+%		%
+%		\begin{align}
+%			\valuefunc_t^\delta &= \colehopf_t^\delta / \openset^\prime (\valuefunc^\delta) \equiv \dfrac{\frac{\delta}{2} \Delta \colehopf^\delta}{-(2/\delta) \exp\left(-\frac{2}{\delta}\valuefunc^\delta\right)}
+%		\end{align}
+%	%
+%	from which we can write the time derivative as 
+%	%	
+%	\begin{align}
+%		\valuefunc_t^\delta = - \dfrac{\delta^2}{4} \dfrac{\Delta \colehopf^\delta}{\exp\left(-(2/\delta) \valuefunc^\delta \right)}
+%	\end{align}
+%	%
+%%	\tcb{
+%%		}
+%%	{Time derivative}	
+%	
