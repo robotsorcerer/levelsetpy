@@ -16,7 +16,7 @@ from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
 
 from levelsetpy.spatialderivative.ENO3bHelper import upwindFirstENO3bHelper
-from levelsetpy.utilities.check_eq_approx import checkEquivalentApprox
+from levelsetpy.spatialderivative.check_eq_approx import checkEquivalentApprox
 
 def  upwindFirstENO3b(grid, data, dim, generateAll=0):
     """

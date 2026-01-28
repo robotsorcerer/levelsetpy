@@ -1,4 +1,4 @@
-__all__ = ["artificia.dissipationLLF"]
+__all__ = ["artificialDissipationLLF"]
 
 __author__ 		= "Lekan Molu"
 __copyright__ 	= "2021, Hamilton-Jacobi Analysis in Python"
