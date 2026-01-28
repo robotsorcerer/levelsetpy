@@ -49,7 +49,7 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(
-    name='LevelSetPy',
+    name='levelsetpy',
     version='0.0',
     author='Lekan Molu',
     author_email='lekanmolu@microsoft.com',

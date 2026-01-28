@@ -12,7 +12,7 @@ __status__ 		= "Completed"
 import logging
 import numpy as np
 from levelsetpy.utilities import *
-from .process_grid import processGrid
+from levelsetpy.grids.process_grid import processGrid
 from levelsetpy.boundarycondition import addGhostExtrapolate, addGhostPeriodic
 
 logger = logging.getLogger(__name__)

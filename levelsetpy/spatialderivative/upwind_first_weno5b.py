@@ -17,8 +17,8 @@ from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
 
 
-from .ENO3bHelper import upwindFirstENO3bHelper
-from .upwind_first_weno5a import weightWENO
+from levelsetpy.spatialderivative.ENO3bHelper import upwindFirstENO3bHelper
+from levelsetpy.spatialderivative.upwind_first_weno5a import weightWENO
 
 def upwindFirstWENO5b(grid, data, dim, generateAll=False):
     """

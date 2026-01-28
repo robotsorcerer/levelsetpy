@@ -15,7 +15,7 @@ import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
 
-from .upwind_first_weno5a import upwindFirstWENO5a
+from levelsetpy.spatialderivative.upwind_first_weno5a import upwindFirstWENO5a
 
 def upwindFirstWENO5(grid, data, dim, generateAll =False):
     """

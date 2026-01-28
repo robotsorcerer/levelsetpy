@@ -10,9 +10,8 @@ __status__ 		= "Completed"
 
 import warnings
 import numpy as np
-from .utils import check_target
+from levelsetpy.initialconditions.utils import check_target
 from levelsetpy.utilities.matlab_utils import *
-from .utils import check_target
 
 def shapeCube(grid, lower=None, upper=None):
     """

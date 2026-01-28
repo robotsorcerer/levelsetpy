@@ -16,7 +16,7 @@ import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
 
-from .check_eq_approx import checkEquivalentApprox
+from levelsetpy.utilities.check_eq_approx import checkEquivalentApprox
 
 def upwindFirstENO2(grid, data, dim, generateAll=0):
     """

@@ -5,15 +5,15 @@ __maintainer__ 	= "Lekan Molu"
 __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
-from SpatialDerivative.Other import *
-from .check_eq_approx import checkEquivalentApprox
-from .ENO3aHelper import upwindFirstENO3aHelper
-from .ENO3bHelper import upwindFirstENO3bHelper
-from .upwind_first_first import upwindFirstFirst
-from .upwind_first_eno2 import upwindFirstENO2
-from .upwind_first_eno3 import upwindFirstENO3
-from .upwind_first_eno3a import upwindFirstENO3a
-from .upwind_first_eno3b import upwindFirstENO3b
-from .upwind_first_weno5 import upwindFirstWENO5
-from .upwind_first_weno5a import upwindFirstWENO5a
-from .upwind_first_weno5b import upwindFirstWENO5b
+from levelsetpy.spatialderivative.other import *
+from levelsetpy.spatialderivative.check_eq_approx import checkEquivalentApprox
+from levelsetpy.spatialderivative.ENO3aHelper import upwindFirstENO3aHelper
+from levelsetpy.spatialderivative.ENO3bHelper import upwindFirstENO3bHelper
+from levelsetpy.spatialderivative.upwind_first_first import upwindFirstFirst
+from levelsetpy.spatialderivative.upwind_first_eno2 import upwindFirstENO2
+from levelsetpy.spatialderivative.upwind_first_eno3 import upwindFirstENO3
+from levelsetpy.spatialderivative.upwind_first_eno3a import upwindFirstENO3a
+from levelsetpy.spatialderivative.upwind_first_eno3b import upwindFirstENO3b
+from levelsetpy.spatialderivative.upwind_first_weno5 import upwindFirstWENO5
+from levelsetpy.spatialderivative.upwind_first_weno5a import upwindFirstWENO5a
+from levelsetpy.spatialderivative.upwind_first_weno5b import upwindFirstWENO5b

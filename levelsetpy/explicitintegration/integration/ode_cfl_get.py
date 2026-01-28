@@ -10,7 +10,7 @@ __status__ 		= "Completed"
 
 
 from levelsetpy.utilities import *
-from .ode_cfl_set import odeCFLset
+from levelsetpy.explicitintegration.integration.ode_cfl_set import odeCFLset
 
 def odeCFLget(options=None, name=None):
     """

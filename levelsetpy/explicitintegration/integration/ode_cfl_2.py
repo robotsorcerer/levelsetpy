@@ -15,9 +15,9 @@ import cupy as cp
 import numpy as np
 
 from levelsetpy.utilities import *
-from .ode_cfl_set import odeCFLset
-from .ode_cfl_mult import odeCFLmultipleSteps
-from .ode_cfl_call import odeCFLcallPostTimestep
+from levelsetpy.explicitintegration.integration.ode_cfl_set import odeCFLset
+from levelsetpy.explicitintegration.integration.ode_cfl_mult import odeCFLmultipleSteps
+from levelsetpy.explicitintegration.integration.ode_cfl_call import odeCFLcallPostTimestep
 
 def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
     """

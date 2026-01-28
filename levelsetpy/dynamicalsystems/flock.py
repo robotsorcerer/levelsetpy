@@ -18,7 +18,7 @@ import cupy as cp
 import numpy as np
 
 from levelsetpy.initialconditions.shape_ops import shapeUnion
-from .bird import Bird
+from levelsetpy.dynamicalsystems.bird import Bird
 from levelsetpy.grids import *
 from levelsetpy.initialconditions import *
 from levelsetpy.utilities.matlab_utils import *

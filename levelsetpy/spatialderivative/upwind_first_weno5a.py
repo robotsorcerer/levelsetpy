@@ -17,7 +17,7 @@ from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
 
 
-from .ENO3aHelper import upwindFirstENO3aHelper
+from levelsetpy.spatialderivative.ENO3aHelper import upwindFirstENO3aHelper
 
 def upwindFirstWENO5a(grid, data, dim, generateAll=False):
     """

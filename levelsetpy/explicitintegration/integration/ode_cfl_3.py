@@ -12,9 +12,9 @@ __status__ 		= "Completed"
 import copy
 import cupy as cp
 import numpy as np
-from .ode_cfl_set import odeCFLset
-from .ode_cfl_mult import odeCFLmultipleSteps
-from .ode_cfl_call import odeCFLcallPostTimestep
+from levelsetpy.explicitintegration.integration.ode_cfl_set import odeCFLset
+from levelsetpy.explicitintegration.integration.ode_cfl_mult import odeCFLmultipleSteps
+from levelsetpy.explicitintegration.integration.ode_cfl_call import odeCFLcallPostTimestep
 from levelsetpy.utilities import *
 
 def odeCFL3(schemeFunc, tspan, y0, options, schemeData):

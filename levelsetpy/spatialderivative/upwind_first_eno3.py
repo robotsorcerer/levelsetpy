@@ -16,7 +16,7 @@ from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
 
 
-from .upwind_first_eno3a import upwindFirstENO3a
+from levelsetpy.spatialderivative.upwind_first_eno3a import upwindFirstENO3a
 
 def  upwindFirstENO3(grid, data, dim, generateAll=0):
     """

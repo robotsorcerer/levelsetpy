@@ -15,7 +15,7 @@ import copy
 import numpy as np
 from levelsetpy.utilities import *
 from levelsetpy.grids import getOGPBounds, createGrid
-from .cell_neighs import neighbors
+from levelsetpy.grids.cell_neighs import neighbors
 
 
 def cells_from_grid(g, bounds, padding=None):

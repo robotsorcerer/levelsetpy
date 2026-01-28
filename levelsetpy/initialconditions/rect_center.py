@@ -10,7 +10,7 @@ __status__ 		= "Completed"
 
 import numpy as np
 from levelsetpy.utilities.matlab_utils import *
-from .rect_corners import shapeRectangleByCorners
+from levelsetpy.initialconditions.rect_corners import shapeRectangleByCorners
 
 def shapeRectangleByCenter(grid, center=None, widths=None):
     """
