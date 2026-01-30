@@ -241,10 +241,12 @@ def main(savedict):
  <img src="figures/shapes3d/sphere.jpeg" height="250px" width="250px">
  <img src="figures/shapes3d/cylinder.jpeg" height="250px" width="250px">
  <img src="figures/shapes3d/sphere_cyl_diff.jpeg" height="250px" width="250px">
+</div>
+
+<div align="center">
  <img src="figures/shapes3d/sphere_cyl_union.jpeg" height="250px" width="250px">
  <img src="figures/shapes3d/sphere_cyl_intersect.jpeg" height="250px" width="250px">
 </div>
-
 
 #### Robustly Controlled Backward Reachable Tubes (RCBRTs)
 
