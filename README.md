@@ -51,6 +51,8 @@ A separate `README.md` file is left in the respective folders to guide the reade
 
 ### **Examples**
 
+#### **Initial Value Problems (IVP)**
+
 + Make a 2D Grid 
 
 ```python
@@ -80,6 +82,25 @@ savedict = dict(save=True, savename='2d_grid.jpg', savepath=join("..", "jpeg_dum
 viz = Visualizer(winsize=(8, 5), block=block, savedict=savedict)
 viz.visGrid([g], g.dim, title='Simple 2D Grid')
 ```
+
+ - Spheres on a 2D grid: a single sphere, two spheres, union of two spheres, and difference of a sphere and a rectangle.
+
+<div align="center">
+ <img src="figures/shapes2d/sphere_2d.jpeg" height="250px" width="250px">
+ <img src="figures/shapes2d/sphere2_2d.jpeg" height="250px" width="250px">
+ <img src="figures/shapes2d/sphere_union_2d.jpeg" height="250px" width="250px">
+ <img src="figures/shapes2d/sph_rect_diff_2d.jpeg" height="250px" width="250px">
+</div>
+
+- Rectangles on a 2D grid: a single rectangle, two rectangles, union of two rectangles, and a cylinder.
+
+<div align="center">
+ <img src="figures/shapes2d/rect3_2d.jpeg" height="250px" width="250px">
+ <img src="figures/shapes2d/rect4_2d.jpeg" height="250px" width="250px">
+ <img src="figures/shapes2d/rect_union_2d.jpeg" height="250px" width="250px">
+ <img src="figures/shapes2d/cylinder_2d.jpeg" height="250px" width="250px">
+</div>
+
 
 + 3D Grids
 
@@ -214,17 +235,72 @@ def main(savedict):
 	plt.show()
 ```
 
+- Initial Conditions for a 3D Grid: a sphere, a cylinder, a sphere and a cylinder difference, a sphere and a cylinder union, and a sphere and a an iconosphere.
+
+<div align="center">
+ <img src="figures/shapes3d/sphere.jpeg" height="250px" width="250px">
+ <img src="figures/shapes3d/cylinder.jpeg" height="250px" width="250px">
+ <img src="figures/shapes3d/sphere_cyl_diff.jpeg" height="250px" width="250px">
+ <img src="figures/shapes3d/sphere_cyl_union.jpeg" height="250px" width="250px">
+ <img src="figures/shapes3d/sphere_cyl_intersect.jpeg" height="250px" width="250px">
+</div>
+
+
+#### Robustly Controlled Backward Reachable Tubes (RCBRTs)
+
+
+
 + RCBRT of a 2D Rocket System
 
 ```bash
 python levelsetpy/examples/rocket_ls_example.py
 ```
 
+- Two rockets on a 2D plane, initial zero level set, and the final RCBRT.
+
+<div align="center">
+ <img src="figures/rocket.jpg" height="250px" width="250px">
+ <img src="figures/rocket_zerolev.jpg" height="250px" width="250px">
+ <img src="figures/rocket_ls_final.jpg" height="250px" width="250px">
+</div>
+
+
 + Compute the RCBRT of a Dubins Car System on a Plane
 
 ```bash
 python levelsetpy/examples/dubins_ls_example.py
 ```
+
++ Time to reach the target set for a double integrator on a plane.
+
+```bash
+python levelsetpy/examples/dint_basic.py
+```
+
++ Double integrator on a plane: Analytical Time to Reach the Target Set. Switching Curve. Initial Conditions.
+
+<div align="center">
+ <img src="figures/dint/attr.jpg" height="300px" width="350px">
+ <img src="figures/dint/switching_curve.jpg" height="300px" width="350px">
+ <img src="figures/dint/doub_int_trajos.jpg" height="300px" width="350px">
+</div>
+
++ Double integrator on a plane: Isochoner above switching curve. Isochoner below switching curve. Isochoner above and below switching curve. 
+
+<div align="center">
+ <img src="figures/dint/isochoner_above.jpg" height="300px" width="350px">
+ <img src="figures/dint/isochoner_below.jpg" height="300px" width="350px">
+ <img src="figures/dint/isochoner_all.jpg" height="300px" width="350px">
+</div>
+
++ Double integrator trajectories evolution.
+
+<div align="center">
+ <img src="figures/dint/dint_0.jpeg" height="300px" width="350px">
+ <img src="figures/dint/dint_03.jpeg" height="300px" width="350px">
+ <img src="figures/dint/dint_06.jpeg" height="300px" width="350px">
+</div>
+
 
 ### Citing this work
 

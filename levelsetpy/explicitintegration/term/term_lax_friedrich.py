@@ -87,10 +87,10 @@ def termLaxFriedrichs(t, y, schemeData):
         thisSchemeData = copy.copy(schemeData)
 
     assert isfield(thisSchemeData, 'grid'),  'grid not in bundle thisschemeData'
-    assert isfield(thisSchemeData, 'CoStateCalc'),  'CoStateCalc not in bundle thisschemeData'
-    assert isfield(thisSchemeData, 'dissFunc'),  'dissFunc not in bundle thisschemeData'
-    assert isfield(thisSchemeData, 'hamFunc'), 'hamFunc not in bundle thisschemeData'
-    assert isfield(thisSchemeData, 'partialFunc'),  'partialFunc not in bundle thisschemeData'
+    assert isfield(thisSchemeData, 'CoStateCalc'),  'CoStateCalc not in bundle thisschemeData' # upwind difference
+    assert isfield(thisSchemeData, 'dissFunc'),  'dissFunc not in bundle thisschemeData' # dissipation function
+    assert isfield(thisSchemeData, 'hamFunc'), 'hamFunc not in bundle thisschemeData' # hamiltonian function
+    assert isfield(thisSchemeData, 'partialFunc'),  'partialFunc not in bundle thisschemeData' # partial function
 
     grid = copy.copy(thisSchemeData.grid)
 
@@ -106,8 +106,8 @@ def termLaxFriedrichs(t, y, schemeData):
 
     # Calculate the co-states of value function
     for i in range(grid.dim):
-        derivL[i], derivR[i] = thisSchemeData.CoStateCalc(grid, data, i)
-        derivC[i] = 0.5 * (derivL[i] + derivR[i])
+        derivL[i], derivR[i] = thisSchemeData.CoStateCalc(grid, data, i) # upwind difference
+        derivC[i] = 0.5 * (derivL[i] + derivR[i]) # centered difference
 
     # Analytic Hamiltonian with centered difference derivatives.
     result = thisSchemeData.hamFunc(t, data, derivC, thisSchemeData)
