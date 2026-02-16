@@ -10,7 +10,7 @@ __status__ 		= "Completed"
 
 import copy
 import logging
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -56,8 +56,8 @@ def  upwindFirstENO3b(grid, data, dim, generateAll=0):
     Lekan on August 16, 2021
     Added cupy impl on Nov 18, 21
     """
-    if isinstance(data, cp.ndarray):
-      data = cp.asarray(data)
+    if isinstance(data, torch.Tensor):
+      data = torch.as_tensor(data)
 
     if((dim < 0) or (dim > grid.dim)):
         ValueError('Illegal dim parameter')
@@ -75,10 +75,8 @@ def  upwindFirstENO3b(grid, data, dim, generateAll=0):
     if(generateAll):
         # Compute the left and right approximations.
         # No need to build WENO approximation, just return all the ENO approx.
-        res = upwindFirstENO3bHelper(grid, gdata, dim, -1)
-        derivL = res.eno_approx
-        res = upwindFirstENO3bHelper(grid, gdata, dim, +1)
-        derivR = res.eno_approx
+        derivL, _, _ = upwindFirstENO3bHelper(grid, gdata, dim, -1)
+        derivR, _, _ = upwindFirstENO3bHelper(grid, gdata, dim, +1)
 
         #---------------------------------------------------------------------------
         # If necessary, check equivalence of ENO terms.
@@ -92,11 +90,8 @@ def  upwindFirstENO3b(grid, data, dim, generateAll=0):
             checkEquivalentApprox(derivL[2], derivR[1], small)
     else:
         #Compute the left and right ENO approximations.
-        res = upwindFirstENO3bHelper(grid, gdata, dim, -1)
-        dL, smoothL = res.eno_approx, res.smooth_est
-
-        res = upwindFirstENO3bHelper(grid, gdata, dim, +1)
-        dR, smoothR = res.eno_approx, res.smooth_est
+        dL, smoothL, _ = upwindFirstENO3bHelper(grid, gdata, dim, -1)
+        dR, smoothR, _ = upwindFirstENO3bHelper(grid, gdata, dim, +1)
 
         #The best ENO approximant has the smallest smoothness estimate
         derivL = choose(dL, smoothL)
@@ -115,8 +110,8 @@ def choose(d, s):
     choose1over3 = (s[0] < s[2])
     choose2over3 = (s[1] < s[2])
 
-    deriv = ((choose1over2 and choose1over3) * d[0] \
-            + (cp.logical_not(choose1over2) and choose2over3) * d[1] \
-            + (cp.logical_not(choose1over3) and cp.logical_not(choose2over3)) * d[2])
+    deriv = ((choose1over2 * choose1over3) * d[0] \
+            + (torch.logical_not(choose1over2) * choose2over3) * d[1] \
+            + (torch.logical_not(choose1over3) * torch.logical_not(choose2over3)) * d[2])
 
     return deriv

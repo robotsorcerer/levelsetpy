@@ -9,10 +9,11 @@ __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
 import copy
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 from levelsetpy.explicitintegration.integration.ode_cfl_set import odeCFLset
+from levelsetpy.explicitintegration.integration.ode_cfl_mult import odeCFLmultipleSteps
 from levelsetpy.explicitintegration.integration.ode_cfl_call import odeCFLcallPostTimestep
 
 def odeCFL1(schemeFunc, tspan, y0, options=None, schemeData=None):
@@ -100,7 +101,7 @@ def odeCFL1(schemeFunc, tspan, y0, options=None, schemeData=None):
             # Set numY, but be careful: ((numY == 1) & iscell(y0)) is possible.
             numY = 1
             # We need a cell vector form of schemeFunc.
-            schemeFuncCell = schemeFunc
+            schemeFuncCell = [schemeFunc]
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         t = tspan[0]
         steps = 0; startTime = cputime(); stepBound = np.zeros((numY), dtype=np.float64)
@@ -127,7 +128,7 @@ def odeCFL1(schemeFunc, tspan, y0, options=None, schemeData=None):
                                         tspan[1] - t, options.maxStep)))
             # If there is a terminal event function registered, we need
             #   to maintain the info from the last timestep.
-            if options.terminalEvent:
+            if isfield(options, 'terminalEvent') and options.terminalEvent:
                 yOld , tOld = y, t
             # Update time.
             t += deltaT
@@ -137,19 +138,20 @@ def odeCFL1(schemeFunc, tspan, y0, options=None, schemeData=None):
                     y1[i] +=(deltaT * ydot[i])
             else:
                 y1 = y + deltaT * ydot[0]
+            y = y1
             steps += 1
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             # If there is one or more post-timestep routines, call them.
-            if options.postTimestep:
+            if isfield(options, 'postTimestep') and options.postTimestep:
               y, schemeData = odeCFLcallPostTimestep(t, y, schemeData, options)
 
             # If we are in single step mode, then do not repeat.
-            if(strcmp(options.singleStep, 'on')):
+            if isfield(options, 'singleStep') and strcmp(options.singleStep, 'on'):
                 break
 
             # If there is a terminal event function, establish initial sign
             #   of terminal event vector.
-            if options.terminalEvent:
+            if isfield(options, 'terminalEvent') and options.terminalEvent:
                 eventValue, schemeData = options.terminalEvent(t, y, tOld, yOld, schemeData)
 
                 if((steps > 1) and np.any(np.sign(eventValue) != np.sign(eventValueOld))):
@@ -160,12 +162,12 @@ def odeCFL1(schemeFunc, tspan, y0, options=None, schemeData=None):
         endTime = cputime()
         if(strcmp(options.stats, 'on')):
             info(f'{steps} steps in {(endTime-startTime):.2} seconds from  {tspan[0]} to {t}.')
-        elif(numT > 2):
-            # If we were asked for the solution at multiple timesteps.
-            t, y, schemeData = odeCFLmultipleSteps(schemeFunc, tspan, y0, options, schemeData)
-        else:
-            # Malformed time span.
-            error('tspan must contain at least two entries')
 
+    elif(numT > 2):
+        # If we were asked for the solution at multiple timesteps.
+        t, y, schemeData = odeCFLmultipleSteps(schemeFunc, tspan, y0, options, schemeData)
+    else:
+        # Malformed time span.
+        error('tspan must contain at least two entries')
 
     return t, y, schemeData

@@ -10,7 +10,7 @@ __status__ 		= "Completed"
 
 
 import copy
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 
@@ -91,12 +91,12 @@ def artificialDissipationLLF(t, data, derivL, derivR, schemeData):
 
     for i in range(grid.dim):
         # Get derivative bounds over entire grid (scalars).
-        derivMinL = cp.min(derivL[i].flatten())
-        derivMinR = cp.min(derivR[i].flatten())
+        derivMinL = torch.min(derivL[i].flatten())
+        derivMinR = torch.min(derivR[i].flatten())
         derivMin[i] = min(derivMinL, derivMinR)
 
-        derivMaxL = cp.max(derivL[i].flatten())
-        derivMaxR = cp.max(derivR[i].flatten())
+        derivMaxL = torch.max(derivL[i].flatten())
+        derivMaxR = torch.max(derivR[i].flatten())
         derivMax[i] = max(derivMaxL, derivMaxR)
 
         # Get derivative differences at each node.
@@ -116,8 +116,8 @@ def artificialDissipationLLF(t, data, derivL, derivR, schemeData):
         # For each dimension, LLF restricts the range of that dimension's
         #   costate at each node to the range between left and right
         #   approximations at that node.
-        derivMin[i] = cp.minimum(derivL[i], derivR[i])
-        derivMax[i] = cp.maximum(derivL[i], derivR[i])
+        derivMin[i] = torch.minimum(derivL[i], derivR[i])
+        derivMax[i] = torch.maximum(derivL[i], derivR[i])
 
         alpha = schemeData.partialFunc(t, data, derivMin, derivMax, schemeData, i)
 
@@ -128,6 +128,6 @@ def artificialDissipationLLF(t, data, derivL, derivR, schemeData):
         diss += (0.5 * derivDiff[i] * alpha)
         stepBoundInv +=  (alpha / grid.dx.item(i))
 
-    stepBound = (1 / stepBoundInv).get().item()
+    stepBound = (1 / torch.max(stepBoundInv.flatten())).detach().cpu().item()
 
     return  diss, stepBound

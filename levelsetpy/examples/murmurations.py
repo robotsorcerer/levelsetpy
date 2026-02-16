@@ -20,7 +20,7 @@ import logging
 import argparse
 import sys, os
 import random
-import cupy as cp
+import torch
 import numpy  as np
 from math import pi
 import numpy.linalg as LA
@@ -210,8 +210,9 @@ def main(args):
 					innerData = Bundle({'grid':flock.grid,
 						'hamFunc': flock.hamiltonian,
 						'partialFunc': flock.dissipation,
-						'dissFunc': artificia.dissipationGLF,
-						'CoStateCalc': upwindFirstWENO5a, 
+						'dissFunc': artificialDissipationGLF,
+						# 'CoStateCalc': upwindFirstWENO5a, 
+						'CoStateCalc': upwindFirstENO3a, 
 						}),
 						positive = True,  # direction to grow the updated level set
 					))
@@ -251,10 +252,11 @@ def main(args):
 			# Loop through t_range (subject to a little roundoff).
 			t_now = t_range[0]
 			start_time = time.perf_counter()
-			itr_start = cp.cuda.Event()
-			itr_end = cp.cuda.Event()
+			if USE_CUDA:
+				itr_start = torch.cuda.Event(enable_timing=True)
+				itr_end = torch.cuda.Event(enable_timing=True)
 
-			value_rolling = cp.asarray(copy.copy(flock.payoff))
+			value_rolling = torch.as_tensor(copy.copy(flock.payoff))
 
 			colors = iter(plt.cm.ocean(np.linspace(.25, 2, 100)))
 			color = next(colors)
@@ -268,7 +270,7 @@ def main(args):
 				with h5py.File(savename, 'r+') as df:
 					last_key = [key for key in df['value']][-1]
 					value_rolling = np.asarray(df[f"value/{last_key}"])
-					value_rolling = cp.asarray(value_rolling)
+					value_rolling = torch.as_tensor(value_rolling)
 					t_now = float(last_key.split(sep='_')[-1])
 			else:
 				savename = join(params.savedict.savepath, rf"murmurations_flock_{args.flock_num:0>2}_{datetime.strftime(datetime.now(), '%m-%d-%y_%H-%M')}.hdf5")
@@ -285,10 +287,15 @@ def main(args):
 			start_time = cputime()
 			
 			gpu_time_buffer = []
-			itr_start = cp.cuda.Event(); itr_end = cp.cuda.Event()
+			if USE_CUDA:
+				itr_start = torch.cuda.Event(enable_timing=True)
+				itr_end = torch.cuda.Event(enable_timing=True)
 
 			while(t_range[1] - t_now > small * t_range[1]):
-				itr_start.record()
+				if USE_CUDA:
+					itr_start.record()
+				else:
+					_cpu_start = time.perf_counter()
 				time_step = f"{t_now:.2f}/{t_range[-1]}"
 
 				# Reshape data array into column vector for ode solver call.
@@ -309,7 +316,7 @@ def main(args):
 				norm_tracker.append(LA.norm(y, 2))
 
 				if args.visualize:
-					value_rolling_np = value_rolling.get()
+					value_rolling_np = value_rolling.cpu().numpy()
 					mesh_bundle=implicit_mesh(value_rolling_np, level=0, \
 											  spacing=tuple(spacing.tolist()), \
 											  edge_color=None,  face_color=next(colors))
@@ -324,13 +331,16 @@ def main(args):
 						with h5py.File(savename, 'a') as h5file:
 							h5file.create_dataset(f'value/time_{t_now:0>3.3f}', data=value_rolling_np, compression="gzip")
 
-				itr_end.record(); itr_end.synchronize()
-
-				gpu_time_buffer.append(cp.cuda.get_elapsed_time(itr_start, itr_end)/1e3)
+				if USE_CUDA:
+					itr_end.record()
+					torch.cuda.synchronize()
+					gpu_time_buffer.append((itr_start.elapsed_time(itr_end))/1e3)
+				else:
+					gpu_time_buffer.append(time.perf_counter() - _cpu_start)
 				info(f't: {time_step} | GPU time: {gpu_time_buffer[-1]:.4f} | Norm: {np.linalg.norm(y, 2):.2f}')
 					
 				if len(norm_tracker)>20: # and cp.all(cp.diff(norm_tracker[:-5])<.01):
-					logger.info(.terminating the game!")
+					logger.info("terminating the game!")
 					break
 			end_time = cputime()
 
@@ -378,6 +388,5 @@ def main(args):
 		os._exit()
 
 if __name__ == '__main__':
-	# Do not use python profiler: https://docs.cupy.dev/en/stable/user_guide/performance.html
-	from cupyx.profiler import benchmark
-	print(benchmark(main, (args,), n_repeat=10))
+	# Run the main function
+	main(args)

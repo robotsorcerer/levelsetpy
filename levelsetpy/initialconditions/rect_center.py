@@ -65,8 +65,8 @@ def shapeRectangleByCenter(grid, center=None, widths=None):
     #   the resulting intersection is not quite a signed distance function.
 
     # For the computation, we really want the lower and upper corners.
-    lower = zeros(grid.dim, 1);
-    upper = zeros(grid.dim, 1);
+    lower = np.zeros((grid.dim, 1), dtype=np.float64)
+    upper = np.zeros((grid.dim, 1), dtype=np.float64)
     for i in range(grid.dim):
         lower[i] = center[i] - 0.5 * widths[i]
         upper[i] = center[i] + 0.5 * widths[i]

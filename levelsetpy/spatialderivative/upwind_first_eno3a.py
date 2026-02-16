@@ -10,7 +10,7 @@ __status__ 		= "Completed"
 
 import copy
 import logging
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ def upwindFirstENO3a(grid, data, dim, generateAll=False):
         Added cupy impl on Nov 18, 21
     """
     if isinstance(data, np.ndarray):
-      data = cp.asarray(data)
+      data = torch.as_tensor(data)
 
     if((dim < 0) or (dim > grid.dim)):
         raise ValueError('Illegal dim parameter')
@@ -101,7 +101,7 @@ def upwindFirstENO3a(grid, data, dim, generateAll=False):
         sizeData = size(data)
         indices1 = []
         for i in range(grid.dim):
-            indices1.append(cp.arange(sizeData[i], dtype=cp.intp))
+            indices1.append(torch.arange(sizeData[i], dtype=torch.int64))
         indices2 = copy.copy(indices1)
 
         #---------------------------------------------------------------------------
@@ -110,41 +110,41 @@ def upwindFirstENO3a(grid, data, dim, generateAll=False):
         #   difference entries, not to left and right approximations.
 
         # Pick out minimum modulus neighboring D2 term.
-        D2abs = cp.abs(DD.D2)
-        indices1[dim] = cp.arange(size(D2abs, dim)-1, dtype=cp.intp)
+        D2abs = torch.abs(DD.D2)
+        indices1[dim] = torch.arange(size(D2abs, dim)-1, dtype=torch.int64)
         indices2[dim] = indices1[dim] + 1
 
-        smallerL = (D2abs[cp.ix_(*indices1)] < D2abs[cp.ix_(*indices2)])
-        smallerR = cp.logical_not(smallerL)
+        smallerL = (D2abs[torch.meshgrid(*indices1, indexing='ij')] < D2abs[torch.meshgrid(*indices2, indexing='ij')])
+        smallerR = torch.logical_not(smallerL)
 
         #---------------------------------------------------------------------------
         # Figure out smallest modulus D3 terms,
         #   given choice of smallest modulus D2 terms above.
-        D3abs = cp.abs(DD.D3)
-        indices1[dim] = cp.arange(size(D3abs, dim)-1, dtype=cp.intp)
+        D3abs = torch.abs(DD.D3)
+        indices1[dim] = torch.arange(size(D3abs, dim)-1, dtype=torch.int64)
         indices2[dim] = copy.copy(indices1[dim]) + 1
-        smallerTemp = (D3abs[cp.ix_(*indices1)] < D3abs[cp.ix_(*indices2)])
+        smallerTemp = (D3abs[torch.meshgrid(*indices1, indexing='ij')] < D3abs[torch.meshgrid(*indices2, indexing='ij')])
 
-        indices1[dim] = cp.arange(size(smallerTemp, dim)-1, dtype=cp.intp)
+        indices1[dim] = torch.arange(size(smallerTemp, dim)-1, dtype=torch.int64)
         indices2[dim] = copy.copy(indices1[dim]) +1
-        smallerLL = cp.logical_and(smallerTemp[cp.ix_(*indices1)], smallerL)
-        smallerRL = cp.logical_and(smallerTemp[cp.ix_(*indices2)], smallerR)
-        smallerTemp = cp.logical_not(smallerTemp)
-        smallerLR = cp.logical_and(smallerTemp[cp.ix_(*indices1)], smallerL)
-        smallerRR = cp.logical_and(smallerTemp[cp.ix_(*indices2)], smallerR)
+        smallerLL = torch.logical_and(smallerTemp[torch.meshgrid(*indices1, indexing='ij')], smallerL)
+        smallerRL = torch.logical_and(smallerTemp[torch.meshgrid(*indices2, indexing='ij')], smallerR)
+        smallerTemp = torch.logical_not(smallerTemp)
+        smallerLR = torch.logical_and(smallerTemp[torch.meshgrid(*indices1, indexing='ij')], smallerL)
+        smallerRR = torch.logical_and(smallerTemp[torch.meshgrid(*indices2, indexing='ij')], smallerR)
 
-        smallerM = cp.logical_or(smallerRL, smallerLR)
+        smallerM = torch.logical_or(smallerRL, smallerLR)
 
         #---------------------------------------------------------------------------
         # Pick out the best third order approximation
-        indices1[dim] = cp.arange(size(smallerLL, dim)-1, dtype=cp.intp)
-        derivL = (dL[0] * smallerLL[cp.ix_(*indices1)] + \
-                  dL[1] * smallerM[cp.ix_(*indices1)] + \
-                  dL[2] * smallerRR[cp.ix_(*indices1)])
+        indices1[dim] = torch.arange(size(smallerLL, dim)-1, dtype=torch.int64)
+        derivL = (dL[0] * smallerLL[torch.meshgrid(*indices1, indexing='ij')] + \
+                  dL[1] * smallerM[torch.meshgrid(*indices1, indexing='ij')] + \
+                  dL[2] * smallerRR[torch.meshgrid(*indices1, indexing='ij')])
 
-        indices1[dim] = cp.arange(1,size(smallerLL, dim), dtype=cp.intp)
-        derivR = (dR[0] * smallerLL[cp.ix_(*indices1)]
-                    + dR[1] * smallerM[cp.ix_(*indices1)]
-                    + dR[2] * smallerRR[cp.ix_(*indices1)])
+        indices1[dim] = torch.arange(1,size(smallerLL, dim), dtype=torch.int64)
+        derivR = (dR[0] * smallerLL[torch.meshgrid(*indices1, indexing='ij')]
+                    + dR[1] * smallerM[torch.meshgrid(*indices1, indexing='ij')]
+                    + dR[2] * smallerRR[torch.meshgrid(*indices1, indexing='ij')])
 
     return derivL, derivR

@@ -9,7 +9,7 @@ __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
 import copy
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 
@@ -100,9 +100,9 @@ def termLaxFriedrichs(t, y, schemeData):
         data = y.reshape(grid.shape)
 
     # Get upwinded and centered derivative approximations.
-    derivL = [cp.nan for i in range(grid.dim)]
-    derivR = [cp.nan for i in range(grid.dim)]
-    derivC = [cp.nan for i in range(grid.dim)]
+    derivL = [torch.tensor(float('nan')) for i in range(grid.dim)]
+    derivR = [torch.tensor(float('nan')) for i in range(grid.dim)]
+    derivC = [torch.tensor(float('nan')) for i in range(grid.dim)]
 
     # Calculate the co-states of value function
     for i in range(grid.dim):
@@ -127,6 +127,6 @@ def termLaxFriedrichs(t, y, schemeData):
 
     #---------------------------------------------------------------------------
     # Reshape output into vector format and negate for RHS of ODE.
-    ydot = cp.expand_dims(-delta.flatten(), 1)
+    ydot = torch.unsqueeze(-delta.flatten(), 1)
 
     return ydot, stepBound, schemeData

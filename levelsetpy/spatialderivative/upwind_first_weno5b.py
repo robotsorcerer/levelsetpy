@@ -11,7 +11,7 @@ __status__ 		= "Needs review"
 
 import copy
 import logging
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -59,11 +59,11 @@ def upwindFirstWENO5b(grid, data, dim, generateAll=False):
 
      Copyright Lekan Molu, 8/21/2021.
     """
-    if isinstance(data, cp.ndarray):
-      data = cp.asarray(data)
+    if isinstance(data, np.ndarray):
+      data = torch.as_tensor(data)
 
     if((dim < 0) or (dim > grid.dim)):
-        ValueError('Illegal dim parameter')
+        raise ValueError('Illegal dim parameter')
 
     # How big is the stencil?
     stencil = 3
@@ -76,8 +76,8 @@ def upwindFirstWENO5b(grid, data, dim, generateAll=False):
     if(generateAll):
         # Compute the left and right approximations.
         # No need to build WENO approximation, just return all the ENO approx.
-        derivL = upwindFirstENO3bHelper(grid, gdata, dim, -1)
-        derivR = upwindFirstENO3bHelper(grid, gdata, dim, +1)
+        derivL, _, _ = upwindFirstENO3bHelper(grid, gdata, dim, -1)
+        derivR, _, _ = upwindFirstENO3bHelper(grid, gdata, dim, +1)
     else:
         #Compute the left and right ENO approximations.
         dL, smoothL, epsilonL = upwindFirstENO3bHelper(grid, gdata, dim, -1)

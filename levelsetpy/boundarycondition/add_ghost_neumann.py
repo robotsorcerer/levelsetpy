@@ -12,7 +12,7 @@ __revised__         = "May 09, 2023"
 
 import copy 
 import logging
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -71,28 +71,28 @@ def addGhostNeumann(dataIn, dim, width=None, ghostData=None):
         lowerDerivative = 0
         upperDerivative = copy.copy(lowerDerivative)
 
-    dims = dataIn.ndim 
-    sizeIn = dataIn.shape 
-    indicesOut = [dim for dim in range(dims)]
-    for dim in range(dims):
-        indicesOut[dim] = range(sizeIn[dim])
+    dims = dataIn.ndim
+    sizeIn = dataIn.shape
+    indicesOut = []
+    for d in range(dims):
+        indicesOut.append(torch.arange(sizeIn[d], dtype=torch.int64))
     indicesIn = copy.copy(indicesOut)
 
-    sizeOut       = copy.copy(sizeIn)
-    sizeOut[dim] += 2*width 
-    dataOut       = cp.zeros(sizeOut)
+    sizeOut       = list(sizeIn)
+    sizeOut[dim] += 2*width
+    dataOut       = torch.zeros(tuple(sizeOut), dtype=DTYPE)
 
-    indicesOut[dim] = range(width, sizeOut[dim]-width)
-    dataOut[cp.ix_(*indicesOut)] = copy.copy(dataIn)
-    
-    # extrapolate 
+    indicesOut[dim] = torch.arange(width, sizeOut[dim]-width, dtype=torch.int64)
+    dataOut[torch.meshgrid(*indicesOut, indexing='ij')] = copy.copy(dataIn)
+
+    # extrapolate
     for i in range(width):
-        indicesOut[dim] = i
-        indicesIn[dim]  = 1
-        dataOut[cp.ix_(*indicesOut)] = dataIn[cp.ix_(*indicesIn)] + (width - i) * lowerDerivative
-    
-        indicesOut[dim] = copy.copy(sizeOut[dim] - i - 1)
-        indicesIn[dim]  = copy.copy(sizeIn[dim] )
-        dataOut[cp.ix_(*indicesOut)] = dataIn[cp.ix_(*indicesIn)] + (width - i) * upperDerivative
-    
+        indicesOut[dim] = torch.tensor([i], dtype=torch.int64)
+        indicesIn[dim]  = torch.tensor([0], dtype=torch.int64)
+        dataOut[torch.meshgrid(*indicesOut, indexing='ij')] = dataIn[torch.meshgrid(*indicesIn, indexing='ij')] + (width - i) * lowerDerivative
+
+        indicesOut[dim] = torch.tensor([sizeOut[dim] - i - 1], dtype=torch.int64)
+        indicesIn[dim]  = torch.tensor([sizeIn[dim] - 1], dtype=torch.int64)
+        dataOut[torch.meshgrid(*indicesOut, indexing='ij')] = dataIn[torch.meshgrid(*indicesIn, indexing='ij')] + (width - i) * upperDerivative
+
     return dataOut

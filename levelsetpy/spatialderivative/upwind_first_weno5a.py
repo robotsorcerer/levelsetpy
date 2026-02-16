@@ -11,7 +11,7 @@ __status__ 		= "Needs review"
 
 import copy
 import logging
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -61,11 +61,11 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=False):
      Copyright Lekan Molu, 8/21/2021
     """
 
-    if isinstance(data, cp.ndarray):
-      data = cp.asarray(data)
+    if isinstance(data, np.ndarray):
+      data = torch.as_tensor(data)
 
     if((dim < 0) or (dim > grid.dim)):
-        error('Illegal dim parameter')
+        raise ValueError('Illegal dim parameter')
 
     # How would you like to calculate epsilon?
     #   'constant'         Use constant 1e-6.
@@ -98,46 +98,46 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=False):
         sizeData = size(data)
         indices1 = []
         for i in range(grid.dim):
-            indices1.append(cp.arange(sizeData[i], dtype=cp.intp))
+            indices1.append(torch.arange(sizeData[i], dtype=torch.int64))
         indices2 = copy.copy(indices1)
 
         terms = 5
-        indices = [indices1 for i in range(terms)]
+        indices = [copy.copy(indices1) for i in range(terms)]
 
         # Element i of the indices cell vector contains an index cell vector
         #   that pulls out the v_i terms for the left approximation from the
         #   first divided difference table.
         for i in range(terms):
-            indices[i][dim] = cp.arange(size(D1, dim) + i - 5, dtype=cp.intp)
+            indices[i][dim] = torch.arange(i, size(D1, dim) + i - 4, dtype=torch.int64)
         #---------------------------------------------------------------------------
         # Smoothness estimates of stencils.
         smooth = cell(3,1)
-        smooth[0] = ((13/12) * (D1[cp.ix_(*indices[0])] \
-                              - 2 * D1[cp.ix_(*indices[1])] \
-                              + D1[cp.ix_(*indices[2])]) **2 \
-                   + (1/4) * (D1[cp.ix_(*indices[0])] \
-                              - 4 * D1[cp.ix_(*indices[1])] \
-                              + 3 * D1[cp.ix_(*indices[2])]) **2)
-        smooth[1] = ((13/12) * (D1[cp.ix_(*indices[1])] \
-                              - 2 * D1[cp.ix_(*indices[2])] \
-                              + D1[cp.ix_(*indices[3])]) **2 \
-                   + (1/4) * (D1[cp.ix_(*indices[1])] \
-                              - D1[cp.ix_(*indices[3])]) **2)
-        smooth[2] = ((13/12) * (D1[cp.ix_(*indices[2])] \
-                              - 2 * D1[cp.ix_(*indices[3])] \
-                              + D1[cp.ix_(*indices[4])]) **2 \
-                   + (1/4) * (3 * D1[cp.ix_(*indices[2])] \
-                              - 4 * D1[cp.ix_(*indices[3])] \
-                              + D1[cp.ix_(*indices[4])]) ** 2)
+        smooth[0] = ((13/12) * (D1[torch.meshgrid(*indices[0], indexing='ij')] \
+                              - 2 * D1[torch.meshgrid(*indices[1], indexing='ij')] \
+                              + D1[torch.meshgrid(*indices[2], indexing='ij')]) **2 \
+                   + (1/4) * (D1[torch.meshgrid(*indices[0], indexing='ij')] \
+                              - 4 * D1[torch.meshgrid(*indices[1], indexing='ij')] \
+                              + 3 * D1[torch.meshgrid(*indices[2], indexing='ij')]) **2)
+        smooth[1] = ((13/12) * (D1[torch.meshgrid(*indices[1], indexing='ij')] \
+                              - 2 * D1[torch.meshgrid(*indices[2], indexing='ij')] \
+                              + D1[torch.meshgrid(*indices[3], indexing='ij')]) **2 \
+                   + (1/4) * (D1[torch.meshgrid(*indices[1], indexing='ij')] \
+                              - D1[torch.meshgrid(*indices[3], indexing='ij')]) **2)
+        smooth[2] = ((13/12) * (D1[torch.meshgrid(*indices[2], indexing='ij')] \
+                              - 2 * D1[torch.meshgrid(*indices[3], indexing='ij')] \
+                              + D1[torch.meshgrid(*indices[4], indexing='ij')]) **2 \
+                   + (1/4) * (3 * D1[torch.meshgrid(*indices[2], indexing='ij')] \
+                              - 4 * D1[torch.meshgrid(*indices[3], indexing='ij')] \
+                              + D1[torch.meshgrid(*indices[4], indexing='ij')]) ** 2)
 
         # Left smoothness estimates just use the left looking portion of
         #   these estimates.  The ENO approximations are in the same order
         #   as in O&F, so we can use the same alpha weights as (3.35) - (3.37).
         smoothL = cell(len(smooth))
-        indices1[dim] = cp.arange(size(data, dim),dtype=cp.intp)
+        indices1[dim] = torch.arange(size(data, dim),dtype=torch.int64)
 
         for i in range(len(smooth)):
-            smoothL[i] = smooth[i][cp.ix_(*indices1)]
+            smoothL[i] = smooth[i][torch.meshgrid(*indices1, indexing='ij')]
 
         weightL = [ 0.1, 0.6, 0.3 ]
 
@@ -148,9 +148,9 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=False):
         #   are in the opposite order as O&F, so we need to reorder the alpha
         #   weights from (3.35) - (3.37).
         smoothR = cell(len(smooth))
-        indices2[dim] = cp.arange(1,size(data, dim) + 1, dtype=cp.intp)
+        indices2[dim] = torch.arange(1,size(data, dim) + 1, dtype=torch.int64)
         for i in range(len(smooth)):
-            smoothR[i] = smooth[i][cp.ix_(*indices2)]
+            smoothR[i] = smooth[i][torch.meshgrid(*indices2, indexing='ij')]
 
         weightR = [ 0.3, 0.6, 0.1 ]
 
@@ -160,17 +160,17 @@ def upwindFirstWENO5a(grid, data, dim, generateAll=False):
             epsilonR = epsilonL
         elif strcmp(epsilonCalculationMethod, 'maxOverGrid'):
             D1squared = D1**2
-            epsilonL = 1e-6 * cp.max(D1squared.flatten()) + 1e-99
+            epsilonL = 1e-6 * torch.max(D1squared.flatten()) + 1e-99
             epsilonR = epsilonL
         elif strcmp(epsilonCalculationMethod, 'maxOverNeighbors'):
             # Implements (3.38) in O&F for computing epsilon.
             D1squared = D1**2
-            epsilon = D1squared[cp.ix_(*indices[0])]
+            epsilon = D1squared[torch.meshgrid(*indices[0], indexing='ij')]
             for i in range(1, len(indices)):
-                epsilon = cp.max(epsilon, D1squared[cp.ix_(*indices[i])].flatten())
+                epsilon = torch.max(epsilon, D1squared[torch.meshgrid(*indices[i], indexing='ij')].flatten())
             epsilon = 1e-6 * epsilon + 1e-99
-            epsilonL = epsilon[cp.ix_(*indices1)]
-            epsilonR = epsilon[cp.ix_(*indices2)]
+            epsilonL = epsilon[torch.meshgrid(*indices1, indexing='ij')]
+            epsilonR = epsilon[torch.meshgrid(*indices2, indexing='ij')]
         else:
             error(f'Unknown epsilonCalculationMethod  {epsilonCalculationMethod}')
 

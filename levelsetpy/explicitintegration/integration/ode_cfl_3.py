@@ -10,7 +10,7 @@ __status__ 		= "Completed"
 
 
 import copy
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.explicitintegration.integration.ode_cfl_set import odeCFLset
 from levelsetpy.explicitintegration.integration.ode_cfl_mult import odeCFLmultipleSteps
@@ -270,6 +270,6 @@ def odeCFL3(schemeFunc, tspan, y0, options, schemeData):
     #---------------------------------------------------------------------------
     else:
         # Malformed time span.
-        ValueError('tspan must contain at least two entries')
+        raise ValueError('tspan must contain at least two entries')
 
     return t, y, schemeData

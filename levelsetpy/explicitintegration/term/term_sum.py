@@ -8,7 +8,7 @@ __maintainer__ 	= "Lekan Molu"
 __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 
@@ -77,9 +77,9 @@ def termSum(t, y, schemeData):
     if(not iscell(thisSchemeData.innerFunc) or not iscell(thisSchemeData.innerData)):
         error('schemeData.innerFunc and schemeData.innerData must be cell vectors')
 
-    numSchemes = len(thisSchemeData.innerFunc.flatten())
+    numSchemes = len(thisSchemeData.innerFunc)
 
-    if(numSchemes != len(thisSchemeData.innerData.flatten())):
+    if(numSchemes != len(thisSchemeData.innerData)):
         error('schemeData.innerFunc and schemeData.innerData must be the same len')
 
     #Calculate sum of updates (inverse sum of stepBounds).
@@ -93,20 +93,20 @@ def termSum(t, y, schemeData):
         else:
             innerData = schemeData.innerData[i]
 
-    # Compute this component of the update.
-    updateI, stepBoundI, innerData = thisSchemeData.innerFunc[i](t, y, innerData)
-    ydot += updateI
-    stepBoundInv += (1 / stepBoundI)
+        # Compute this component of the update.
+        updateI, stepBoundI, innerData = thisSchemeData.innerFunc[i](t, y, innerData)
+        ydot += updateI
+        stepBoundInv += (1 / stepBoundI)
 
-    # Store any modifications of the inner data structure.
-    if(iscell(schemeData)):
-        schemeData[0].innerData[i] = innerData[0]
-    else:
-        schemeData.innerData[i] = innerData
+        # Store any modifications of the inner data structure.
+        if(iscell(schemeData)):
+            schemeData[0].innerData[i] = innerData[0]
+        else:
+            schemeData.innerData[i] = innerData
 
     # Final timestep bound.
     if(stepBoundInv == 0):
-        stepBound = cp.inf
+        stepBound = torch.inf
     else:
         stepBound = 1 / stepBoundInv
 

@@ -59,8 +59,8 @@ class DoubleIntegratorVisualizer(object):
 		self.grid = params.grid
 
 		# move data to cpu
-		# self.grid.xs = [self.grid.xs[i].get() for i in range(self.grid.dim) \
-		#   					if isinstance(self.grid.xs[i], cp.ndarray) else \
+		# self.grid.xs = [self.grid.xs[i].cpu().numpy() for i in range(self.grid.dim) \
+		#   					if isinstance(self.grid.xs[i], torch.Tensor) else \
 		# 						self.grid.xs[i]]
 
 		self._gs  = Gridspec.GridSpec(1, 2, self._fig)

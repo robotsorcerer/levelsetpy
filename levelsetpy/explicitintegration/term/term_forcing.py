@@ -10,6 +10,7 @@ __status__ 		= "Completed"
 
 
 import copy
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 
@@ -99,7 +100,7 @@ def  termForcing(t, y, schemeData):
     assert isfield(thisSchemeData, 'forcing'), "forcing not in schemeData"
 
     #Get forcing function.
-    if(isfloat(thisSchemeData.forcing)):
+    if(isfloat(thisSchemeData.forcing) or isinstance(thisSchemeData.forcing, (np.ndarray, torch.Tensor))):
         forcing = thisSchemeData.forcing
 
     elif(callable(thisSchemeData.forcing)):
@@ -111,29 +112,32 @@ def  termForcing(t, y, schemeData):
                 data = cell(numY, 1)
                 for i in range(numY):
                     if(iscell(schemeData)):
-                        data[i] = y[i].reshape(schemeData[i].grid.shape, order='F')
+                        data[i] = y[i].reshape(schemeData[i].grid.shape)
                     else:
-                        data[i] = y[i].reshape(schemeData.grid.shape, order='F')
+                        data[i] = y[i].reshape(schemeData.grid.shape)
 
                 forcing = thisSchemeData.forcing(t, data, schemeData)
 
             else:
                 # Ignore any vector level set.
-                data = y[0].reshape(thisSchemeData.grid.shape, order='F')
+                data = y[0].reshape(thisSchemeData.grid.shape)
                 forcing = thisSchemeData.forcing(t, data, thisSchemeData)
 
         else:
             # There is no vector level set.
-            data = y.reshape(thisSchemeData.grid.shape, order='F')
+            data = y.reshape(thisSchemeData.grid.shape)
             forcing = thisSchemeData.forcing(t, data, thisSchemeData)
 
     else:
         error('schemeData.forcing must be a scalar, array or function handle')
     #---------------------------------------------------------------------------
     # Compute the update (including negation for RHS of ODE).
-    ydot = expand(-forcing.flatten(order='F'), 1)
+    if isinstance(forcing, (int, float)):
+        ydot = torch.full((y.numel(),), -forcing, dtype=DTYPE)
+    else:
+        ydot = (-forcing).flatten()
 
     # No derivative, so no timestep limit.
-    stepBound = np.inf
+    stepBound = float('inf')
 
     return ydot, stepBound, schemeData

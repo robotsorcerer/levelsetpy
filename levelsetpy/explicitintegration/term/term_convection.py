@@ -10,6 +10,7 @@ __status__ 		= "Completed"
 
 
 import copy
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 
@@ -148,32 +149,32 @@ def termConvection(t, y, schemeData):
 
 
     # Approximate the convective term dimension by dimension.
-    delta = zeros(size(data))
+    delta = torch.zeros(data.shape, dtype=data.dtype)
     stepBoundInv = 0
     for i in range(grid.dim):
         #Get upwinded derivative approximations.
         derivL, derivR = thisSchemeData.derivFunc(grid, data, i)
 
-    # Figure out upwind direction.
-    v = velocity[i]
-    flowL = (v < 0)
-    flowR = (v > 0)
+        # Figure out upwind direction.
+        v = velocity[i]
+        flowL = (v < 0)
+        flowR = (v > 0)
 
-    # Approximate convective term with upwinded derivatives
-    # (where v == 0 derivative doesn't matter).
-    deriv = derivL * flowR + derivR * flowL
+        # Approximate convective term with upwinded derivatives
+        # (where v == 0 derivative doesn't matter).
+        deriv = derivL * flowR + derivR * flowL
 
-    # Dot product requires sum over dimensions.
-    delta += deriv * v
+        # Dot product requires sum over dimensions.
+        delta += deriv * v
 
-    # CFL condition.  Note that this is conservative we really should do
-    # the summation over the entire grid and then take the maximum,
-    # rather than maximizing for each dimension and then summing.
-    stepBoundInv += np.max(np.abs(v)) / grid.dx[i]
+        # CFL condition.  Note that this is conservative we really should do
+        # the summation over the entire grid and then take the maximum,
+        # rather than maximizing for each dimension and then summing.
+        stepBoundInv += torch.max(torch.abs(v).flatten()) / grid.dx.item(i)
 
     stepBound = 1 / stepBoundInv
 
     # Reshape output into vector format and negate for RHS of ODE.
-    ydot = expand(-delta.flatten(), 1)
+    ydot = (-delta).flatten()
 
     return ydot, stepBound, schemeData

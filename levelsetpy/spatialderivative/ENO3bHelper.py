@@ -10,7 +10,7 @@ __status__ 		= "Completed"
 
 import copy
 import logging
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -54,8 +54,8 @@ def upwindFirstENO3bHelper(grid, gdata, dim, direction):
      Lekan on August 16, 2021
     """
     #---------------------------------------------------------------------------
-    if isinstance(gdata, cp.ndarray):
-      data = cp.asarray(gdata)
+    if isinstance(gdata, torch.Tensor):
+      data = torch.as_tensor(gdata)
 
     dxInv = 1 / grid.dx.item(dim)
 
@@ -66,12 +66,12 @@ def upwindFirstENO3bHelper(grid, gdata, dim, direction):
     sizeData = size(gdata)
     indices = []
     for i in range(grid.dim):
-      indices[i] = cp.arange(sizeData[i], dtype=cp.intp)
+      indices.append(torch.arange(sizeData[i], dtype=torch.int64))
 
     # Compute the appropriate approximations.
     if direction ==-1:
         varargout = derivativeLeft(gdata, dxInv, dim, indices, stencil)
-    if direction == +1:
+    elif direction == +1:
         varargout = derivativeRight(gdata, dxInv, dim, indices, stencil)
     else:
         error(f'Invalid direction parameter {direction}')
@@ -86,16 +86,16 @@ def derivativeLeft(data, dxInv, dim, indices1, stencil):
     indices2 = copy.copy(indices1)
 
     # Where does the actual data lie?
-    indexDer = cp.arange(stencil, (size(data, dim) - stencil), dtype=cp.intp)
+    indexDer = torch.arange(stencil, (size(data, dim) - stencil), dtype=torch.int64)
 
     # The five v terms.
     terms = 5
     v = []
     for i in range(terms):
-        offset = i - 3
+        offset = i - 2
         indices1[dim] = indexDer + offset
         indices2[dim] = indexDer + offset - 1
-        v.append((data[cp.ix_(*indices1)] - data[cp.ix_(*indices2)]) * dxInv)
+        v.append((data[torch.meshgrid(*indices1, indexing='ij')] - data[torch.meshgrid(*indices2, indexing='ij')]) * dxInv)
 
     return derivativeWENO(v)
 
@@ -107,7 +107,7 @@ def derivativeRight(data, dxInv, dim, indices1, stencil):
     indices2 = copy.copy(indices1)
 
     # where does the actual data lie?
-    indexDer = cp.arange(stencil, (size(data, dim) - stencil))
+    indexDer = torch.arange(stencil, (size(data, dim) - stencil))
 
     # the five v terms
     terms = 5
@@ -115,9 +115,9 @@ def derivativeRight(data, dxInv, dim, indices1, stencil):
 
     for i in range(terms):
         offset = 3 - i
-        indices1[dim] = indexDer + offset + 1
-        indices2[dim] = indexDer + offset
-        v[i] = (data[cp.ix_(*indices1)] - data[cp.ix_(*indices2)]) * dxInv
+        indices1[dim] = indexDer + offset
+        indices2[dim] = indexDer + offset - 1
+        v.append((data[torch.meshgrid(*indices1, indexing='ij')] - data[torch.meshgrid(*indices2, indexing='ij')]) * dxInv)
 
     return derivativeWENO(v)
 
@@ -156,13 +156,10 @@ def derivativeWENO(v, use_comp=False):
     if(use_comp):
         epsilon = v[0]**2
         for i in range(1, len(v)):
-            epsilon = cp.max(epsilon, (v[i]**2).flatten())
+            epsilon = torch.max(epsilon, (v[i]**2).flatten())
         epsilon = epsilon*1e-6 + 1e-99
     else:
         epsilon = 1e-6
     eps = epsilon
 
-    result = Bundle(dict(eno_approx=eno_approx, smooth_est=smooth_est, eps=eps))
-
-
-    return result
+    return eno_approx, smooth_est, eps

@@ -13,7 +13,7 @@ import sys, os
 import logging
 import argparse
 import copy, time
-import cupy as cp
+import torch
 import numpy as np
 import scipy.linalg as la
 import matplotlib.pyplot as plt
@@ -30,6 +30,8 @@ from levelsetpy.explicitintegration import *
 from levelsetpy.dynamicalsystems import DoubleIntegrator
 
 parser = argparse.ArgumentParser(description='Double Integrator Analysis')
+
+parser.add_argument('--base_path', '-bp', type=str, default='/opt/levelsetpy', help='base path for saving results' )
 parser.add_argument('--silent', '-si', action='store_true', help='silent debug print outs' )
 parser.add_argument('--visualize', '-vz', action='store_false', help='visualize level sets?' )
 parser.add_argument('--init_cond', '-ic', type=str, default='ellipsoid', help='visualize level sets?' )
@@ -232,7 +234,7 @@ def show_attr(g, attr, fontdict, base_path):
     os.makedirs(savepath) if not os.path.exists(savepath) else None
     fig2.savefig(join(savepath, "attr.jpg"), bbox_inches='tight',facecolor='None')
 
-base_path = "/opt/LevPy/Dint"
+base_path = join(args.base_path, "dint")
 os.makedirs(base_path) if not os.path.exists(base_path) else None
 
 def isochroner(dint, tstar = 0.5):
@@ -325,7 +327,7 @@ def main():
 				innerData = Bundle({'grid':g,
 					'hamFunc': dint.hamiltonian,
 					'partialFunc': dint.dissipation,
-					'dissFunc': artificia.dissipationGLF,
+					'dissFunc': artificialDissipationGLF,
 					'CoStateCalc': upwindFirstENO2,
 					}),
 					positive = False,  # direction to grow the updated level set
@@ -337,7 +339,7 @@ def main():
 
 	y = copy.copy(value_func_init.flatten())
 	y, finite_diff_data = postTimestepTTR(0, y, finite_diff_data)
-	value_func = cp.asarray(copy.copy(y.reshape(g.shape)))
+	value_func = torch.as_tensor(copy.copy(y.reshape(g.shape)))
 
 	# Visualization paramters
 	spacing = tuple(g.dx.flatten().tolist())
@@ -346,7 +348,7 @@ def main():
 						'labelsize': 16,
 						'labels': "Initial 0-LevelSet",
 						'linewidth': 2,
-						'mesh': value_func.get(),
+						'mesh': value_func.cpu().numpy(),
 						'init_conditions': False,
 						'pause_time': args.pause_time,
 						'level': 0, # which level set to visualize
@@ -368,9 +370,15 @@ def main():
 	gpu_time_buffer = []
 
 	idx = 0
-	itr_start = cp.cuda.Event(); itr_end = cp.cuda.Event()
+	if USE_CUDA:
+		itr_start = torch.cuda.Event(enable_timing=True)
+		itr_end = torch.cuda.Event(enable_timing=True)
+
 	while max_time-cur_time > small * max_time:
-		itr_start.record(); 
+		if USE_CUDA:
+			itr_start.record()
+		else:
+			_cpu_start = time.perf_counter()
 		time_step = f"{cur_time:.2f}/{max_time:.2f}"
 
 		y0 = value_func.flatten()
@@ -385,24 +393,26 @@ def main():
 		value_func = y.reshape(g.shape)
 
 		if args.visualize:
-			ls_mesh = value_func.get()
+			ls_mesh = value_func.cpu().numpy()
 			# store this brt
 			value_func_all[idx] = ls_mesh
 			viz.update_tube(attr, ls_mesh, cur_time, delete_last_plot=True)
 			idx += 1
 
-		itr_end.record(); itr_end.synchronize()
-
-		gpu_time_buffer.append(cp.cuda.get_elapsed_time(itr_start, itr_end)/1e3)
+		if USE_CUDA:
+			itr_end.record()
+			torch.cuda.synchronize()
+			gpu_time_buffer.append((itr_start.elapsed_time(itr_end))/1e3)
+		else:
+			gpu_time_buffer.append(time.perf_counter() - _cpu_start)
 		info(f't: {time_step} | GPU time: {gpu_time_buffer[-1]:.4f} | Norm: {np.linalg.norm(y, 2):.2f}')
 
 	info(f"Avg. local time: {sum(gpu_time_buffer)/len(gpu_time_buffer):.4f} secs")
 	info(f"Total Time: {sum(gpu_time_buffer):.4f} secs")
 
 if __name__ == '__main__':
-	# Do not use python profiler: https://docs.cupy.dev/en/stable/user_guide/performance.html
-	from cupyx.profiler import benchmark
-	print(benchmark(main, n_repeat=20))
+	# Run the main function
+	main()
 
 
 

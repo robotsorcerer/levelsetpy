@@ -9,6 +9,7 @@ __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
 import copy
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 
@@ -97,15 +98,15 @@ def termNormal(t, y, schemeData):
 
     #For most cases, we are interested in the first implicit surface function.
     if(iscell(y)):
-        data = y[0].reshape(grid.shape, order='F')
+        data = y[0].reshape(grid.shape)
     else:
-        data = y.reshape(grid.shape, order='F')
+        data = y.reshape(grid.shape)
 
     #Get speed field.
-    if(isfloat(thisSchemeData.forcing)):
-        forcing = thisSchemeData.forcing
+    if(isfloat(thisSchemeData.speed) or isinstance(thisSchemeData.speed, (np.ndarray, torch.Tensor))):
+        speed = thisSchemeData.speed
 
-    elif(callable(thisSchemeData.forcing)):
+    elif(callable(thisSchemeData.speed)):
 
         if(iscell(y)):
             if(isfield(thisSchemeData, 'passVLS') and thisSchemeData.passVLS):
@@ -114,9 +115,9 @@ def termNormal(t, y, schemeData):
                 dataV = cell(numY, 1)
                 for i in range(numY):
                     if(iscell(schemeData)):
-                        dataV[i] = y[i].reshape(schemeData[i].grid.shape, order='F')
+                        dataV[i] = y[i].reshape(schemeData[i].grid.shape)
                     else:
-                        dataV[i] = y[i].reshape(schemeData.grid.shape, order='F')
+                        dataV[i] = y[i].reshape(schemeData.grid.shape)
 
                 speed = thisSchemeData.speed(t, dataV, schemeData)
 
@@ -131,11 +132,11 @@ def termNormal(t, y, schemeData):
         error('schemeData.speed must be a scalar, array or function handle')
 
     # In the end, all we care about is the magnitude of the gradient.
-    magnitude = zeros(size(data))
+    magnitude = torch.zeros(data.shape, dtype=data.dtype)
 
     # In this case, keep track of stepBound for each node until the very
     #   end (since we need to divide by the appropriate gradient magnitude).
-    stepBoundInv = zeros(size(data))
+    stepBoundInv = torch.zeros(data.shape, dtype=data.dtype)
 
     # Determine the upwind direction dimension by dimension
     for i in range(grid.dim):
@@ -145,14 +146,14 @@ def termNormal(t, y, schemeData):
         # Effective velocity in this dimension (scaled by \|\grad \phi\|).
         prodL = speed * derivL
         prodR = speed * derivR
-        magL = np.abs(prodL)
-        magR = np.abs(prodR)
+        magL = torch.abs(prodL)
+        magR = torch.abs(prodR)
 
         # Determine the upwind direction.
         #   Either both sides agree in sign (take direction in which they agree),
         #   or characteristics are converging (take larger magnitude direction).
-        flowL = ((prodL >= 0) and (prodR >= 0)) or ((prodL >= 0) and (prodR <= 0) and (magL >= magR))
-        flowR = ((prodL <= 0) and (prodR <= 0)) or ((prodL >= 0) and (prodR <= 0) and (magL < magR))
+        flowL = ((prodL >= 0) & (prodR >= 0)) | ((prodL >= 0) & (prodR <= 0) & (magL >= magR))
+        flowR = ((prodL <= 0) & (prodR <= 0)) | ((prodL >= 0) & (prodR <= 0) & (magL < magR))
 
         # For diverging characteristics, take gradient = 0
         #   (so we don't actually need to calculate this term).
@@ -163,19 +164,22 @@ def termNormal(t, y, schemeData):
 
         # CFL condition: sum of effective velocities from O&F (6.2).
         effectiveVelocity = (magL * flowL + magR * flowR)
-        dxInv = 1 / grid.dx[i]
-        stepBoundInv += (dxInv@effectiveVelocity)
+        dxInv = 1 / grid.dx.item(i)
+        stepBoundInv += (dxInv * effectiveVelocity)
 
     # Finally, calculate speed * \|\grad \phi\|
-    magnitude = np.sqrt(magnitude)
+    magnitude = torch.sqrt(magnitude)
     delta = speed * magnitude
 
     # Find the most restrictive timestep bound.
-    nonZero = np.nonzero(magnitude > 0)
+    nonZero = torch.nonzero(magnitude > 0, as_tuple=True)
     stepBoundInvNonZero = stepBoundInv[nonZero] / magnitude[nonZero]
-    stepBound = 1 / np.max(stepBoundInvNonZero)
+    if stepBoundInvNonZero.numel() > 0:
+        stepBound = (1 / torch.max(stepBoundInvNonZero)).item()
+    else:
+        stepBound = float('inf')
 
     # Reshape output into vector format and negate for RHS of ODE.
-    ydot = expand(-delta.flatten(order='F'), 1)
+    ydot = (-delta).flatten()
 
     return ydot, stepBound, schemeData

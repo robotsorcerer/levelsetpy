@@ -10,7 +10,7 @@ __status__ 		= "Completed"
 
 
 import copy
-import cupy as cp
+import torch
 import numpy as np
 import logging
 from levelsetpy.utilities.matlab_utils import *
@@ -273,7 +273,7 @@ def processGrid(gridIn, data=None, sparse_flag=False):
     else:
         gridOut.axis = []
 
-    Nshape = gridOut.N.squeeze()
+    Nshape = gridOut.N.squeeze(axis=1)
     Nshape = tuple([x.item() for x in Nshape])
     if(isfield(gridOut, 'shape')):
         if(gridOut.dim == 1):

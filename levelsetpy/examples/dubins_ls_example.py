@@ -13,12 +13,10 @@ import time
 import logging
 import argparse
 import sys, os
-import cupy as cp
+import torch
 import numpy  as np
 from math import pi
 import matplotlib.pyplot as plt
-from cupyx.profiler import benchmark
-import matplotlib.Gridspec as Gridspec
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from skimage import measure
 
@@ -30,7 +28,7 @@ from levelsetpy.grids import createGrid
 from levelsetpy.dynamicalsystems import DubinsVehicleRel
 from levelsetpy.initialconditions import shapeCylinder
 from levelsetpy.spatialderivative import upwindFirstENO2
-from levelsetpy.explicitintegration.integration import odeCFL2, odeCFLset
+from levelsetpy.explicitintegration.integration import (odeCFL1, odeCFL2, odeCFL3, odeCFLset)
 from levelsetpy.explicitintegration.dissipation import artificialDissipationGLF
 from levelsetpy.explicitintegration.term import termRestrictUpdate, termLaxFriedrichs
 from levelsetpy.visualization import RCBRTVisualizer
@@ -94,10 +92,10 @@ def main(args):
 	dubins_rel = DubinsVehicleRel(g, u_bound, w_bound)
 
 	# after creating value function, make state space cupy objects
-	g.xs = [cp.asarray(x) for x in g.xs]
+	g.xs = [torch.as_tensor(x) for x in g.xs]
 	finite_diff_data = Bundle(dict(innerFunc = termLaxFriedrichs,
 				innerData = Bundle({'grid':g, 'hamFunc': dubins_rel.hamiltonian,
-				'partialFunc': dubins_rel.dissipation, 'dissFunc': artificia.dissipationGLF,
+				'partialFunc': dubins_rel.dissipation, 'dissFunc': artificialDissipationGLF,
 				'CoStateCalc': upwindFirstENO2}), positive = args.direction, # direction to grow the updated level set
 				))
 
@@ -140,13 +138,20 @@ def main(args):
 
 		brt = [value_init]
 		meshes, brt_time = [], []
-		value_rolling = cp.asarray(copy.copy(value_init))
+		value_rolling = torch.as_tensor(copy.copy(value_init))
 
 		t_now = t_range[0]
 		gpu_time_buffer = []
-		itr_start = cp.cuda.Event(); itr_end = cp.cuda.Event()
+		
+		if USE_CUDA:
+			itr_start = torch.cuda.Event(enable_timing=True)
+			itr_end = torch.cuda.Event(enable_timing=True)
+
 		while(t_range[1] - t_now > small * t_range[1]):
-			itr_start.record()
+			if USE_CUDA:
+				itr_start.record()
+			else:
+				_cpu_start = time.perf_counter()
 			time_step = f"{t_now:.2f}/{t_range[-1]}"
 
 			# Reshape data array into column vector for ode solver call.
@@ -156,14 +161,15 @@ def main(args):
 			t_span = np.hstack([ t_now, min(t_range[1], t_now + t_steps) ])
 
 			# Integrate a timestep.
-			t, y, _ = odeCFL2(termRestrictUpdate, t_span, y0, odeCFLset(options), finite_diff_data)
+			# t, y, _ = odeCFL2(termRestrictUpdate, t_span, y0, odeCFLset(options), finite_diff_data)
+			t, y, _ = odeCFL3(termRestrictUpdate, t_span, y0, odeCFLset(options), finite_diff_data)
 			t_now = t
 
 			# Get back the correctly shaped data array
 			value_rolling = y.reshape(g.shape)
 
 			if args.visualize:
-				value_rolling_np = value_rolling.get()
+				value_rolling_np = value_rolling.cpu().numpy()
 				mesh=implicit_mesh(value_rolling_np, level=0, spacing=args.spacing,
 									edge_color=None,  face_color='maroon')
 				viz.update_tube(mesh, time_step, True)
@@ -174,9 +180,12 @@ def main(args):
 					fig = plt.gcf()
 					fig.savefig(join(params.savedict.savepath, rf"rcbrt_{t_now}.jpg"), bbox_inches='tight',facecolor='None')
 
-			itr_end.record(); itr_end.synchronize()
-
-			gpu_time_buffer.append(cp.cuda.get_elapsed_time(itr_start, itr_end)/1e3)
+			if USE_CUDA:
+				itr_end.record()
+				torch.cuda.synchronize()
+				gpu_time_buffer.append((itr_start.elapsed_time(itr_end))/1e3)
+			else:
+				gpu_time_buffer.append(time.perf_counter() - _cpu_start)
 			info(f't: {time_step} | GPU time: {gpu_time_buffer[-1]:.4f} | Norm: {np.linalg.norm(y, 2):.2f}')
 
 		if not args.load_brt:
@@ -188,9 +197,5 @@ def main(args):
 		
 
 if __name__ == '__main__':
-	if args.benchmark:
-		# Do not use python profiler: https://docs.cupy.dev/en/stable/user_guide/performance.html
-		from cupyx.profiler import benchmark
-		print(benchmark(main, (args,), n_repeat=20))
-	else:
-		main(args)
+	# Run the main function
+	main(args)

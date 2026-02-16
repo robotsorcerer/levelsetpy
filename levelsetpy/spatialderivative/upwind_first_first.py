@@ -10,7 +10,7 @@ __status__ 		= "Completed"
 
 import copy
 import logging
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -47,11 +47,11 @@ def upwindFirstFirst(grid, data, dim, generateAll=False):
      Lekan Molu, 8/21/2021
          Added cupy impl on Nov 18, 21
     """
-    if isinstance(data, cp.ndarray):
-      data = cp.asarray(data)
+    if isinstance(data, np.ndarray):
+      data = torch.as_tensor(data)
 
     if((dim < 0) or (dim > grid.dim)):
-        ValueError('Illegal dim parameter')
+        raise ValueError('Illegal dim parameter')
 
     dxInv = 1 / grid.dx.item(dim)
 
@@ -65,22 +65,22 @@ def upwindFirstFirst(grid, data, dim, generateAll=False):
     sizeData = size(gdata)
     indices1 = []
     for i in range(grid.dim):
-        indices1[i] = cp.arange(sizeData[i], dtype=cp.intp)
+        indices1.append(torch.arange(sizeData[i], dtype=torch.int64))
     indices2 = copy.copy(indices1)
 
     #Where does the actual data lie in the dimension of interest?
-    indices1[dim] = cp.arange(size(gdata, dim), dtype=cp.intp)
+    indices1[dim] = torch.arange(1, size(gdata, dim), dtype=torch.int64)
     indices2[dim] = indices1[dim] - 1
 
     #This array includes one extra entry in dimension of interest.
-    deriv = dxInv*(gdata[cp.ix_(indices1)] - gdata[cp.ix_(indices2)])
+    deriv = dxInv*(gdata[torch.meshgrid(*indices1, indexing='ij')] - gdata[torch.meshgrid(*indices2, indexing='ij')])
 
     #Take leftmost grid.N(dim) entries for left approximation.
-    indices1[dim] = cp.arange(size(deriv, dim) - 1, dtype=cp.intp)
-    derivL = deriv[cp.ix_(indices1)]
+    indices1[dim] = torch.arange(size(deriv, dim) - 1, dtype=torch.int64)
+    derivL = deriv[torch.meshgrid(*indices1, indexing='ij')]
 
     #Take rightmost grid.N(dim) entries for right approximation.
-    indices1[dim] = cp.arange(1,size(deriv, dim), dtype=cp.intp)
-    derivR = deriv[cp.ix_(indices1)]
+    indices1[dim] = torch.arange(1,size(deriv, dim), dtype=torch.int64)
+    derivR = deriv[torch.meshgrid(*indices1, indexing='ij')]
 
     return  derivL, derivR

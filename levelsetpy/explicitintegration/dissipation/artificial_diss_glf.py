@@ -9,7 +9,7 @@ __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
 
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 
@@ -90,12 +90,12 @@ def artificialDissipationGLF(t, data, derivL, derivR, schemeData):
 
     for i in range(grid.dim):
         # Get derivative bounds over entire grid (scalars).
-        derivMinL = cp.min(derivL[i].flatten())
-        derivMinR = cp.min(derivR[i].flatten())
+        derivMinL = torch.min(derivL[i].flatten())
+        derivMinR = torch.min(derivR[i].flatten())
         derivMin[i] = min(derivMinL, derivMinR)
 
-        derivMaxL = cp.max(derivL[i].flatten())
-        derivMaxR = cp.max(derivR[i].flatten())
+        derivMaxL = torch.max(derivL[i].flatten())
+        derivMaxR = torch.max(derivR[i].flatten())
         derivMax[i] = max(derivMaxL, derivMaxR)
 
         # Get derivative differences at each node.
@@ -110,14 +110,14 @@ def artificialDissipationGLF(t, data, derivL, derivR, schemeData):
                       schemeData, i)
 
         diss += (0.5 * derivDiff[i] * alpha)
-        if isinstance(alpha, cp.ndarray):
+        if isinstance(alpha, torch.Tensor):
           #from Osher and Fedkiw, the coeffs are
           # set to the max possible values of |H_{x|y}| respectively
-          alpha = cp.max(alpha.flatten())
+          alpha = torch.max(alpha.flatten())
 
 
         stepBoundInv += (alpha / grid.dx.item(i))
 
-    stepBound = (1 / stepBoundInv).get().item()
+    stepBound = (1 / stepBoundInv).detach().cpu().item()
 
     return diss, stepBound

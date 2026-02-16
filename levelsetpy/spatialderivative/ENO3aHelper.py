@@ -10,7 +10,7 @@ __status__ 		= "Completed"
 
 import copy
 import logging
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ def upwindFirstENO3aHelper(grid, data, dim, approx4, stripDD=False):
     """
     #---------------------------------------------------------------------------
     if isinstance(data, np.ndarray):
-      data = cp.asarray(data)
+      data = torch.as_tensor(data)
 
     dxInv = 1 / grid.dx.item(dim)
 
@@ -76,24 +76,24 @@ def upwindFirstENO3aHelper(grid, data, dim, approx4, stripDD=False):
     sizeData = size(gdata)
     indices1 = []
     for i in range(grid.dim):
-        indices1.append(cp.arange(sizeData[i], dtype=cp.intp))
+        indices1.append(torch.arange(sizeData[i], dtype=torch.int64))
     indices2 = copy.copy(indices1)
 
     #---------------------------------------------------------------------------
     # First divided differences (first entry corresponds to D^1_{-3/2}).
-    indices1[dim] = cp.arange(1,size(gdata, dim), dtype=cp.intp)
+    indices1[dim] = torch.arange(1,size(gdata, dim), dtype=torch.int64)
     indices2[dim] = copy.copy(indices1[dim]) - 1
-    D1 = dxInv*(gdata[cp.ix_(*indices1)] - gdata[cp.ix_(*indices2)])
+    D1 = dxInv*(gdata[torch.meshgrid(*indices1, indexing='ij')] - gdata[torch.meshgrid(*indices2, indexing='ij')])
 
     # Second divided differences (first entry corresponds to D^2_{-1}).
-    indices1[dim] = cp.arange(1,size(D1, dim), dtype=cp.intp)
+    indices1[dim] = torch.arange(1,size(D1, dim), dtype=torch.int64)
     indices2[dim] = copy.copy(indices1[dim])  - 1
-    D2 = 0.5 * dxInv*(D1[cp.ix_(*indices1)] - D1[cp.ix_(*indices2)])
+    D2 = 0.5 * dxInv*(D1[torch.meshgrid(*indices1, indexing='ij')] - D1[torch.meshgrid(*indices2, indexing='ij')])
 
     # Third divided differences (first entry corresponds to D^3_{-1/2}).
-    indices1[dim] = cp.arange(1,size(D2, dim), dtype=cp.intp)
+    indices1[dim] = torch.arange(1,size(D2, dim), dtype=torch.int64)
     indices2[dim] = copy.copy(indices1[dim])  - 1
-    D3 = (1/3) * dxInv*(D2[cp.ix_(*indices1)] - D2[cp.ix_(*indices2)])
+    D3 = (1/3) * dxInv*(D2[torch.meshgrid(*indices1, indexing='ij')] - D2[torch.meshgrid(*indices2, indexing='ij')])
 
     #---------------------------------------------------------------------------
     # If we want the unstripped divided difference entries, make a copy now.
@@ -104,17 +104,18 @@ def upwindFirstENO3aHelper(grid, data, dim, approx4, stripDD=False):
     # First divided difference array has 2 extra entries at top and bottom
     #   (from stencil width 3), so strip them off.
     # Now first entry corresponds to D^1_{1/2}.
-    indices1[dim] = cp.arange(2, size(D1, dim)-2, dtype=cp.intp)
-    D1 = D1[cp.ix_(*indices1)]
+    indices1[dim] = torch.arange(2, size(D1, dim)-2, dtype=torch.int64)
+    D1 = D1[torch.meshgrid(*indices1, indexing='ij')]
 
     # Second divided difference array has an extra entry at top and bottom
     #   (from stencil width 3), so strip them off.
     # Now first entry corresponds to D^2_0.
-    indices1[dim] = cp.arange(1, size(D2, dim)-1, dtype=cp.intp)
-    D2 = D2[cp.ix_(*indices1)]
+    indices1[dim] = torch.arange(1, size(D2, dim)-1, dtype=torch.int64)
+    D2 = D2[torch.meshgrid(*indices1, indexing='ij')]
 
-    # If we want the stripped divided difference entries, make a copy now.
-    DD = Bundle({ 'D1': D1, 'D2': D2, 'D3': D3 })
+    # If we want the stripped divided difference entries, overwrite now.
+    if stripDD:
+        DD = Bundle({ 'D1': D1, 'D2': D2, 'D3': D3 })
 
     #---------------------------------------------------------------------------
     # First order approx is just the first order divided differences.
@@ -123,11 +124,11 @@ def upwindFirstENO3aHelper(grid, data, dim, approx4, stripDD=False):
 
     M = 4 if approx4 else 3
     # Take leftmost grid.N(dim) entries for left approximation.
-    indices1[dim] =cp.arange(size(D1, dim)-1, dtype=cp.intp)
-    dL = [D1[cp.ix_(*indices1)] for i in range(M)]
+    indices1[dim] =torch.arange(size(D1, dim)-1, dtype=torch.int64)
+    dL = [D1[torch.meshgrid(*indices1, indexing='ij')] for i in range(M)]
     # Take rightmost grid.N(dim) entries for right approximation.
-    indices1[dim] = cp.arange(1, size(D1, dim), dtype=cp.intp)
-    dR = [D1[cp.ix_(*indices1)] for i in range(M)]
+    indices1[dim] = torch.arange(1, size(D1, dim), dtype=torch.int64)
+    dR = [D1[torch.meshgrid(*indices1, indexing='ij')] for i in range(M)]
     #---------------------------------------------------------------------------
     # Each copy gets modified by one of the second order terms.
     #   Second order terms are sorted left to right.
@@ -140,24 +141,24 @@ def upwindFirstENO3aHelper(grid, data, dim, approx4, stripDD=False):
     coeffL = +1 * grid.dx.item(dim)
     coeffR = -1 * grid.dx.item(dim)
 
-    indices1[dim] = cp.arange(size(D2, dim)-2, dtype=cp.intp)
-    indices2[dim] = cp.arange(1, size(D2, dim)-1, dtype=cp.intp)
+    indices1[dim] = torch.arange(size(D2, dim)-2, dtype=torch.int64)
+    indices2[dim] = torch.arange(1, size(D2, dim)-1, dtype=torch.int64)
 
 
-    dL[0] += coeffL*D2[cp.ix_(*indices1)]
-    dL[1] += coeffL*D2[cp.ix_(*indices1)]
-    dL[2] += coeffL*D2[cp.ix_(*indices2)]
+    dL[0] += coeffL*D2[torch.meshgrid(*indices1, indexing='ij')]
+    dL[1] += coeffL*D2[torch.meshgrid(*indices1, indexing='ij')]
+    dL[2] += coeffL*D2[torch.meshgrid(*indices2, indexing='ij')]
     if(approx4):
-        dL[3] += coeffL*D2[cp.ix_(*indices2)]
+        dL[3] += coeffL*D2[torch.meshgrid(*indices2, indexing='ij')]
 
     indices1[dim] += 1
     indices2[dim] += 1
-    dR[0] += coeffR*D2[cp.ix_(*indices1)]
-    dR[1] += coeffR*D2[cp.ix_(*indices1)]
-    dR[2] += coeffR*D2[cp.ix_(*indices2)]
+    dR[0] += coeffR*D2[torch.meshgrid(*indices1, indexing='ij')]
+    dR[1] += coeffR*D2[torch.meshgrid(*indices1, indexing='ij')]
+    dR[2] += coeffR*D2[torch.meshgrid(*indices2, indexing='ij')]
 
     if(approx4):
-        dR[3] += coeffR * D2[cp.ix_(*indices2)]
+        dR[3] += coeffR * D2[torch.meshgrid(*indices2, indexing='ij')]
 
 
     #---------------------------------------------------------------------------
@@ -175,25 +176,25 @@ def upwindFirstENO3aHelper(grid, data, dim, approx4, stripDD=False):
     coeffRL = -1 * grid.dx.item(dim)**2
     coeffRR = +2 * grid.dx.item(dim)**2
 
-    indices1[dim] =cp.arange(size(D3, dim) - 3, dtype=cp.intp)
-    dL[0] += coeffLL*D3[cp.ix_(*indices1)]
+    indices1[dim] =torch.arange(size(D3, dim) - 3, dtype=torch.int64)
+    dL[0] += coeffLL*D3[torch.meshgrid(*indices1, indexing='ij')]
 
     indices1[dim] += 1
-    dL[1] += coeffLL*D3[cp.ix_(*indices1)]
+    dL[1] += coeffLL*D3[torch.meshgrid(*indices1, indexing='ij')]
     if(approx4):
-        dL[3] += coeffLR*D3[cp.ix_(*indices1)]
+        dL[3] += coeffLR*D3[torch.meshgrid(*indices1, indexing='ij')]
 
     indices1[dim] += 1
-    dL[2] += coeffLR*D3[cp.ix_(*indices1)]
+    dL[2] += coeffLR*D3[torch.meshgrid(*indices1, indexing='ij')]
 
-    indices1[dim] = cp.arange(1 ,size(D3, dim) - 2, dtype=cp.intp)
-    dR[0] += coeffRL*D3[cp.ix_(*indices1)]
+    indices1[dim] = torch.arange(1 ,size(D3, dim) - 2, dtype=torch.int64)
+    dR[0] += coeffRL*D3[torch.meshgrid(*indices1, indexing='ij')]
     indices1[dim] +=1
-    dR[1] +=coeffRL*D3[cp.ix_(*indices1)]
+    dR[1] +=coeffRL*D3[torch.meshgrid(*indices1, indexing='ij')]
     if(approx4):
-        dR[3] += coeffRR*D3[cp.ix_(*indices1)]
+        dR[3] += coeffRR*D3[torch.meshgrid(*indices1  , indexing='ij')]
 
     indices1[dim] +=1
-    dR[2] += coeffRR*D3[cp.ix_(*indices1)]
+    dR[2] += coeffRR*D3[torch.meshgrid(*indices1, indexing='ij')]
 
     return dL, dR, DD

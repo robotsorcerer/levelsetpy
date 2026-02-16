@@ -11,7 +11,7 @@ __status__ 		= "Completed"
 
 import copy
 import time
-import cupy as cp
+import torch
 import numpy as np
 
 from levelsetpy.utilities import *
@@ -220,6 +220,6 @@ def  odeCFL2(schemeFunc, tspan, y0, options=None, schemeData=None):
 
     #---------------------------------------------------------------------------
     else:
-        ValueError('tspan must contain at least two entries')
+        raise ValueError('tspan must contain at least two entries')
 
     return t, y, schemeData

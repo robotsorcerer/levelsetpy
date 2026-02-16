@@ -11,7 +11,7 @@ __status__ 		= "Completed"
 
 import copy
 import logging
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ def upwindFirstENO2(grid, data, dim, generateAll=0):
     if((dim < 0) or (dim > grid.dim)):
         raise ValueError('Illegal dim parameter')
 
-    dxInv = cp.divide(1, grid.dx.item(dim))
+    dxInv = torch.div(1, grid.dx.item(dim))
 
     # How big is the stencil?
     stencil = 2
@@ -74,51 +74,52 @@ def upwindFirstENO2(grid, data, dim, generateAll=0):
     sizeData = size(gdata)
     indices1 = []
     for i in range(grid.dim):
-      indices1.append(cp.arange(sizeData[i], dtype=cp.intp))
+      indices1.append(torch.arange(sizeData[i], dtype=torch.int64))
     indices2 = copy.copy(indices1)
 
-    cp.cuda.Device().synchronize()
+    if USE_CUDA:
+        torch.cuda.synchronize()
     #---------------------------------------------------------------------------
     # First divided differences (first entry corresponds to D^1_{-1/2}).
-    indices1[dim] = cp.arange(1,size(gdata, dim), dtype=cp.intp)
+    indices1[dim] = torch.arange(1,size(gdata, dim), dtype=torch.int64)
     indices2[dim] = indices1[dim] - 1
-    D1 = dxInv*(gdata[cp.ix_(*indices1)] - gdata[cp.ix_(*indices2)])
+    D1 = dxInv*(gdata[torch.meshgrid(*indices1, indexing='ij')] - gdata[torch.meshgrid(*indices2, indexing='ij')])
 
-    indices1[dim] = cp.arange(1, size(D1, dim), dtype=cp.intp)
+    indices1[dim] = torch.arange(1, size(D1, dim), dtype=torch.int64)
     indices2[dim] = indices1[dim] - 1
-    D2 = 0.5 * dxInv*(D1[cp.ix_(*indices1)] - D1[cp.ix_(*indices2)])
+    D2 = 0.5 * dxInv*(D1[torch.meshgrid(*indices1, indexing='ij')] - D1[torch.meshgrid(*indices2, indexing='ij')])
 
     #---------------------------------------------------------------------------
     # First divided difference array has an extra entry at top and bottom
     #   (from stencil width 2), so strip them off.
     # Now first entry corresponds to D^1_{1/2}.
-    indices1[dim] = cp.arange(1, size(D1, dim)-1, dtype=cp.intp)
-    D1 = D1[cp.ix_(*indices1)]
+    indices1[dim] = torch.arange(1, size(D1, dim)-1, dtype=torch.int64)
+    D1 = D1[torch.meshgrid(*indices1, indexing='ij')]
     #---------------------------------------------------------------------------
     # First order approx is just the first order divided differences.
     #   Make two copies to build the two approximations
 
     # Take leftmost grid.N(dim) entries for left approximation.
-    indices1[dim] = cp.arange(0, D1.shape[dim] - 1, dtype=cp.intp)
-    dL = [D1[cp.ix_(*indices1)] for i in range(2)]
+    indices1[dim] = torch.arange(0, D1.shape[dim] - 1, dtype=torch.int64)
+    dL = [D1[torch.meshgrid(*indices1, indexing='ij')] for i in range(2)]
 
     # Take rightmost grid.N(dim) entries for right approximation.
-    indices1[dim] = cp.arange(1, size(D1, dim), dtype=cp.intp)
-    dR = [D1[cp.ix_(*indices1)] for i in range(2)]
+    indices1[dim] = torch.arange(1, size(D1, dim), dtype=torch.int64)
+    dR = [D1[torch.meshgrid(*indices1, indexing='ij')] for i in range(2)]
 
     #---------------------------------------------------------------------------
     # Each copy gets modified by one of the second order terms.
     #   Second order terms are sorted left to right.
-    indices1[dim] = cp.arange(0, size(D2, dim) - 2, dtype=cp.intp)
-    indices2[dim] = cp.arange(1, size(D2, dim) - 1, dtype=cp.intp)
-    dL[0] += (grid.dx.item(dim) * D2[cp.ix_(*indices1)])
-    dL[1] += (grid.dx.item(dim) * D2[cp.ix_(*indices2)])
+    indices1[dim] = torch.arange(0, size(D2, dim) - 2, dtype=torch.int64)
+    indices2[dim] = torch.arange(1, size(D2, dim) - 1, dtype=torch.int64)
+    dL[0] += (grid.dx.item(dim) * D2[torch.meshgrid(*indices1, indexing='ij')])
+    dL[1] += (grid.dx.item(dim) * D2[torch.meshgrid(*indices2, indexing='ij')])
 
     indices1[dim] += 1
     indices2[dim] += 1
 
-    dR[0] -= (grid.dx.item(dim) * D2[cp.ix_(*indices1)])
-    dR[1] -= (grid.dx.item(dim) * D2[cp.ix_(*indices2)])
+    dR[0] -= (grid.dx.item(dim) * D2[torch.meshgrid(*indices1, indexing='ij')])
+    dR[1] -= (grid.dx.item(dim) * D2[torch.meshgrid(*indices2, indexing='ij')])
 
     #---------------------------------------------------------------------------
     if(generateAll):
@@ -138,18 +139,18 @@ def upwindFirstENO2(grid, data, dim, generateAll=0):
         #   difference entries, not to left and right approximations.
 
         # Pick out minimum modulus neighboring D2 term.
-        D2abs = cp.abs(D2)
-        indices1[dim] = cp.arange(0, size(D2, dim) - 1, dtype=cp.intp)
+        D2abs = torch.abs(D2)
+        indices1[dim] = torch.arange(0, size(D2, dim) - 1, dtype=torch.int64)
         indices2[dim] = indices1[dim] + 1
-        smallerL = (D2abs[cp.ix_(*indices1)] < D2abs[cp.ix_(*indices2)])
-        smallerR = cp.logical_not(smallerL)
+        smallerL = (D2abs[torch.meshgrid(*indices1, indexing='ij')] < D2abs[torch.meshgrid(*indices2, indexing='ij')])
+        smallerR = torch.logical_not(smallerL)
 
         #---------------------------------------------------------------------------
         # Pick out second order approximation that used the minimum modulus D2 term.
-        indices1[dim] = cp.arange(0, size(smallerL, dim) - 1, dtype=cp.intp)
-        derivL = dL[0] * smallerL[cp.ix_(*indices1)] + dL[1] * smallerR[cp.ix_(*indices1)]
+        indices1[dim] = torch.arange(0, size(smallerL, dim) - 1, dtype=torch.int64)
+        derivL = dL[0] * smallerL[torch.meshgrid(*indices1, indexing='ij')] + dL[1] * smallerR[torch.meshgrid(*indices1, indexing='ij')]
 
-        indices1[dim] = cp.arange(1, size(smallerL, dim), dtype=cp.intp)
-        derivR = dR[0] * smallerL[cp.ix_(*indices1)] + dR[1] * smallerR[cp.ix_(*indices1)]
+        indices1[dim] = torch.arange(1, size(smallerL, dim), dtype=torch.int64)
+        derivR = dR[0] * smallerL[torch.meshgrid(*indices1, indexing='ij')] + dR[1] * smallerR[torch.meshgrid(*indices1, indexing='ij')]
 
     return derivL, derivR

@@ -8,6 +8,7 @@ __maintainer__ 	= "Lekan Molu"
 __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 
@@ -93,9 +94,9 @@ def termTraceHessian(t, y, schemeData):
     grid = thisSchemeData.grid
 
     if(iscell(y)):
-        data = y[0].reshape(grid.shape, order='F')
+        data = y[0].reshape(grid.shape)
     else:
-        data = y.reshape(grid.shape, order='F')
+        data = y.reshape(grid.shape)
 
     # Get matrices.
     L = getMatrix(t, data, thisSchemeData, thisSchemeData.L)
@@ -117,12 +118,12 @@ def termTraceHessian(t, y, schemeData):
     D = [1 / (grid.dx * grid.dx.T)]
     timeStepMatrix = cellMatrixMultiply(cellMatrixMultiply(L, D), R)
     timeStepTrace = cellMatrixTrace(timeStepMatrix)
-    stepBound = 1 / (2 * np.max(np.abs(timeStepTrace.flatten(order='F'))))
+    stepBound = 1 / (2 * np.max(np.abs(timeStepTrace.flatten())))
 
     # Reshape output into vector format.
     #   We do not need to negate for RHS of ODE: since we skipped the
     #   negation in the trace step above.
-    ydot = update.flatten(order='F')
+    ydot = update.flatten()
 
     return ydot, stepBound, schemeData
 

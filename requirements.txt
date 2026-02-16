@@ -1,6 +1,7 @@
-numpy
+numpy==2.2.6
 scipy
-cupy-cuda13x
+torch
+torchvision
 absl-py
 matplotlib
 scikit-image  #  for implicit function of geometric primitives

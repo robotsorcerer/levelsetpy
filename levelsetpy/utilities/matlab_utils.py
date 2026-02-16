@@ -4,8 +4,9 @@ __all__ = [
             "quickarray", "ismember", "omin", "omax", "strcmp",
             "isbundle", "isfield", "cputime","error", "realmax", "eps",
             "info","warn", "debug", "length","size",  "to_column_mat", "numel",
-            "numDims", "ndims", "expand", "ones", "zeros", "isvector",
+            "numDims", "ndims", "expand", "ones", "zeros", "isvector", "index_array_torch",
             "isColumnLength", "cell",  "iscell", "isnumeric", "isfloat", "isscalar",
+            "USE_CUDA", "DEVICE", "DTYPE",
 ]
 
 
@@ -21,6 +22,7 @@ __status__ 		= "Completed"
 
 import time
 import math
+import torch
 import numbers
 import sys, copy
 import numpy as np
@@ -35,6 +37,11 @@ realmin = sys.float_info.min
 realmax = sys.float_info.max
 eps     = sys.float_info.epsilon
 DEFAULT_ORDER = "C"
+
+# Device management
+USE_CUDA = torch.cuda.is_available()
+DEVICE = torch.device('cuda' if USE_CUDA else 'cpu')
+DTYPE = torch.float64
 
 
 
@@ -73,6 +80,16 @@ def index_array(start=1, end=None, step=1):
     """
     assert end is not None, "end in index array must be an integer"
     return np.arange(start-1, end, step, dtype=np.intp)
+
+def index_array_torch(start=1, end=None, step=1):
+    """
+        Generate an indexing array for nice slicing of
+        numpy-like arrays.
+        Subtracts 1 from start to account for 0-indexing
+        in python.
+    """
+    assert end is not None, "end in index array must be an integer"
+    return torch.arange(start-1, end, step, dtype=torch.int64)
 
 def quickarray(start, end, step=1):
     "A quick python array."
@@ -199,7 +216,10 @@ def ones(rows, cols=None, dtype=ONES_TYPE):
     if cols is not None:
         shape = (rows, cols)
     else:
-        shape = (rows, rows)
+        if isinstance(rows, (tuple, torch.Size)):
+            shape = rows
+        else:
+            shape = (rows, rows)
     return np.ones(shape, dtype=dtype)
 
 def zeros(rows, cols=None, dtype=ZEROS_TYPE):

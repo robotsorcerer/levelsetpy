@@ -13,7 +13,7 @@ __status__ 		= "Completed"
 import time
 import random
 import hashlib
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import eps, deg2rad
 
@@ -269,10 +269,10 @@ class Bird():
         #     self.cur_state = self.runge_kutta4(xdot)
         # self.cur_state = self.dynamics_abs(self.cur_state)
 
-        cur_state = cp.asarray(self.cur_state)
+        cur_state = torch.as_tensor(self.cur_state)
 
-        p1_coeff = -cp.cos(cur_state[2,0])
-        p2_coeff =  -cp.sin(cur_state[2,0])
+        p1_coeff = -torch.cos(cur_state[2,0])
+        p2_coeff =  -torch.sin(cur_state[2,0])
 
         θr  = -self.w_e
 
@@ -308,18 +308,18 @@ class Bird():
         #     # print('integrated type: ', type(self.cur_state), self.cur_state.dtype)
         # self.cur_state = self.dynamics_abs(self.cur_state)
 
-        cur_state = cp.asarray(self.cur_state)
+        cur_state = torch.as_tensor(self.cur_state)
 
-        p1_coeff = self.v_e - self.v_p * cp.cos(cur_state[2,0])
-        p2_coeff = self.v_p* cp.sin(cur_state[2,0])
+        p1_coeff = self.v_e - self.v_p * torch.cos(cur_state[2,0])
+        p2_coeff = self.v_p* torch.sin(cur_state[2,0])
 
         # find lower and upper bound of orientation of vehicles that are neighbors
         w_e_upper_bound = max([neigh.w_e for neigh in self.neighbors])
         w_e_lower_bound = min([neigh.w_e for neigh in self.neighbors])
 
         Hxp = (p1 * p1_coeff - p2 * p2_coeff ) + \
-               w_e_upper_bound*cp.abs(p2 * cur_state[0,0] - p1*cur_state[1,0]+p3) +\
-               w_e_upper_bound * cp.abs(p3)
+               w_e_upper_bound*torch.abs(p2 * cur_state[0,0] - p1*cur_state[1,0]+p3) +\
+               w_e_upper_bound * torch.abs(p3)
 
         return  Hxp
 

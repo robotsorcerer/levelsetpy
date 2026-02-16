@@ -10,6 +10,7 @@ __status__ 		= "Completed"
 
 
 import copy
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 
@@ -142,6 +143,6 @@ def termCurvature(t, y, schemeData):
     stepBound = 1 / (2 * np.max(b) * np.sum(grid.dx ** -2))
 
     # Reshape output into vector format and negate for RHS of ODE.
-    ydot = expand(-delta.flatten(order='F'), 1)
+    ydot = (-delta).flatten()
 
     return ydot, stepBound, schemeData

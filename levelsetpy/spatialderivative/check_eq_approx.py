@@ -10,6 +10,7 @@ __status__ 		= "Completed"
 
 import copy
 import logging
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -42,6 +43,11 @@ def checkEquivalentApprox(approx1, approx2,bound):
 
     """
 
+    if isinstance(approx1, torch.Tensor):
+        approx1 = approx1.detach().cpu().numpy()
+    if isinstance(approx2, torch.Tensor):
+        approx2 = approx2.detach().cpu().numpy()
+
     # Approximate magnitude of the solution
     magnitude = 0.5 * np.abs(approx1 + approx2)
 
@@ -52,18 +58,20 @@ def checkEquivalentApprox(approx1, approx2,bound):
     absError = np.abs(approx1 - approx2)
 
     # Be careful not to divide by too small a number.
-    relError = ones(size(absError))
+    relError = ones(size(absError), dtype=np.float64)
     relError.fill(np.nan)
     relError[useRelative] = np.divide(absError[useRelative], magnitude[useRelative])
 
     # Check that bounds are respected.
-    if(max(relError[useRelative]) > bound):
+    relVals = relError[useRelative]
+    if(relVals.size > 0 and np.nanmax(relVals) > bound):
         logger.warn(f'exceeded relative bound. Error in supposedly'
                     'equivalent derivative approximations'
-                    '{max(relError[useRelative])}, {bound}')
-    if(max(absError[useAbsolute]) > bound):
+                    f'{np.nanmax(relVals)}, {bound}')
+    absVals = absError[useAbsolute]
+    if(absVals.size > 0 and np.max(absVals) > bound):
         logger.warn(f'exceeded absolute bound. Error in supposedly'
                     'equivalent derivative approximations'
-                    '{max(relError[useAbsolute])}, {bound}')
+                    f'{np.max(absVals)}, {bound}')
 
     return relError, absError

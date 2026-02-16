@@ -9,6 +9,7 @@ __email__ 		= "patlekno@icloud.com"
 __status__ 		= "Completed"
 
 import copy
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 
@@ -139,9 +140,9 @@ def termReinit(t, y, schemeData):
     grid = thisSchemeData.grid
 
     if iscell(y):
-        data = y[0].reshape(grid.shape, order='F')
+        data = y[0].reshape(grid.shape)
     else:
-        data = y.reshape(grid.shape, order='F')
+        data = y.reshape(grid.shape)
 
     if isfield(thisSchemeData, 'subcell_fix_order'):
         if thisSchemeData.subcell_fix_order==0:
@@ -184,17 +185,17 @@ def termReinit(t, y, schemeData):
         #   according to left and right derivative approximations.
 
         # Both directions agree that flow is to the left.
-        flowL = ((S * derivR <= 0) and (S * derivL <= 0))
+        flowL = ((S * derivR <= 0) & (S * derivL <= 0))
 
         # Both directions agree that flow is to the right.
-        flowR = ((S * derivR >= 0) and (S * derivL >= 0))
+        flowR = ((S * derivR >= 0) & (S * derivL >= 0))
 
         # Diverging flow entropy condition requires choosing deriv = 0
         #   (so we don't actually have to calculate this term).
-        #flow0 = ((S * derivR >  0) and (S * derivL <  0))
+        #flow0 = ((S * derivR >  0) & (S * derivL <  0))
 
         # Converging flow, need to check which direction arrives first.
-        flows = ((S * derivR <  0) and (S * derivL >  0))
+        flows = ((S * derivR <  0) & (S * derivL >  0))
         if(np.any(flows.flatten())):
             conv = np.where(flows)
             s = zeros(size(flows))

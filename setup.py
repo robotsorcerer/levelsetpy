@@ -40,7 +40,7 @@ Operating System :: Unix
 Operating System :: MacOS
 """
 
-excludes=["Tests", "Figures"]
+excludes=["Tests", "Figures", "build"]
 
 with open('README.md') as fp:
     long_description = fp.read()
@@ -54,7 +54,7 @@ setup(
     author='Lekan Molu',
     author_email='lekanmolu@microsoft.com',
     url='https://github.com/robotsorcerer/levelsetpy',
-    description='GPU-Accelerated Hyperbolic PDE Solvers and Level Set Dynamics to Implicit Geometries in Python',
+    description='PyTorch-Accelerated Hyperbolic PDE Solvers and Level Set Dynamics to Implicit Geometries in Python',
     long_description=long_description,
     packages=['levelsetpy', 'levelsetpy.boundarycondition', 'levelsetpy.dynamicalsystems', 
     'levelsetpy.explicitintegration', 'levelsetpy.explicitintegration.dissipation', 

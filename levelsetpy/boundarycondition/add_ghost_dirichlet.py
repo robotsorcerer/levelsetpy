@@ -12,7 +12,7 @@ __revised__     = "May 09, 2023"
 
 import copy 
 import logging
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -73,24 +73,24 @@ def addGhostDirichlet(dataIn, dim, width=None, ghostData=None):
         lowerValue = 0
         upperValue = copy.copy(lowerValue)
 
-    dims = dataIn.ndim 
-    sizeIn = dataIn.shape 
-    indicesOut = [dim for dim in range(dims)]
-    for i in range(dims):
-        indicesOut[i] = range(sizeIn[i])
+    dims = dataIn.ndim
+    sizeIn = dataIn.shape
+    indicesOut = []
+    for d in range(dims):
+        indicesOut.append(torch.arange(sizeIn[d], dtype=torch.int64))
     indicesIn = copy.copy(indicesOut)
 
-    sizeOut = copy.copy(sizeIn)
-    sizeOut[dim] += 2*width 
-    dataOut = cp.zeros(sizeOut)
+    sizeOut = list(sizeIn)
+    sizeOut[dim] += 2*width
+    dataOut = torch.zeros(tuple(sizeOut), dtype=DTYPE)
 
-    indicesOut[dim] = range(width, sizeOut[dim]-width)
-    dataOut[cp.ix_(indicesOut)] = copy.copy(dataIn)
-    
-    indicesOut[dim] = range(width)
-    dataOut[cp.ix_(indicesOut)] = lowerValue 
-    
-    indicesOut[dim] = range(sizeOut[dim] - width, sizeOut[dim])
-    dataOut[cp.ix_(indicesOut)] = copy.copy(upperValue)
-    
+    indicesOut[dim] = torch.arange(width, sizeOut[dim]-width, dtype=torch.int64)
+    dataOut[torch.meshgrid(*indicesOut, indexing='ij')] = copy.copy(dataIn)
+
+    indicesOut[dim] = torch.arange(width, dtype=torch.int64)
+    dataOut[torch.meshgrid(*indicesOut, indexing='ij')] = lowerValue
+
+    indicesOut[dim] = torch.arange(sizeOut[dim] - width, sizeOut[dim], dtype=torch.int64)
+    dataOut[torch.meshgrid(*indicesOut, indexing='ij')] = copy.copy(upperValue)
+
     return dataOut

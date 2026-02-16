@@ -12,7 +12,7 @@ __revised__   = "May 09, 2023"
 
 import copy
 import logging
-import cupy as cp
+import torch
 import numpy as np
 from levelsetpy.utilities import *
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
       dataOut (ndarray):	Output data.  
     """
     if isinstance(dataIn, np.ndarray):
-      dataIn = cp.asarray(dataIn)
+      dataIn = torch.as_tensor(dataIn)
 
     if not width:
         width = 1
@@ -67,43 +67,43 @@ def addGhostExtrapolate(dataIn, dim, width=None, ghostData=None):
     sizeIn = size(dataIn)
     indicesOut = []
     for i in range(dims):
-        indicesOut.append(cp.arange(sizeIn[i], dtype=cp.intp))
+        indicesOut.append(torch.arange(sizeIn[i], dtype=torch.int64))
     indicesIn = copy.copy(indicesOut)
 
     # create appropriately sized output array
     sizeOut = copy.copy(list(sizeIn))
     sizeOut[dim] = sizeOut[dim] + (2 * width)
-    dataOut = cp.zeros(tuple(sizeOut), dtype=cp.float64)
+    dataOut = torch.zeros(tuple(sizeOut), dtype=DTYPE)
 
     # fill output array with input data
-    indicesOut[dim] = cp.arange(width, sizeOut[dim] - width, dtype=cp.intp) # correct
+    indicesOut[dim] = torch.arange(width, sizeOut[dim] - width, dtype=torch.int64) # correct
     # dynamic slicing to save the day
-    dataOut[cp.ix_(*indicesOut)] = copy.copy(dataIn) 
+    dataOut[torch.meshgrid(*indicesOut, indexing='ij')] = copy.copy(dataIn)
 
     # compute derivatives
-    indicesOut[dim] = [0]
-    indicesIn[dim] = [1]
-    derivativeBot = dataIn[cp.ix_(*indicesOut)] - dataIn[cp.ix_(*indicesIn)]
+    indicesOut[dim] = torch.tensor([0], dtype=torch.int64)
+    indicesIn[dim] = torch.tensor([1], dtype=torch.int64)
+    derivativeBot = dataIn[torch.meshgrid(*indicesOut, indexing='ij')] - dataIn[torch.meshgrid(*indicesIn, indexing='ij')]
 
-    indicesOut[dim] = [sizeIn[dim]-1]
-    indicesIn[dim] = [sizeIn[dim] - 2]
-    derivativeTop = dataIn[cp.ix_(*indicesOut)] - dataIn[cp.ix_(*indicesIn)]
+    indicesOut[dim] = torch.tensor([sizeIn[dim]-1], dtype=torch.int64)
+    indicesIn[dim] = torch.tensor([sizeIn[dim] - 2], dtype=torch.int64)
+    derivativeTop = dataIn[torch.meshgrid(*indicesOut, indexing='ij')] - dataIn[torch.meshgrid(*indicesIn, indexing='ij')]
 
     # adjust derivative sign to correspond with sign of data at array edge
-    indicesIn[dim] = [0]
-    derivativeBot = derivativeMultiplier * cp.abs(derivativeBot) * cp.sign(dataIn[cp.ix_(*indicesIn)])
+    indicesIn[dim] = torch.tensor([0], dtype=torch.int64)
+    derivativeBot = derivativeMultiplier * torch.abs(derivativeBot) * torch.sign(dataIn[torch.meshgrid(*indicesIn, indexing='ij')])
 
-    indicesIn[dim] = [sizeIn[dim]-1]
-    derivativeTop = derivativeMultiplier * cp.abs(derivativeTop) * cp.sign(dataIn[cp.ix_(*indicesIn)])
+    indicesIn[dim] = torch.tensor([sizeIn[dim]-1], dtype=torch.int64)
+    derivativeTop = derivativeMultiplier * torch.abs(derivativeTop) * torch.sign(dataIn[torch.meshgrid(*indicesIn, indexing='ij')])
 
     # now extrapolate
     for i in range(width):
-        indicesOut[dim] = [i]
-        indicesIn[dim] = [0]
-        dataOut[cp.ix_(*indicesOut)] = (dataIn[cp.ix_(*indicesIn)] + (width - i) * derivativeBot)
+        indicesOut[dim] = torch.tensor([i], dtype=torch.int64)
+        indicesIn[dim] = torch.tensor([0], dtype=torch.int64)
+        dataOut[torch.meshgrid(*indicesOut, indexing='ij')] = (dataIn[torch.meshgrid(*indicesIn, indexing='ij')] + (width - i) * derivativeBot)
 
-        indicesOut[dim] = [sizeOut[dim]-1-i]
-        indicesIn[dim] = [sizeIn[dim]-1]
-        dataOut[cp.ix_(*indicesOut)] = (dataIn[cp.ix_(*indicesIn)] + (width - i) * derivativeTop)
+        indicesOut[dim] = torch.tensor([sizeOut[dim]-1-i], dtype=torch.int64)
+        indicesIn[dim] = torch.tensor([sizeIn[dim]-1], dtype=torch.int64)
+        dataOut[torch.meshgrid(*indicesOut, indexing='ij')] = (dataIn[torch.meshgrid(*indicesIn, indexing='ij')] + (width - i) * derivativeTop)
         
     return dataOut

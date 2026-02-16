@@ -10,7 +10,7 @@ __status__ 		  = "Completed, Circa, August Week I, 2021."
 __revised__     = "May 09, 2023"
 
 import copy
-import cupy as cp
+import torch
 import numpy as np
 import logging
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
        dataOut:	Output data array.
     """
     if isinstance(dataIn, np.ndarray):
-      dataIn = cp.asarray(dataIn)
+      dataIn = torch.as_tensor(dataIn)
 
     if not width:
       width = 1
@@ -62,25 +62,25 @@ def addGhostPeriodic(dataIn, dim, width=None, ghostData=None):
     sizeIn = dataIn.shape
     indicesOut = cell(dims)
     for i in range(dims):
-      indicesOut[i] = index_array(1, sizeIn[i])
+      indicesOut[i] = index_array_torch(1, sizeIn[i])
     indicesIn = copy.copy(indicesOut)
 
     # create appropriately sized output array
     sizeOut = copy.copy(list(sizeIn))
     sizeOut[dim] = sizeOut[dim] + 2 * width
-    dataOut = cp.zeros(tuple(sizeOut), dtype=cp.float64)
+    dataOut = torch.zeros(tuple(sizeOut), dtype=DTYPE)
 
-    # fill output array with cp.intp data
-    indicesOut[dim] = cp.arange(width, sizeOut[dim] - width, dtype=cp.intp)
-    dataOut[cp.ix_(*indicesOut)] = dataIn
+    # fill output array with torch.int64 data
+    indicesOut[dim] = torch.arange(width, sizeOut[dim] - width, dtype=torch.int64)
+    dataOut[torch.meshgrid(*indicesOut, indexing='ij')] = dataIn
 
     # fill ghost cells
-    indicesIn[dim] = cp.arange(sizeIn[dim] - width,sizeIn[dim], dtype=cp.intp)
-    indicesOut[dim] = cp.arange(width, dtype=cp.intp)
-    dataOut[cp.ix_(*indicesOut)] = dataIn[cp.ix_(*indicesIn)]
+    indicesIn[dim] = torch.arange(sizeIn[dim] - width,sizeIn[dim], dtype=torch.int64)
+    indicesOut[dim] = torch.arange(width, dtype=torch.int64)
+    dataOut[torch.meshgrid(*indicesOut, indexing='ij')] = dataIn[torch.meshgrid(*indicesIn, indexing='ij')]
 
-    indicesIn[dim] = cp.arange(width, dtype=cp.intp)
-    indicesOut[dim] = cp.arange(sizeOut[dim] - width, sizeOut[dim], dtype=cp.intp)
-    dataOut[cp.ix_(*indicesOut)] = dataIn[cp.ix_(*indicesIn)]
+    indicesIn[dim] = torch.arange(width, dtype=torch.int64)
+    indicesOut[dim] = torch.arange(sizeOut[dim] - width, sizeOut[dim], dtype=torch.int64)
+    dataOut[torch.meshgrid(*indicesOut, indexing='ij')] = dataIn[torch.meshgrid(*indicesIn, indexing='ij')]
 
     return dataOut
