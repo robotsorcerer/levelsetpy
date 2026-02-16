@@ -26,7 +26,7 @@ year    = {2023},
 
 | Dependency      | Dependency      | Dependency      | 
 | :--:     | :---:               | :---:               | 
-| [Numpy](https://numpy.org/)  | [Scipy](https://scipy.org/)  | [Cupy](https://cupy.dev/) |
+| [Numpy](https://numpy.org/)  | [Scipy](https://scipy.org/)  | [PyTorch](https://pytorch.org/) |
 | [Absl-py](https://abseil.io/docs/python/quickstart)   | [Scikit-image](https://scikit-image.org/) | [Matplotlib](https://matplotlib.org/)     | 
 
 **Note**: The user should elect to install a cupy version that matches the version of their CUDA installation. Cupy is commented out in the [requirements.txt](requirements.txt) file. Please follow the directions on the [cupy install page](https://docs.cupy.dev/en/stable/install.html).
