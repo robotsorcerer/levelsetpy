@@ -50,7 +50,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='levelsetpy',
-    version='0.0',
+    version='0.1',
     author='Lekan Molu',
     author_email='lekanmolu@microsoft.com',
     url='https://github.com/robotsorcerer/levelsetpy',
