@@ -47,10 +47,10 @@ def splitGrid(g, dims, bounds, padding=None):
      """
 
     if not padding:
-        padding = 0.05 * (g.max - g.min);
+        padding = 0.05 * (g.max - g.min)
 
     # Separate the grid into different dimensions
-    gs_temp = sepGrid(g, dims);
+    gs_temp = sepGrid(g, dims)
 
     # For each dimension, split the grid according to bounds
     gs = []

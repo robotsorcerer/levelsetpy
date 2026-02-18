@@ -52,7 +52,7 @@ setup(
     name='levelsetpy',
     version='0.1',
     author='Lekan Molu',
-    author_email='lekanmolu@microsoft.com',
+    author_email='patlekno@icloud.com',
     url='https://github.com/robotsorcerer/levelsetpy',
     description='PyTorch-Accelerated Hyperbolic PDE Solvers and Level Set Dynamics to Implicit Geometries in Python',
     long_description=long_description,
