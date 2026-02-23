@@ -1,0 +1,428 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\Dv}{D\bm{v}}
+\newcommand{\bx}{\bm{x}}
+\newcommand{\by}{\bm{y}}
+\newcommand{\bz}{\bm{z}}
+\newcommand{\bv}{\bm{v}}
+\newcommand{\bp}{\bm{p}}
+\usepackage{bm}
+
+\title{Corrected Derivation of the Quasi-Linearized Cole-Hopf\\
+Transformation for Viscous Hamilton-Jacobi PDEs}
+\author{Mathematical Supplement to ICML 2026 Submission}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We provide a corrected and complete derivation of the Cole-Hopf-like
+transformation proposed for linearizing the viscous Hamilton-Jacobi (HJ) PDE.
+We show that the transformation is \emph{exact} only when the Hamiltonian
+is quadratic in the co-state ($H = \tfrac{1}{2}|\bp|^2$), and derive the
+precise residual that arises for general Hamiltonians.  We then formulate
+the quasi-linearization iteration and establish the Gaussian expectation
+formulas for the value function and its spatial gradient.
+\end{abstract}
+
+%% ==========================================================================
+\section{Setup}
+%% ==========================================================================
+
+Consider the viscous HJ initial-value problem:
+\begin{equation}\label{eq:hjvisc}
+  \bv_t^\delta + H(t;\bx, D\bv^\delta) = \frac{\delta}{2}\,\Delta \bv^\delta
+  \quad\text{in } \R^n\times(0,T],
+  \qquad
+  \bv^\delta(0;\bx) = g(\bx),
+\end{equation}
+where $\delta > 0$ is the viscosity parameter, $H:\R\times\R^n\times\R^n\to\R$
+is the Hamiltonian, and $g:\R^n\to\R$ is the terminal/initial cost.
+
+%% ==========================================================================
+\section{The Cole-Hopf Transformation}
+%% ==========================================================================
+
+\subsection{\texorpdfstring{Exact case: $H(\bp) = \tfrac{1}{2}|\bp|^2$}{Exact case: H(p) = (1/2)|p|²}}
+
+Define $\omega^\delta = e^{-\bv^\delta/\delta}$.  Then:
+\begin{align}
+  \omega_t^\delta &= -\frac{1}{\delta}\,\omega^\delta\, \bv_t^\delta, \\
+  D\omega^\delta &= -\frac{1}{\delta}\,\omega^\delta\, D\bv^\delta, \\
+  \Delta\omega^\delta &= \frac{1}{\delta^2}\,\omega^\delta\,|D\bv^\delta|^2
+    - \frac{1}{\delta}\,\omega^\delta\,\Delta\bv^\delta.
+\end{align}
+
+From~\eqref{eq:hjvisc} with $H = \tfrac{1}{2}|D\bv^\delta|^2$:
+\[
+  \bv_t^\delta = \frac{\delta}{2}\Delta\bv^\delta - \frac{1}{2}|D\bv^\delta|^2.
+\]
+
+Substituting:
+\begin{align}
+  \omega_t^\delta
+  &= -\frac{1}{\delta}\,\omega^\delta
+     \Bigl(\frac{\delta}{2}\Delta\bv^\delta - \frac{1}{2}|D\bv^\delta|^2\Bigr)
+  = -\frac{1}{2}\omega^\delta\Delta\bv^\delta
+    + \frac{1}{2\delta}\omega^\delta|D\bv^\delta|^2, \\
+  \frac{\delta}{2}\Delta\omega^\delta
+  &= \frac{1}{2\delta}\omega^\delta|D\bv^\delta|^2
+     - \frac{1}{2}\omega^\delta\Delta\bv^\delta.
+\end{align}
+
+Therefore $\omega_t^\delta = \frac{\delta}{2}\Delta\omega^\delta$, i.e.,
+$\omega^\delta$ satisfies the \textbf{heat equation exactly}.
+
+\begin{proposition}[Exact Cole-Hopf]\label{prop:exact}
+  If $H(\bp) = \frac{1}{2}|\bp|^2$, then $\omega^\delta = e^{-\bv^\delta/\delta}$
+  satisfies
+  \[
+    \omega_t^\delta = \frac{\delta}{2}\,\Delta\omega^\delta
+    \quad\text{in } \R^n\times(0,T],
+    \qquad
+    \omega^\delta(0;\bx) = e^{-g(\bx)/\delta}.
+  \]
+\end{proposition}
+
+\subsection{General case: the residual}
+
+For a general Hamiltonian, define $c(t,\bx) := \frac{2\,H(t;\bx,D\bv^\delta)}{\delta\,|D\bv^\delta|^2}$
+and set $\omega^\delta = e^{-c\,\bv^\delta}$.  Writing $f = -c\,\bv^\delta$,
+the chain rule gives:
+\begin{align}
+  \omega_t^\delta &= \omega^\delta(-c_t\,\bv^\delta - c\,\bv_t^\delta), \label{eq:omega_t_general}\\
+  \Delta\omega^\delta &= \omega^\delta\bigl(|Df|^2 + \Delta f\bigr), \label{eq:laplacian_omega}
+\end{align}
+where $Df = -Dc\,\bv^\delta - c\,D\bv^\delta$ and
+$\Delta f = -\Delta c\,\bv^\delta - 2\langle Dc, D\bv^\delta\rangle - c\,\Delta\bv^\delta$.
+
+\begin{proof}[Derivation of~\eqref{eq:laplacian_omega}]
+We compute $\Delta\omega^\delta$ for $\omega^\delta = e^f$ where $f(\bx) = -c\,\bv^\delta$.
+
+\medskip
+\noindent\textbf{Step 1 (Gradient of $\omega^\delta$).}
+By the chain rule applied to $\omega^\delta = e^f$:
+\[
+  \frac{\partial\omega^\delta}{\partial x_i}
+  = e^f\,\frac{\partial f}{\partial x_i},
+  \qquad\text{i.e.,}\qquad
+  D\omega^\delta = \omega^\delta\,Df.
+\]
+
+\noindent\textbf{Step 2 (Second partial derivatives).}
+Differentiate $\partial_{x_i}\omega^\delta = e^f\,\partial_{x_i}f$ once more using the product rule:
+\[
+  \frac{\partial^2\omega^\delta}{\partial x_i^2}
+  = \frac{\partial}{\partial x_i}\!\Bigl(e^f\,\frac{\partial f}{\partial x_i}\Bigr)
+  = \underbrace{e^f\,\Bigl(\frac{\partial f}{\partial x_i}\Bigr)^{\!2}}_{\text{chain rule on }e^f}
+    \;+\;\underbrace{e^f\,\frac{\partial^2 f}{\partial x_i^2}}_{\text{product rule remainder}}.
+\]
+
+\noindent\textbf{Step 3 (Sum over all dimensions).}
+The Laplacian $\Delta\omega^\delta = \sum_{i=1}^{n}\partial^2_{x_i}\omega^\delta$ gives:
+\[
+  \Delta\omega^\delta
+  = \sum_{i=1}^{n}e^f\!\Bigl[\Bigl(\frac{\partial f}{\partial x_i}\Bigr)^{\!2}
+    + \frac{\partial^2 f}{\partial x_i^2}\Bigr]
+  = e^f\!\Biggl[\,\underbrace{\sum_{i=1}^n\Bigl(\frac{\partial f}{\partial x_i}\Bigr)^{\!2}}_{=\,|Df|^2}
+    \;+\;\underbrace{\sum_{i=1}^n\frac{\partial^2 f}{\partial x_i^2}}_{=\,\Delta f}\Biggr]
+  = \omega^\delta\bigl(|Df|^2 + \Delta f\bigr).
+\]
+
+\noindent\textbf{Step 4 (Expand $Df$ and $\Delta f$ via the product rule).}
+Since $f = -c\,\bv^\delta$ and $c = c(t,\bx)$ is itself spatially varying:
+\begin{align*}
+  Df &= -Dc\,\bv^\delta - c\,D\bv^\delta, \\
+  \Delta f &= -\Delta c\,\bv^\delta
+    - 2\langle Dc, D\bv^\delta\rangle
+    - c\,\Delta\bv^\delta,
+\end{align*}
+where the cross-term $-2\langle Dc, D\bv^\delta\rangle$ arises from the
+product-rule identity $\Delta(c\,\bv^\delta) = (\Delta c)\,\bv^\delta
++ 2\langle Dc, D\bv^\delta\rangle + c\,\Delta\bv^\delta$.
+\end{proof}
+
+Substituting these expressions and using the HJ PDE
+$\bv_t^\delta = \frac{\delta}{2}\Delta\bv^\delta - H$ yields the following
+residual equation.
+
+\begin{theorem}[Residual equation]\label{thm:residual}
+  The transformed variable $\omega^\delta = e^{-c\,\bv^\delta}$ satisfies
+  \begin{equation}\label{eq:residual}
+    \omega_t^\delta - \frac{\delta}{2}\,\Delta\omega^\delta
+    = \omega^\delta\cdot R(t,\bx),
+  \end{equation}
+  where the \textbf{residual} is
+  \begin{equation}\label{eq:R}
+    R = -c_t\,\bv^\delta
+      + \delta\langle Dc, D\bv^\delta\rangle(1 - c\,\bv^\delta)
+      - \frac{\delta}{2}\,(\bv^\delta)^2\,|Dc|^2
+      + \frac{\delta}{2}\,\bv^\delta\,\Delta c.
+  \end{equation}
+  The leading-order terms ($cH - \frac{\delta}{2}c^2|D\bv^\delta|^2$) cancel
+  by the choice of $c$; only terms involving derivatives of $c$ remain.
+\end{theorem}
+
+\begin{proof}
+We set $f = -c\,\bv^\delta$ so that $\omega^\delta = e^f$, and compute
+$\omega_t^\delta - \frac{\delta}{2}\Delta\omega^\delta$ in full.  The
+derivation proceeds in six steps.
+
+\medskip
+\noindent\textbf{Step 1 (Factor out $\omega^\delta$).}
+From~\eqref{eq:omega_t_general} and~\eqref{eq:laplacian_omega}:
+\[
+  \omega_t^\delta - \frac{\delta}{2}\,\Delta\omega^\delta
+  = \omega^\delta\!\Bigl[
+      f_t
+      - \frac{\delta}{2}\bigl(|Df|^2 + \Delta f\bigr)
+    \Bigr],
+\]
+so the residual is $R = f_t - \frac{\delta}{2}\,|Df|^2 - \frac{\delta}{2}\,\Delta f$.
+We now expand each of these three pieces.
+
+\medskip
+\noindent\textbf{Step 2 (Compute $f_t$).}
+Since $f = -c\,\bv^\delta$ with $c = c(t,\bx)$:
+\[
+  f_t = -c_t\,\bv^\delta - c\,\bv_t^\delta.
+\]
+Substitute the HJ PDE $\bv_t^\delta = \frac{\delta}{2}\,\Delta\bv^\delta - H$:
+\begin{equation}\label{eq:ft_expanded}
+  f_t
+  = -c_t\,\bv^\delta - c\Bigl(\frac{\delta}{2}\,\Delta\bv^\delta - H\Bigr)
+  = -c_t\,\bv^\delta
+    - \frac{c\delta}{2}\,\Delta\bv^\delta
+    + c\,H.
+\end{equation}
+
+\medskip
+\noindent\textbf{Step 3 (Compute $|Df|^2$).}
+From $Df = -Dc\,\bv^\delta - c\,D\bv^\delta$, expand the square:
+\begin{equation}\label{eq:Df_sq}
+  |Df|^2
+  = |Dc|^2(\bv^\delta)^2
+    + 2\,c\,\bv^\delta\,\langle Dc, D\bv^\delta\rangle
+    + c^2\,|D\bv^\delta|^2.
+\end{equation}
+
+\medskip
+\noindent\textbf{Step 4 (Compute $\Delta f$).}
+From the product-rule identity
+$\Delta(c\,\bv^\delta) = (\Delta c)\,\bv^\delta
+  + 2\langle Dc, D\bv^\delta\rangle + c\,\Delta\bv^\delta$:
+\begin{equation}\label{eq:Delta_f}
+  \Delta f = -\Delta(c\,\bv^\delta)
+  = -\Delta c\,\bv^\delta
+    - 2\langle Dc, D\bv^\delta\rangle
+    - c\,\Delta\bv^\delta.
+\end{equation}
+
+\medskip
+\noindent\textbf{Step 5 (Assemble all terms).}
+Substitute \eqref{eq:ft_expanded}--\eqref{eq:Delta_f} into
+$R = f_t - \frac{\delta}{2}|Df|^2 - \frac{\delta}{2}\Delta f$:
+\begin{align*}
+  R &= \underbrace{
+    \Bigl(-c_t\,\bv^\delta
+    - \frac{c\delta}{2}\,\Delta\bv^\delta
+    + c\,H\Bigr)}_{f_t} \\
+  &\quad - \frac{\delta}{2}\,
+    \underbrace{\Bigl(
+      |Dc|^2(\bv^\delta)^2
+      + 2\,c\,\bv^\delta\langle Dc, D\bv^\delta\rangle
+      + c^2|D\bv^\delta|^2
+    \Bigr)}_{|Df|^2} \\
+  &\quad - \frac{\delta}{2}\,
+    \underbrace{\Bigl(
+      -\Delta c\,\bv^\delta
+      - 2\langle Dc, D\bv^\delta\rangle
+      - c\,\Delta\bv^\delta
+    \Bigr)}_{\Delta f}.
+\end{align*}
+
+Distribute and list all seven resulting terms:
+\begin{alignat*}{2}
+  &\text{(a)}\;\; &&{-c_t\,\bv^\delta}, \\
+  &\text{(b)}\;\; &&{-\tfrac{c\delta}{2}\,\Delta\bv^\delta}, \\
+  &\text{(c)}\;\; &&{+c\,H}, \\
+  &\text{(d)}\;\; &&{-\tfrac{\delta}{2}\,c^2|D\bv^\delta|^2}, \\
+  &\text{(e)}\;\; &&{-c\delta\,\bv^\delta\langle Dc, D\bv^\delta\rangle}, \\
+  &\text{(f)}\;\; &&{-\tfrac{\delta}{2}\,|Dc|^2(\bv^\delta)^2}, \\
+  &\text{(g)}\;\; &&{+\delta\langle Dc, D\bv^\delta\rangle}, \\
+  &\text{(h)}\;\; &&{+\tfrac{\delta}{2}\,\Delta c\,\bv^\delta}, \\
+  &\text{(i)}\;\; &&{+\tfrac{c\delta}{2}\,\Delta\bv^\delta}.
+\end{alignat*}
+
+\medskip
+\noindent\textbf{Step 6 (Cancellations and simplification).}
+
+\emph{(I) The $\Delta\bv^\delta$ terms cancel.}
+Terms (b) and (i): $\;-\frac{c\delta}{2}\Delta\bv^\delta + \frac{c\delta}{2}\Delta\bv^\delta = 0$.
+
+\emph{(II) The leading-order terms cancel by the choice of $c$.}
+From $c = \frac{2H}{\delta|D\bv^\delta|^2}$, compute:
+\[
+  \frac{\delta}{2}\,c^2|D\bv^\delta|^2
+  = \frac{\delta}{2}\cdot\frac{4H^2}{\delta^2|D\bv^\delta|^4}\cdot|D\bv^\delta|^2
+  = \frac{2H^2}{\delta|D\bv^\delta|^2}
+  = c\,H.
+\]
+Therefore terms (c) and (d): $\;c\,H - \frac{\delta}{2}\,c^2|D\bv^\delta|^2 = 0$.
+
+\emph{(III) Factor the $\langle Dc, D\bv^\delta\rangle$ terms.}
+Terms (e) and (g):
+\[
+  \delta\langle Dc, D\bv^\delta\rangle
+  - c\delta\,\bv^\delta\langle Dc, D\bv^\delta\rangle
+  = \delta\langle Dc, D\bv^\delta\rangle\bigl(1 - c\,\bv^\delta\bigr).
+\]
+
+\emph{(IV) Collect the surviving terms:} (a), (III), (f), (h):
+\[
+  \boxed{
+    R = -c_t\,\bv^\delta
+      + \delta\langle Dc, D\bv^\delta\rangle(1 - c\,\bv^\delta)
+      - \frac{\delta}{2}\,(\bv^\delta)^2|Dc|^2
+      + \frac{\delta}{2}\,\bv^\delta\,\Delta c.
+  }
+\]
+Every surviving term involves a derivative of $c$ ($c_t$, $Dc$, or $\Delta c$).
+When $c$ is constant these all vanish and $R\equiv 0$, recovering the exact
+Cole-Hopf result.
+\end{proof}
+
+\begin{corollary}
+  $R \equiv 0$ if and only if $c$ is constant, which holds when
+  $H/|D\bv^\delta|^2$ is independent of $(\bx,t)$.  For $H=\frac{1}{2}|\bp|^2$,
+  $c = 1/\delta = \mathrm{const}$, recovering Proposition~\ref{prop:exact}.
+\end{corollary}
+
+\begin{remark}[Errata in the ICML submission]
+  (i) Proposition~3.1 in the submission states the linearized equation as
+  $\partial_t\omega^\delta - \frac{\delta}{2}\Delta\omega^\delta = H$;
+  the RHS should be $0$ (for the exact case) or $\omega^\delta R$
+  (for the general case).
+  (ii) Equations~(11) and~(12) use $|Dg|^2/H^\delta$ as a prefactor;
+  this equals $|D\bv^\delta|^2/H$ only at $t=0$.  For $t>0$, the
+  correct prefactor involves $|D\bv^\delta|^2$ and $H(t;\bx,D\bv^\delta)$
+  at the current time.
+  (iii) Lemmas~3.3 and~3.4 are formally correct as identities but are
+  not self-contained: they involve $D^2\bv^\delta$, $D_t D\bv^\delta$,
+  $DH$, and $D_t H$, which are themselves unknown.
+\end{remark}
+
+%% ==========================================================================
+\section{Quasi-Linearization Algorithm}
+%% ==========================================================================
+
+For general $H$, we propose an iterative scheme:
+
+\medskip
+\noindent\textbf{Algorithm} (Quasi-Linearized Cole-Hopf).
+
+\begin{enumerate}
+  \item \textbf{Initialize:} $\bv^{(0)}(t;\bx) = g(\bx)$, \;
+        $c^{(0)} = \frac{2\,H(t;\bx,Dg)}{{\delta\,|Dg|^2}}$.
+  \item \textbf{For $k = 0,1,2,\ldots$:}
+    \begin{enumerate}
+      \item Freeze $c^{(k)}$ at the current iterate.
+      \item Solve the heat equation
+            $\omega_t = \frac{\delta}{2}\Delta\omega$
+            with initial data
+            $\omega^{(k)}(0;\bx) = e^{-c^{(k)} g(\bx)}$.
+      \item Recover $\bv^{(k+1)} = -(1/c^{(k)})\log\omega^{(k+1)}$.
+      \item Update $D\bv^{(k+1)}$ and $c^{(k+1)} = \frac{2H(t;\bx,D\bv^{(k+1)})}{\delta|D\bv^{(k+1)}|^2}$.
+      \item Check convergence: $\|\bv^{(k+1)} - \bv^{(k)}\|/\|\bv^{(k)}\| < \varepsilon$.
+    \end{enumerate}
+\end{enumerate}
+
+%% ==========================================================================
+\section{Gaussian Expectation Formulas}
+%% ==========================================================================
+
+At each iteration, the heat equation is solved via the Green's function:
+
+\begin{lemma}[Value function recovery]\label{lem:value}
+  Given the heat equation with initial data $\omega(0;\bx) = e^{-c\,g(\bx)}$,
+  the value function at time $t$ is
+  \begin{equation}\label{eq:value}
+    \bv^\delta(t;\bx)
+    = -\frac{1}{c}\,\log\E_{\bz\sim\mathcal{N}(0,I_n)}
+      \bigl[e^{-c\,g(\bx + \sigma\bz)}\bigr],
+    \qquad \sigma = \sqrt{\delta(T-t)}.
+  \end{equation}
+  For numerical stability, use the log-sum-exp identity:
+  $-\frac{1}{c}\log\frac{1}{J}\sum_{j=1}^J e^{-c\,g(\bx+\sigma\bz_j)}$
+  with $\bz_j\stackrel{\text{iid}}{\sim}\mathcal{N}(0,I_n)$.
+\end{lemma}
+
+\begin{lemma}[Gradient recovery]\label{lem:gradient}
+  The spatial gradient is recovered as an importance-weighted ratio:
+  \begin{equation}\label{eq:gradient}
+    D\bv^\delta(t;\bx)
+    = \frac{\E_{\bz}\bigl[Dg(\bx+\sigma\bz)\,e^{-c\,g(\bx+\sigma\bz)}\bigr]}
+           {\E_{\bz}\bigl[e^{-c\,g(\bx+\sigma\bz)}\bigr]}.
+  \end{equation}
+\end{lemma}
+
+\begin{proof}
+  From $\omega = e^{-c\bv}$ and the heat-kernel representation
+  $\omega(t;\bx) = \E[e^{-c\,g(\bx+\sigma\bz)}]$:
+  \[
+    D\omega = \E\bigl[-c\,Dg(\by)\,e^{-c\,g(\by)}\bigr]
+    \cdot\frac{1}{\sigma}\,\frac{\partial\by}{\partial\bx}
+    = \E\bigl[Dg(\by)\cdot(-c)\,e^{-cg(\by)}\bigr].
+  \]
+  Wait --- more carefully:
+  $D_\bx\omega(t;\bx) = \E[D_\bx e^{-cg(\bx+\sigma\bz)}] = -c\,\E[Dg(\by)\,e^{-cg(\by)}]$.
+  Since $\omega = e^{-c\bv}$ and $D\omega = -c\,e^{-c\bv}\,D\bv = -c\,\omega\,D\bv$,
+  we get $D\bv = D\omega / (-c\,\omega)$, which gives~\eqref{eq:gradient}.
+\end{proof}
+
+%% ==========================================================================
+\section{Error Analysis}
+%% ==========================================================================
+
+\subsection{Quasi-linearization error}
+
+The residual $R$ in~\eqref{eq:R} involves $Dc$, $\Delta c$, $c_t$.
+Since $c = 2H/(\delta|D\bv|^2)$, we have $Dc = O(D^2\bv, DH)$.
+For smooth solutions with bounded Hessian $\|D^2\bv\| \le M_2$:
+\[
+  \|R\|_\infty \le C(\delta, M_2, \|DH\|, \|\bv\|_\infty)\cdot\|Dc\|_\infty.
+\]
+
+When the iteration converges ($\bv^{(k+1)}\approx\bv^{(k)}$), the
+frozen coefficient $c^{(k)}$ stabilizes and $R\to 0$ effectively.
+
+\subsection{Monte Carlo error}
+
+The standard MC estimator for~\eqref{eq:value} converges at rate $O(1/\sqrt{J})$
+where $J$ is the number of samples.  The effective variance depends on
+$c$ and the range of $g$: when $c\,\|g\|_\infty \gg 1$ (small $\delta$),
+the exponential weights become concentrated and the effective sample size
+shrinks.  Importance sampling with a tilted proposal (e.g., Laplace
+approximation around the mode of $e^{-cg}$) can reduce variance.
+
+\subsection{Viscosity approximation error}
+
+By Crandall-Lions (1984), $\|\bv^\delta - \bv\|_\infty \le k\sqrt{\delta}$
+where $\bv$ is the inviscid viscosity solution.  Thus smaller $\delta$
+improves the approximation quality but increases the MC variance
+(the weights become more peaked).  This creates a fundamental
+bias-variance tradeoff controlled by $\delta$.
+
+\end{document}

@@ -197,6 +197,7 @@ class Flock(Bird):
         # bookkeeing on the graph
         self.graph.θs[idx,:] =  θr
 
+    @lru_cache(maxsize=1024)
     def hamiltonian(self, t, data, value_derivs, finite_diff_bundle):
         """
             By definition, the Hamiltonian is the total energy stored in
@@ -244,6 +245,7 @@ class Flock(Bird):
 
         return torch.as_tensor(ham)
 
+    @lru_cache(maxsize=1024)
     def dissipation(self, t, data, derivMin, derivMax, \
                       schemeData, dim):
         """

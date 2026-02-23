@@ -68,6 +68,7 @@ class DubinsVehicleRel():
             self.w_p = self.w(u_bound)
             self.w_e = self.w(u_bound)
 
+    @lru_cache(maxsize=1024)
     def hamiltonian(self, t, data, value_derivs, finite_diff_bundle):
         """
             H = p_1 [v_e - v_p cos(x_3)] - p_2 [v_p sin x_3] \
@@ -97,6 +98,7 @@ class DubinsVehicleRel():
 
         return Hxp
 
+    @lru_cache(maxsize=1024)
     def dissipation(self, t, data, derivMin, derivMax, schemeData, dim):
         """
             Parameters

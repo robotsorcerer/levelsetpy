@@ -52,6 +52,7 @@ class DoubleIntegrator():
 
         return self.Gamma
 
+    @lru_cache(maxsize=128)
     def hamiltonian(self, t, data, value_derivs, finite_diff_bundle):
         """
             H = \dot{x1} . x2 + \dot{x2} . u + x_0
@@ -79,6 +80,7 @@ class DoubleIntegrator():
         return -(value_derivs[0]*x2- \
                  torch.abs(value_derivs[1])*self.control_law)
 
+    @lru_cache(maxsize=128)
     def dissipation(self, t, data, derivMin, derivMax, \
                       schemeData, dim):
         """
@@ -94,6 +96,7 @@ class DoubleIntegrator():
 
         return x_dot[dim]
 
+    @lru_cache(maxsize=128)
     def mttr(self):
         """
             Computes the minimum time we need to reach the

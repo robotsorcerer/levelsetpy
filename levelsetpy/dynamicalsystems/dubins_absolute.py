@@ -159,6 +159,7 @@ class DubinsVehicleAbs():
 
         return X
 
+    @lru_cache(maxsize=1024)
     def dissipation(self, t, data, derivMin, derivMax, \
                       schemeData, dim):
         """
