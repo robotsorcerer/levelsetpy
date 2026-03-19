@@ -209,6 +209,15 @@ See `compare_rocket_levelsetpy.py` and `compare_dubins_levelsetpy.py` for detail
 
 ## ToDos
 
+- [ ] Check distance between $c$ and $v^\delta$ (using levelsetpy)
+- [x] Fix dy in (12)
+- [x] Don't use $d_i$ for Monte Carlo samples
+- [x] No dy in (11) 
+- [ ] A few laers of approximation may be impeding the safety argument; minimize approximations as much as we can
+- [ ] Verify eq. (18) is consistent 
+- [ ] Verify (14), (19)
+- [ ] Look into number of samples needed
+
 
 ### Future Enhancements
 - [ ] Add GPU acceleration (JAX on GPU)
