@@ -15,6 +15,7 @@ __comment__     = "Two Rockets in Relative Coordinates"
 import torch
 import numpy as np
 
+from functools import lru_cache
 from levelsetpy.utilities.matlab_utils import isColumnLength, isvector
 
 class RocketSystemRel():
@@ -82,7 +83,6 @@ class RocketSystemRel():
         self.u_e = self.u(u_bound)
         self.u_p = self.u(-u_bound)
 
-    @lru_cache(maxsize=1024)
     def hamiltonian(self, t, value, value_derivs, finite_diff_bundle):
         """
             H = p_1 [u_e - u_p cos(x_3)] - p_2 [u_p sin x_3] \
@@ -114,7 +114,6 @@ class RocketSystemRel():
 
         return Hxp
 
-    @lru_cache(maxsize=1024)
     def dissipation(self, t, data, derivMin, derivMax, \
                       schemeData, dim):
         """

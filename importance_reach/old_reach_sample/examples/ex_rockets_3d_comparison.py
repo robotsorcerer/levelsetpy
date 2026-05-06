@@ -41,17 +41,17 @@ from src.hj_sampler import HJReachabilitySampler
 # ═══════════════════════════════════════════════════════════════════════
 #  Global plot style: bold, large fonts
 # ═══════════════════════════════════════════════════════════════════════
-FONTDICT = {"fontsize": 14, "fontweight": "bold"}
-TITLE_FONTDICT = {"fontsize": 15, "fontweight": "bold"}
+FONTDICT = {"fontsize": 24, "fontweight": "bold"}
+TITLE_FONTDICT = {"fontsize": 22, "fontweight": "bold"}
 plt.rcParams.update({
     "font.weight": "bold",
     "axes.labelweight": "bold",
     "axes.titleweight": "bold",
-    "axes.labelsize": 14,
-    "axes.titlesize": 15,
-    "xtick.labelsize": 11,
-    "ytick.labelsize": 11,
-    "figure.titlesize": 16,
+    "axes.labelsize": 24,
+    "axes.titlesize": 20,
+    "xtick.labelsize": 18,
+    "ytick.labelsize": 18,
+    "figure.titlesize": 22,
     "figure.titleweight": "bold",
 })
 
@@ -112,7 +112,7 @@ THETA_SLICES = [-pi / 2, 0.0, pi / 2]
 DELTA = 0.08
 MC_CFG = SolverConfig(
     delta=DELTA,
-    num_samples=8_000,
+    num_samples=14_000,
     max_quasi_iters=12,
     quasi_tol=1e-5,
     t_start=0.0,
@@ -306,7 +306,7 @@ def setup_3d_ax(ax, title, xlim, ylim, zlim):
     ax.set_zlim3d(*zlim)
     ax.set_xlabel(r"$\mathbf{x}$ (m)", fontdict=FONTDICT, labelpad=8)
     ax.set_ylabel(r"$\mathbf{z}$ (m)", fontdict=FONTDICT, labelpad=8)
-    ax.set_zlabel(r"$\boldsymbol{\theta}$ (rad)", fontdict=FONTDICT, labelpad=8)
+    ax.set_zlabel(r"$\theta$ (rad)", fontdict=FONTDICT, labelpad=8)
     ax.set_title(title, fontdict=TITLE_FONTDICT, pad=12)
     ax.tick_params(axis="both", which="major", labelsize=10)
     ax.view_init(elev=25, azim=-50)
@@ -318,7 +318,8 @@ def setup_3d_ax(ax, title, xlim, ylim, zlim):
 # ═══════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    out_dir = os.path.dirname(__file__)
+    out_dir = "/home/lex/Documents/Papers/MoluxLabs/Neurips2026/HJ_Gauss/figures"
+    os.makedirs(out_dir, exist_ok=True)
 
     # ── Run levelsetpy ──────────────────────────────────────────────
     g_ls, v_ls, time_ls = run_levelsetpy()
@@ -403,12 +404,12 @@ if __name__ == "__main__":
 
     fig_slices.suptitle(
         f"Two-Rockets BRT: MC Cole-Hopf vs levelsetpy\n"
-        f"a={A_THRUST}, g={GRAV}, Grid: {GRID_N_LS}³ | "
+        # f"a={A_THRUST}, g={GRAV}, Grid: {GRID_N_LS}³ | "
         f"MC: {MC_CFG.num_samples} samples, δ={DELTA} | T={T_FINAL}",
         fontsize=16, fontweight="bold",
     )
     fig_slices.tight_layout()
-    out_slices = os.path.join(out_dir, "rockets_3d_slices.png")
+    out_slices = os.path.join(out_dir, "rockets_3d_slices.jpg")
     fig_slices.savefig(out_slices, dpi=150, bbox_inches="tight")
     print(f"\nSaved 2D slices → {out_slices}")
     plt.close(fig_slices)
@@ -476,13 +477,13 @@ if __name__ == "__main__":
 
     fig_3d.suptitle(
         f"Two-Rockets 3D Backward Reachable Tube (zero level set)\n"
-        f"a={A_THRUST}, g={GRAV}, T={T_FINAL} | "
+        #f"a={A_THRUST}, g={GRAV}, T={T_FINAL} | "
         f"levelsetpy: {GRID_N_LS}³ grid | "
         f"MC: {GRID_N_MC_3D}³ grid, {MC_CFG.num_samples} samples",
-        fontsize=16, fontweight="bold",
+        fontsize=26, fontweight="bold",
     )
     fig_3d.tight_layout()
-    out_3d = os.path.join(out_dir, "rockets_3d_brt.png")
+    out_3d = os.path.join(out_dir, "rockets_3d_brt.jpg")
     fig_3d.savefig(out_3d, dpi=150, bbox_inches="tight")
     print(f"Saved 3D BRT → {out_3d}")
     plt.close(fig_3d)
@@ -511,12 +512,11 @@ if __name__ == "__main__":
                  fontsize=12, framealpha=0.9)
 
     fig_overlay.suptitle(
-        f"Two-Rockets BRT Overlay\n"
-        f"a={A_THRUST}, g={GRAV}, T={T_FINAL}",
+        f"Two-Rockets BRT Overlay",
         fontsize=16, fontweight="bold",
     )
     fig_overlay.tight_layout()
-    out_overlay = os.path.join(out_dir, "rockets_3d_overlay.png")
+    out_overlay = os.path.join(out_dir, "rockets_3d_overlay.jpg")
     fig_overlay.savefig(out_overlay, dpi=150, bbox_inches="tight")
     print(f"Saved overlay → {out_overlay}")
     plt.close(fig_overlay)

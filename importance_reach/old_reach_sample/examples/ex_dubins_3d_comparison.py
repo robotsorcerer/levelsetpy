@@ -42,20 +42,19 @@ from src.hj_sampler import HJReachabilitySampler
 # ═══════════════════════════════════════════════════════════════════════
 #  Global plot style: bold, large fonts
 # ═══════════════════════════════════════════════════════════════════════
-FONTDICT = {"fontsize": 14, "fontweight": "bold"}
-TITLE_FONTDICT = {"fontsize": 15, "fontweight": "bold"}
+FONTDICT = {"fontsize": 24, "fontweight": "bold"}
+TITLE_FONTDICT = {"fontsize": 22, "fontweight": "bold"}
 plt.rcParams.update({
     "font.weight": "bold",
     "axes.labelweight": "bold",
     "axes.titleweight": "bold",
-    "axes.labelsize": 14,
-    "axes.titlesize": 15,
-    "xtick.labelsize": 11,
-    "ytick.labelsize": 11,
-    "figure.titlesize": 16,
+    "axes.labelsize": 24,
+    "axes.titlesize": 20,
+    "xtick.labelsize": 18,
+    "ytick.labelsize": 18,
+    "figure.titlesize": 22,
     "figure.titleweight": "bold",
 })
-
 
 # ═══════════════════════════════════════════════════════════════════════
 #  Parameters (shared between both solvers)
@@ -82,7 +81,7 @@ THETA_SLICES = [-pi / 2, 0.0, pi / 2]
 DELTA = 0.08       # viscosity parameter
 cfg = SolverConfig(
     delta=DELTA,
-    num_samples=10_000,
+    num_samples=20_000,
     max_quasi_iters=15,
     quasi_tol=1e-5,
     t_start=0.0,
@@ -222,6 +221,8 @@ def run_mc_solver(theta_val):
 # ═══════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
+    out_dir = "/home/lex/Documents/Papers/MoluxLabs/Neurips2026/HJ_Gauss/figures"
+    os.makedirs(out_dir, exist_ok=True)
     # ── Run levelsetpy ──────────────────────────────────────────────
     g_ls, v_ls, time_ls = run_levelsetpy()
 
@@ -251,7 +252,7 @@ if __name__ == "__main__":
         l_inf = np.nanmax(diff[mask]) if mask.any() else float("nan")
         l2_rel = (np.sqrt(np.nanmean(diff[mask] ** 2))
                   / max(np.sqrt(np.nanmean(V_ref[mask] ** 2)), 1e-12))
-        print(f"  L_inf error = {l_inf:.4f},  L2_rel = {l2_rel:.4f}")
+        print(f"  L_inf error = {l_inf:.3f},  L2_rel = {l2_rel:.3f}")
         print(f"  Expected O(sqrt(delta)) = {np.sqrt(DELTA):.4f}")
 
         X_np, Y_np = np.array(X), np.array(Y)
@@ -260,9 +261,9 @@ if __name__ == "__main__":
         ax = axes[0, col]
         cf = ax.contourf(X_np, Y_np, V_ref, levels=20, cmap="RdBu_r")
         ax.contour(X_np, Y_np, V_ref, levels=[0.0], colors="k", linewidths=2.5)
-        ax.set_title(rf"levelsetpy  $\theta={theta_val:.2f}$",
+        ax.set_title(rf"$\theta={theta_val:.2f}$",
                      fontdict=TITLE_FONTDICT)
-        ax.set_xlabel(r"$\mathbf{x_1}$ (m)", fontdict=FONTDICT)
+        # ax.set_xlabel(r"$\mathbf{x_1}$ (m)", fontdict=FONTDICT)
         ax.set_ylabel(r"$\mathbf{x_2}$ (m)", fontdict=FONTDICT)
         ax.set_aspect("equal")
 
@@ -272,11 +273,11 @@ if __name__ == "__main__":
         ax.contour(X_np, Y_np, np.array(V_mc), levels=[0.0], colors="k",
                    linewidths=2.5)
         ax.set_title(
-            rf"MC ($\delta$={DELTA})  $\theta={theta_val:.2f}$"
+            rf"$\delta$={DELTA}$"
             f"\n{len(history)} iters, {elapsed_mc:.1f}s",
             fontdict=TITLE_FONTDICT,
         )
-        ax.set_xlabel(r"$\mathbf{x_1}$ (m)", fontdict=FONTDICT)
+        # ax.set_xlabel(r"$\mathbf{x_1}$ (m)", fontdict=FONTDICT)
         ax.set_ylabel(r"$\mathbf{x_2}$ (m)", fontdict=FONTDICT)
         ax.set_aspect("equal")
 
@@ -288,7 +289,7 @@ if __name__ == "__main__":
         ax.contour(X_np, Y_np, V_ref, levels=[0.0], colors="cyan",
                    linewidths=2, linestyles="--")
         ax.set_title(
-            rf"|error|  L$_\infty$={l_inf:.3f}  L$_2$={l2_rel:.3f}",
+            rf"L$_\infty$={l_inf:.3f}  L$_2$={l2_rel:.3f}",
             fontdict=TITLE_FONTDICT,
         )
         ax.set_xlabel(r"$\mathbf{x_1}$ (m)", fontdict=FONTDICT)
@@ -306,10 +307,10 @@ if __name__ == "__main__":
         f"Dubins Pursuit-Evasion BRS: MC Cole-Hopf vs levelsetpy\n"
         f"Grid: {GRID_N_LS}³ | MC: {cfg.num_samples} samples, "
         f"δ={DELTA} | T={T_FINAL}",
-        fontsize=16, fontweight="bold",
+        fontsize=22, fontweight="bold",
     )
     fig.tight_layout()
-    out = os.path.join(os.path.dirname(__file__), "dubins_3d_comparison.png")
+    out = os.path.join(out_dir, "dubins_3d_comparison.jpg")
     fig.savefig(out, dpi=150, bbox_inches="tight")
     print(f"\nSaved → {out}")
     print(f"\nTiming: levelsetpy={time_ls:.1f}s, MC total={total_mc_time:.1f}s")

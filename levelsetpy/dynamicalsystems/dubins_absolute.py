@@ -13,6 +13,7 @@ __comment__     = "Two Dubins Vehicle in Absolute Coordinates"
 import time
 import torch
 import numpy as np
+from functools import lru_cache
 from levelsetpy.utilities import eps
 
 class DubinsVehicleAbs():
@@ -159,7 +160,6 @@ class DubinsVehicleAbs():
 
         return X
 
-    @lru_cache(maxsize=1024)
     def dissipation(self, t, data, derivMin, derivMax, \
                       schemeData, dim):
         """
