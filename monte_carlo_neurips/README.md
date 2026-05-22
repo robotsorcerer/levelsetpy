@@ -206,23 +206,3 @@ See `compare_rocket_levelsetpy.py` and `compare_dubins_levelsetpy.py` for detail
 **Author**: Lekan Molu's Implementation based on ICML 2026 paper
 **Date**: January/February 2026
 **Status**: ✅ Verified and tested
-
-## ToDos
-
-- [ ] Check distance between $c$ and $v^\delta$ (using levelsetpy)
-- [x] Fix dy in (12)
-- [x] Don't use $d_i$ for Monte Carlo samples
-- [x] No dy in (11) 
-- [ ] A few laers of approximation may be impeding the safety argument; minimize approximations as much as we can
-- [ ] Verify eq. (18) is consistent 
-- [ ] Verify (14), (19)
-- [ ] Look into number of samples needed
-
-
-### Future Enhancements
-- [ ] Add GPU acceleration (JAX on GPU)
-- [ ] Implement adaptive MC sampling
-- [ ] Extend to higher dimensions (4D, 5D)
-- [ ] Add reach-avoid problems
-- [ ] Implement time-varying Hamiltonians
-- [ ] Compare with DeepReach
