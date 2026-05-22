@@ -405,7 +405,7 @@ if __name__ == "__main__":
     fig_slices.suptitle(
         f"Two-Rockets BRT: MC Cole-Hopf vs levelsetpy\n"
         # f"a={A_THRUST}, g={GRAV}, Grid: {GRID_N_LS}³ | "
-        f"MC: {MC_CFG.num_samples} samples, δ={DELTA} | T={T_FINAL}",
+        f"MC: {MC_CFG.num_samples} samples, $\\delta={DELTA}$ | T={T_FINAL}",
         fontsize=16, fontweight="bold",
     )
     fig_slices.tight_layout()

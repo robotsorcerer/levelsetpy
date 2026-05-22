@@ -306,7 +306,7 @@ if __name__ == "__main__":
     fig.suptitle(
         f"Dubins Pursuit-Evasion BRS: MC Cole-Hopf vs levelsetpy\n"
         f"Grid: {GRID_N_LS}³ | MC: {cfg.num_samples} samples, "
-        f"δ={DELTA} | T={T_FINAL}",
+        f"$\\delta={DELTA}$ | T={T_FINAL}",
         fontsize=22, fontweight="bold",
     )
     fig.tight_layout()
