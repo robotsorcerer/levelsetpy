@@ -1,0 +1,7 @@
+flax
+jax[cuda13]
+levelsetpy
+torch
+torchvision
+matplotlib
+numpy
