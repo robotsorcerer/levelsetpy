@@ -47,8 +47,13 @@ class GPUDistributor:
         self.auto_detect = auto_detect
         self.force_n_devices = force_n_devices
 
-        # Detect available devices
-        available_devices = devices(device_type)
+        # Detect available devices (fall back to CPU if device_type unavailable)
+        try:
+            available_devices = devices(device_type)
+        except RuntimeError:
+            # Device type not available, fall back to CPU
+            available_devices = devices("cpu")
+            self.device_type = "cpu"
         self.n_available = len(available_devices)
 
         if force_n_devices is not None:
