@@ -75,6 +75,8 @@ def brt_topology_signature(
 
 def detect_phase_transitions(
     topology_history: List[TopologyState],
+    v_slices: Optional[List[jnp.ndarray]] = None,
+    flash_radius_jump: float = 2.0,
 ) -> List[Tuple[int, str]]:
     """Detect phase transition events from topology history.
 
@@ -82,6 +84,13 @@ def detect_phase_transitions(
     ----------
     topology_history : list of TopologyState
         Time-evolving topology signatures.
+    v_slices : list of jnp.ndarray, optional
+        2D value function slices (one per time step). When provided, flash
+        expansion is also detected via a jump in BRT radius (primary criterion),
+        in addition to the topological proxy (secondary criterion).
+    flash_radius_jump : float
+        Minimum increase in BRT radius (in grid units) to qualify as flash
+        expansion when ``v_slices`` is provided.
 
     Returns
     -------
@@ -92,6 +101,11 @@ def detect_phase_transitions(
 
     if len(topology_history) < 2:
         return events
+
+    # Precompute radii if value slices available
+    radii: List[float] = []
+    if v_slices is not None:
+        radii = [brt_radius_at_time(v) for v in v_slices]
 
     for i in range(1, len(topology_history)):
         prev = topology_history[i - 1]
@@ -109,8 +123,16 @@ def detect_phase_transitions(
         if curr.n_components > prev.n_components:
             events.append((i, "flock_fragmentation"))
 
-        # Flash expansion: radial growth (detected by decreasing betti_1 or increasing radius)
-        # This is harder to detect purely topologically; rely on radius growth instead
+        # Flash expansion: primary — large radial jump in BRT boundary;
+        # secondary (topological proxy) — fragmented BRT re-unifies into a
+        # single simply-connected component.
+        flash_detected = False
+        if radii and radii[i] - radii[i - 1] >= flash_radius_jump:
+            flash_detected = True
+        elif prev.n_components > 1 and curr.n_components == 1 and curr.betti_1 == 0:
+            flash_detected = True
+        if flash_detected:
+            events.append((i, "flash_expansion"))
 
     return events
 
