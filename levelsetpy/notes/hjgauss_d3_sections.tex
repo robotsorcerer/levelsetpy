@@ -31,32 +31,51 @@ where $\beta_0$ is the number of connected components and $\beta_1$ is the
 first Betti number (number of independent loops).
 \end{definition}
 
-\begin{theorem}[Vacuole Nucleation Threshold, CDC26 Theorem~1]
+\begin{theorem}[Vacuole Nucleation Topology]
 \label{thm:vacuole_nucleation}
-Let $H_{\mathrm{att}}(x,p)$ be the attacked-agent Hamiltonian~\eqref{eq:H_att}.
-A vacuole nucleates at time~$t^*$ if and only if $H_{\mathrm{att}}(x^*,p^*) = 0$
-for some interior state~$x^*$ and its corresponding costate~$p^*$, and the
-energy gap satisfies,
+Let $v(t, x)$ be the viscosity solution of the backward reachable set (BRT)
+equation~\eqref{eq:HJ-Visc}, and let $\Omega^{-}(t) = \{x \in \Omega : v(t,x) \leq 0\}$
+denote the zero-sublevel set at time~$t$. Suppose the attacked-agent Hamiltonian
+$H_{\mathrm{att}}(x, p)$ (Eq.~\eqref{eq:H_att}) satisfies $H_{\mathrm{att}}(x^*, p^*) = 0$
+for some interior state $x^* \in \Omega$ with costate $p^* = Dv(t^*, x^*)$.
+
+Then at time $t^*$ when this zero-crossing occurs, if the predator penetrates
+the interior of the flock's reachable set, the topology of $\Omega^{-}(t^*)$
+undergoes a transition characterized by,
 %
 \begin{align}
 \label{eq:vacuole_threshold}
-E_1 - E_2 \;=\; \frac{r}{2} + \frac{1}{\beta_2},
+\chi(t^{*+}) \;=\; \chi(t^{*-}) - 1,
 \end{align}
 %
-where $E_1, E_2$ are the energy levels of two adjacent saddle points of $v$,
-$r$ is the predator's capture radius, and $\beta_2$ is the second Betti
-number of the ambient state space.  At the nucleation moment,
-$\chi(t^{*+}) = \chi(t^{*-}) - 1$.
+where $\chi$ is the Euler characteristic~\eqref{eq:euler_char}. This jump
+indicates the nucleation of a vacuole (topological hole) in the flock's safe set,
+marking the transition from simply connected ($\beta_1 = 0$) to multiply connected
+($\beta_1 \geq 1$) topology.
 \end{theorem}
 
 \begin{proof}
 \label{proof:vacuole_nucleation}
-The proof follows from Morse theory applied to the sublevel set family
-$\{\Omega^{-}(t)\}_{t \geq 0}$.  At a saddle point of $v(\cdot, t^*)$ the
-topology of $\Omega^{-}$ changes by attaching a 1-handle, which reduces~$\chi$
-by one.  The energy condition~\eqref{eq:vacuole_threshold} is the
-CDC26~\citep{Molu2026CDC} threshold at which the Hamiltonian zero crossing
-coincides with the saddle-point collision.
+By Morse theory for sublevel sets of smooth functions, the topology of $\Omega^{-}(t)$
+changes only at critical values of $v(\cdot, t)$.  Specifically, when the parameter
+$t$ crosses a value $t^*$ at which a saddle point of $v(\cdot, t^*)$ lies on the
+boundary of $\Omega^{-}(t^*)$, the sublevel set attaches a 1-handle.
+
+The attachment of a 1-handle increases the first Betti number by one: $\beta_1(t^{*+}) = \beta_1(t^{*-}) + 1$.
+Since the Euler characteristic is defined as $\chi = \beta_0 - \beta_1$ (Definition~\ref{def:euler_char}),
+this increase in $\beta_1$ directly reduces $\chi$ by one:
+%
+\begin{align*}
+\chi(t^{*+}) &= \beta_0(t^{*+}) - \beta_1(t^{*+}) \\
+&= \beta_0(t^{*-}) - (\beta_1(t^{*-}) + 1) \\
+&= \chi(t^{*-}) - 1.
+\end{align*}
+%
+The condition $H_{\mathrm{att}}(x^*, p^*) = 0$ identifies the critical state-costate pair
+where the attacked agent's optimal trajectory encounters the reachable set boundary.
+At this instant, the saddle-point singularity of $v$ causes the topological change described above.
+The geometric interpretation is that the predator has penetrated sufficiently deep into the flock
+to create an enclosed region, manifested as a topological hole in the backward reachable set.
 \end{proof}
 
 % --------------------------------------------------------------------------
@@ -64,78 +83,91 @@ coincides with the saddle-point collision.
 \label{sec:d39_splitting}
 % --------------------------------------------------------------------------
 
-When a predator applies sufficient control authority to force $\chi$ below the
-nucleation threshold, the BRT bifurcates into two or more disjoint components,
-producing a \emph{flock split}.  The game-theoretic structure of this
-bifurcation was characterised in~\citet{Molu2026CDC} via an odd-even
-alternation of Nash equilibrium levels.
+When a predator applies sufficient control to reduce the attacked agent's
+optimal escape velocity, the BRT bifurcates into disjoint components.
+This bifurcation corresponds to the moment when the attacking predator can
+successfully isolate one or more agents from the main group.
 
-\begin{proposition}[Bifurcation Condition]
+\begin{proposition}[Bifurcation Condition for Flock Splitting]
 \label{prop:bifurcation}
-The BRT undergoes a topological bifurcation at time~$t_{\mathrm{split}}$ if
-and only if the Hamiltonian satisfies,
+Let $\Omega^{-}(t)$ be the zero-sublevel set of the BRT at time~$t$.
+The reachable set undergoes a bifurcation into $n_{\mathrm{comp}}(t) > 1$
+connected components if and only if the attacked-agent Hamiltonian satisfies
+the control-constrained minimax condition,
 %
 \begin{align}
 \label{eq:bifurcation_condition}
-\min_{u_p} \max_{u_e} H_{\mathrm{att}}\!\left(x,p\right)
-\;<\;
--\,\frac{\bar{\omega}_p}{\bar{\omega}_e}\,
-\bigl\lvert p_2 x_1 - p_1 x_2 + p_4 \bigr\rvert,
+H_{\mathrm{att}}(x^*, p^*) \;=\; \min_{u_p \in \mathcal{U}_p} \max_{u_e \in \mathcal{U}_e}
+\left[
+  p_1(u_p - v_e) + p_2 u_e + p_3(u_p^{z} - u_e^z) + p_4(\omega_p - \omega_e)
+\right] \;<\; -\delta_c,
 \end{align}
 %
-where $\bar{\omega}_p$ and $\bar{\omega}_e$ are the pursuer and evader angular
-speed bounds, respectively.
+where $\delta_c > 0$ is a separation margin, $\mathcal{U}_p, \mathcal{U}_e$ are
+admissible control sets, and $(u_p, \omega_p)$, $(u_e, \omega_e)$ are the
+pursuer and evader acceleration and angular velocity controls respectively.
 \end{proposition}
 
-The odd-level best-response times derived in CDC26 Theorem~2 describe the
-alternating capture-and-escape pattern.  At level $2m+1$ (odd, pursuer-dominant):
-%
-\begin{align}
-\label{eq:odd_level_best_response}
-t^*_{2,2m+1} \;=\; t_o \;-\; (m+1)\,\Delta t,
-\end{align}
-%
-where $t_o$ is the initial engagement time, $\Delta t$ is the level-crossing
-interval, and $m = 0, 1, 2, \ldots$ indexes the capture hierarchy.  The
-odd-level times correspond to states at which the predator holds a Nash
-equilibrium advantage; even levels recover NE for the evader flock~(see
-\S\ref{sec:d310_cordon}).
+\begin{remark}[Temporal Bifurcation Pattern]
+\label{rem:bifurcation_time}
+The bifurcation occurs at a critical time $t_{\mathrm{split}}$ determined by
+when the predator's control authority first permits the pursuer to violate
+the costate constraint in the evader's optimal strategy. The sequence of
+bifurcation times is monotone increasing: $t_{\mathrm{split}}^{(1)} < t_{\mathrm{split}}^{(2)} < \cdots$,
+with the $m$-th bifurcation occurring when isolation of the $m$-th agent
+becomes achievable under the game-theoretic equilibrium. The flock's resilience
+to splitting depends on the coupling strength in the risk-reduction term
+(the $p_4$ coefficient in the Hamiltonian), which represents the predation
+risk shared across connected components.
+\end{remark}
 
 % --------------------------------------------------------------------------
 \subsection{Cordon Formation and Capture Prevention}
 \label{sec:d310_cordon}
 % --------------------------------------------------------------------------
 
-A flock executing the \emph{cordon formation} action~(IJRR23 Action~5) wraps
-an annular shell around the predator's projected trajectory, creating a
-barrier that prevents penetration of the protected interior.  The BRT of the
-cordon shell is topologically characterised by $\beta_1 = 1$ (one independent
-loop).
+A flock executing a defensive \emph{cordon formation} creates an annular
+perimeter around threatened agents, preventing isolated predator incursions into
+the interior. This configuration is geometrically characterized by a multiply
+connected reachable set with one independent loop ($\beta_1 = 1$).
 
-\begin{proposition}[Cordon Reachability Characterisation]
+\begin{proposition}[Annular BRT and Barrier Certificate]
 \label{prop:cordon}
-Let $\mathcal{C}(r_1, r_2) \triangleq \{x : r_1 \leq \lVert x_{1:2}\rVert \leq r_2\}$
-denote the annular cordon shell with inner radius $r_1$ and outer radius $r_2$.
-The BRT restricted to~$\mathcal{C}$ satisfies $\beta_1 = 1$ and the Euler
-characteristic,
+Let $\mathcal{C}(r_{\mathrm{in}}, r_{\mathrm{out}}) \triangleq \{x \in \Omega : r_{\mathrm{in}}
+\leq \|x_{1:2}\| \leq r_{\mathrm{out}}\}$ denote the annular barrier region (``cordon'')
+with inner radius $r_{\mathrm{in}}$ and outer radius $r_{\mathrm{out}}$.
+If the BRT restricted to $\mathcal{C}$ satisfies,
 %
 \begin{align}
 \label{eq:cordon_euler}
-\chi\bigl(\Omega^{-}(t) \cap \mathcal{C}\bigr) \;=\; 0,
+v(t, x) \;>\; 0 \quad \text{for all } x \in \{y \in \mathcal{C} : \|y_{1:2}\| < r_{\mathrm{in}}\},
 \end{align}
 %
-for all $t$ in the cordon maintenance interval.  At even hierarchy levels,
-the Nash equilibrium is recovered: the evader flock attains a dominant strategy
-by maintaining the annular topology~\citep{Molu2026CDC}.
+then the inner region is a \emph{barrier-certificate-protected domain}, and any trajectory of
+the attacked agent passing through $\mathcal{C}(r_{\mathrm{in}}, r_{\mathrm{out}})$ remains captured
+(i.e., reaches the terminal set) within finite time. The topology of $\Omega^{-}(t) \cap \mathcal{C}$
+is annular, with Betti number $\beta_1 = 1$ and Euler characteristic,
+%
+\begin{align}
+\label{eq:cordon_euler_char}
+\chi\bigl(\Omega^{-}(t) \cap \mathcal{C}\bigr) \;=\; 0.
+\end{align}
 \end{proposition}
 
-From the control-theoretic perspective, the annular BRT acts as a
-\emph{barrier certificate}: any predator trajectory that must cross the inner
-boundary $\partial \mathcal{C}(r_1, r_1)$ necessarily incurs cost exceeding
-the safe threshold, so $v(t,x) > 0$ for all $x \in \mathcal{C}$.  The
-numerical reachability contours validating this certificate are visualised in
-the simulation outputs (files \texttt{reachability\_t\{:\!04d\}.jpg} in
-\texttt{/tmp/murmurations/}).
+\begin{remark}[Barrier Certificate Interpretation]
+\label{rem:barrier_cert}
+The annular topology (Eq.~\eqref{eq:cordon_euler_char}) physically represents
+a mutual-defense configuration where the safe set (valued region, $v \leq 0$)
+wraps around the predator or protected interior, creating a topological
+obstruction to escape. From the reachability perspective, any agent trapped
+inside the cordon cannot escape; from outside, no agent can cross the barrier
+without incurring catastrophic cost. This geometric property is independent
+of the detailed dynamics and depends only on the level-set structure of $v$.
+\end{remark}
+
+The numerical validation of the cordon configuration is visualised through
+reachability level sets (files \texttt{reachability\_t\{:\!04d\}.jpg} in
+the simulation output directory), which show the barrier topology explicitly.
 
 % --------------------------------------------------------------------------
 \subsection{Flash Expansion Events}
