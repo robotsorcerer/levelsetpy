@@ -6,7 +6,7 @@ After the Cole-Hopf transformation, omega satisfies the heat equation:
 The fundamental solution (Green's function) gives:
     omega(t, x) = E_{y ~ N(x, delta*(T-t)*I)} [ omega(T, y) ]
 
-For the value function recovery (Lemma 3.2 in the paper, corrected):
+For the value function recovery (Lemma D.2 / lem:value in Appendix D):
     v(t, x) = -(1/c) * log E_{z ~ N(0, I)} [ exp(-c * g(x + sigma*z)) ]
 
 where  sigma = sqrt(delta * (T - t))  and  c  is the Cole-Hopf coefficient.
@@ -84,7 +84,7 @@ def mc_gradient_at_point(
 
     Two estimators available:
 
-    B.17 (Corollary B.4 from hjgauss.pdf, default):
+    Corollary B.5 (cor:mc_gradient / eq:mc_grad from hjgauss.pdf, default):
         Dv = (1/(t_eff*delta*c)) * (x - E[y*w] / E[w])
 
     Autodiff (ICML variant):
@@ -95,7 +95,7 @@ def mc_gradient_at_point(
     Parameters
     ----------
     gradient_mode : str, default "b17"
-        Choice of gradient estimator. "b17" uses Eq. B.17, "autodiff" uses autodiff.
+        Choice of gradient estimator. "b17" uses Corollary B.5 (eq:mc_grad), "autodiff" uses autodiff.
 
     Returns
     -------
@@ -117,7 +117,7 @@ def mc_gradient_at_point(
     weights = weights / jnp.sum(weights)  # (J,) normalized
 
     if gradient_mode == "b17":
-        # Eq. B.17 / Corollary B.4: (1/(t_eff*delta*c)) * (x - weighted_mean(y))
+        # Corollary B.5 (eq:mc_grad): (1/(t_eff*delta*c)) * (x - weighted_mean(y))
         weighted_mean = jnp.sum(weights[:, None] * y, axis=0)
         return (1.0 / (t_eff * delta * c)) * (x - weighted_mean)
     else:  # "autodiff"

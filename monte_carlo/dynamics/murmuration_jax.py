@@ -19,15 +19,30 @@ Terminal cost (capture cylinder): g(x) = sqrt(x₁² + x₂²) - r_capture
 """
 
 from dataclasses import dataclass
-from typing import Optional, List, Tuple
+from typing import TYPE_CHECKING, Optional, List, Tuple
 
 import jax
 import jax.numpy as jnp
 from jax import vmap
 
-from ..src.config import SolverConfig
-from ..src.hj_sampler import HJReachabilitySampler
-from ..src.hamiltonians.murmuration import MurmuationHamiltonian4D
+if TYPE_CHECKING:
+    from src.gpu_distribution import GPUDistributor
+
+
+import sys 
+import os
+from os.path import join 
+from pathlib import Path
+try:
+    _HERE = os.path.abspath(__file__)
+except NameError:
+    _HERE = Path.cwd()
+_ROOT = os.path.dirname(os.path.dirname(_HERE)) 
+sys.path.append(_ROOT)
+
+from src.config import SolverConfig
+from src.hj_sampler import HJReachabilitySampler
+from src.hamiltonians.murmuration import MurmuationHamiltonian4D
 
 
 def avg_heading_jax(w_e: float, neighbor_headings: jnp.ndarray) -> float:
@@ -171,7 +186,14 @@ class PredatorState:
 class MurmuationSolverJAX4D:
     """HJ-Gauss solver for 4D aerial murmuration safety."""
 
-    def __init__(self, cfg: SolverConfig, omega_e_bar: float = 1.0, omega_p_bar: float = 1.0, gamma_max: float = 0.5):
+    def __init__(
+        self,
+        cfg: SolverConfig,
+        omega_e_bar: float = 1.0,
+        omega_p_bar: float = 1.0,
+        gamma_max: float = 0.5,
+        distributor: Optional["GPUDistributor"] = None,
+    ):
         """
         Parameters
         ----------
@@ -183,11 +205,14 @@ class MurmuationSolverJAX4D:
             Pursuer angular speed bound.
         gamma_max : float
             Climb rate bound.
+        distributor : GPUDistributor, optional
+            Multi-GPU distributor for sharding across devices.
         """
         self.cfg = cfg
         self.omega_e_bar = omega_e_bar
         self.omega_p_bar = omega_p_bar
         self.gamma_max = gamma_max
+        self.distributor = distributor
 
     def solve_single_flock(
         self, flock: FlockState, predator: PredatorState, t: float = 0.0
@@ -219,7 +244,7 @@ class MurmuationSolverJAX4D:
             omega_p_bar=self.omega_p_bar,
             gamma_max=self.gamma_max,
         )
-        solver = HJReachabilitySampler(H, terminal_cost_4d, self.cfg)
+        solver = HJReachabilitySampler(H, terminal_cost_4d, self.cfg, self.distributor)
         v, _ = solver.solve_quasi_linear(flock.states, t=t)
 
         wall_time = time.time() - start
@@ -227,7 +252,7 @@ class MurmuationSolverJAX4D:
 
     def solve_flock_system(
         self, flocks: List[FlockState], predators: List[PredatorState], t: float = 0.0
-    ) -> Tuple[jnp.ndarray, float, float]:
+    ) -> Tuple[List[jnp.ndarray], float, float]:
         """Solve BRT for multi-flock, multi-predator system.
 
         Safety: min over all (flock, predator) pairs.
@@ -243,10 +268,12 @@ class MurmuationSolverJAX4D:
 
         Returns
         -------
-        safety_values : jnp.ndarray, shape (n_f, n_a)
-            BRT value for each agent in each flock.
+        safety_values : list of jnp.ndarray, length n_f
+            BRT value for each agent in each flock; ``safety_values[f]`` has
+            shape ``(n_agents_f,)`` and equals the per-agent minimum over all
+            predators for flock ``f``.
         safe_fraction : float
-            Fraction of agents with v > 0 (safe).
+            Fraction of all agents across all flocks with v > 0 (safe).
         wall_time : float
             Total wall-clock time.
         """
@@ -255,27 +282,28 @@ class MurmuationSolverJAX4D:
         start = time.time()
 
         n_f = len(flocks)
-        n_a_max = max(f.n_agents for f in flocks)
         n_p = len(predators)
 
-        # Solve all (flock, predator) pairs in parallel via vmap
-        safety_all_pairs = []
+        # Solve all (flock, predator) pairs.
+        # safety_all_pairs[f] is a list of n_p arrays, each shape (n_agents_f,).
+        safety_all_pairs: List[List[jnp.ndarray]] = []
         for flock in flocks:
-            flock_safety = []
+            flock_safety: List[jnp.ndarray] = []
             for predator in predators:
                 v, _ = self.solve_single_flock(flock, predator, t)
                 flock_safety.append(v)
-            safety_all_pairs.append(jnp.array(flock_safety))  # (n_p, n_a)
+            safety_all_pairs.append(flock_safety)
 
-        # Global BRT: min over all (flock, predator) pairs
-        global_brt_values = jnp.min(
-            jnp.array(safety_all_pairs), axis=(0, 1)  # min over flocks and predators
-        )
+        # Per-flock safety: min over all predators for that flock.
+        # Result is a list of (n_agents_f,) arrays, one per flock.
+        safety_values: List[jnp.ndarray] = [
+            jnp.min(jnp.stack(flock_safety, axis=0), axis=0)
+            for flock_safety in safety_all_pairs
+        ]  # list of length n_f, each (n_agents_f,)
 
-        # Reshape back to per-flock
-        safety_values = jnp.array([sp[0, :] for sp in safety_all_pairs])
-
-        safe_fraction = float(jnp.mean(global_brt_values > 0))
+        # Global safe fraction: concatenate across all flocks, then threshold.
+        all_v = jnp.concatenate(safety_values, axis=0)  # (total_agents,)
+        safe_fraction = float(jnp.mean(all_v > 0))
         wall_time = time.time() - start
 
         return safety_values, safe_fraction, wall_time
