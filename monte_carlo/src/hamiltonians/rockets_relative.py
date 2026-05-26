@@ -4,12 +4,12 @@ State: x = (x, z, theta)
   - (x, z): relative position of evader w.r.t. pursuer
   - theta = u_p - u_e: relative thrust inclination
 
-Dynamics (eq. 18 of the ICML26 paper):
+Dynamics (Section 4.1 of the NeurIPS 2026 paper):
     x_dot     = a_p cos(theta) + u_e * x
     z_dot     = a_p sin(theta) + a_e + u_e * x - g
     theta_dot = u_p - u_e
 
-Hamiltonian (eq. 21):
+Hamiltonian (Equations 22-23):
     H(x, p) = -a * p1 * cos(theta) - p2 * (g - a - a*sin(theta))
               - u_bar * |p1*x + p3| + u_bar * |p2*x + p3|
 

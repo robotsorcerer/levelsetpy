@@ -6,7 +6,7 @@ After the Cole-Hopf transformation, omega satisfies the heat equation:
 The fundamental solution (Green's function) gives:
     omega(t, x) = E_{y ~ N(x, delta*(T-t)*I)} [ omega(T, y) ]
 
-For the value function recovery (Lemma 3.2 in the paper, corrected):
+For the value function recovery (Lemma D.2 / lem:value in Appendix D):
     v(t, x) = -(1/c) * log E_{z ~ N(0, I)} [ exp(-c * g(x + sigma*z)) ]
 
 where  sigma = sqrt(delta * (T - t))  and  c  is the Cole-Hopf coefficient.
