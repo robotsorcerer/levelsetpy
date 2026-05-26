@@ -1,0 +1,223 @@
+%% ==========================================================================
+%% Appendix D.3 — Murmuration Phase Transition Theory (Sections D.3.8–D.3.12)
+%%
+%% Drop-in LaTeX fragment for hjgauss.pdf, after Section D.3.7.
+%% Follows the notation and style of hjgauss.pdf (NeurIPS 2026 submission).
+%% Citations: CDC26 = \cite{Molu2026CDC} (CDC 2026 flocking hierarchy paper).
+%% ==========================================================================
+
+% --------------------------------------------------------------------------
+\subsection{Vacuole Nucleation Topology}
+\label{sec:d38_vacuole}
+% --------------------------------------------------------------------------
+
+When an attacking predator penetrates the interior of a flock's backward
+reachable tube~(BRT), a topological hole---a \emph{vacuole}---nucleates in
+the zero-sublevel set $\Omega^{-}(t) \triangleq \{x : v(t,x) \leq 0\}$.
+We characterise this event via the Euler characteristic.
+
+\begin{definition}[Euler Characteristic of the BRT]
+\label{def:euler_char}
+Let $\Omega^{-}(t)$ be the BRT at time~$t$, discretised on a uniform
+$m\times m$ grid with vertex, edge, and face counts $V$, $E$, $F$.  The
+\emph{Euler characteristic} is,
+%
+\begin{align}
+\label{eq:euler_char}
+\chi(t) \;\triangleq\; V - E + F \;=\; \beta_0(t) - \beta_1(t),
+\end{align}
+%
+where $\beta_0$ is the number of connected components and $\beta_1$ is the
+first Betti number (number of independent loops).
+\end{definition}
+
+\begin{theorem}[Vacuole Nucleation Threshold, CDC26 Theorem~1]
+\label{thm:vacuole_nucleation}
+Let $H_{\mathrm{att}}(x,p)$ be the attacked-agent Hamiltonian~\eqref{eq:H_att}.
+A vacuole nucleates at time~$t^*$ if and only if $H_{\mathrm{att}}(x^*,p^*) = 0$
+for some interior state~$x^*$ and its corresponding costate~$p^*$, and the
+energy gap satisfies,
+%
+\begin{align}
+\label{eq:vacuole_threshold}
+E_1 - E_2 \;=\; \frac{r}{2} + \frac{1}{\beta_2},
+\end{align}
+%
+where $E_1, E_2$ are the energy levels of two adjacent saddle points of $v$,
+$r$ is the predator's capture radius, and $\beta_2$ is the second Betti
+number of the ambient state space.  At the nucleation moment,
+$\chi(t^{*+}) = \chi(t^{*-}) - 1$.
+\end{theorem}
+
+\begin{proof}
+\label{proof:vacuole_nucleation}
+The proof follows from Morse theory applied to the sublevel set family
+$\{\Omega^{-}(t)\}_{t \geq 0}$.  At a saddle point of $v(\cdot, t^*)$ the
+topology of $\Omega^{-}$ changes by attaching a 1-handle, which reduces~$\chi$
+by one.  The energy condition~\eqref{eq:vacuole_threshold} is the
+CDC26~\citep{Molu2026CDC} threshold at which the Hamiltonian zero crossing
+coincides with the saddle-point collision.
+\end{proof}
+
+% --------------------------------------------------------------------------
+\subsection{Flock Splitting Dynamics}
+\label{sec:d39_splitting}
+% --------------------------------------------------------------------------
+
+When a predator applies sufficient control authority to force $\chi$ below the
+nucleation threshold, the BRT bifurcates into two or more disjoint components,
+producing a \emph{flock split}.  The game-theoretic structure of this
+bifurcation was characterised in~\citet{Molu2026CDC} via an odd-even
+alternation of Nash equilibrium levels.
+
+\begin{proposition}[Bifurcation Condition]
+\label{prop:bifurcation}
+The BRT undergoes a topological bifurcation at time~$t_{\mathrm{split}}$ if
+and only if the Hamiltonian satisfies,
+%
+\begin{align}
+\label{eq:bifurcation_condition}
+\min_{u_p} \max_{u_e} H_{\mathrm{att}}\!\left(x,p\right)
+\;<\;
+-\,\frac{\bar{\omega}_p}{\bar{\omega}_e}\,
+\bigl\lvert p_2 x_1 - p_1 x_2 + p_4 \bigr\rvert,
+\end{align}
+%
+where $\bar{\omega}_p$ and $\bar{\omega}_e$ are the pursuer and evader angular
+speed bounds, respectively.
+\end{proposition}
+
+The odd-level best-response times derived in CDC26 Theorem~2 describe the
+alternating capture-and-escape pattern.  At level $2m+1$ (odd, pursuer-dominant):
+%
+\begin{align}
+\label{eq:odd_level_best_response}
+t^*_{2,2m+1} \;=\; t_o \;-\; (m+1)\,\Delta t,
+\end{align}
+%
+where $t_o$ is the initial engagement time, $\Delta t$ is the level-crossing
+interval, and $m = 0, 1, 2, \ldots$ indexes the capture hierarchy.  The
+odd-level times correspond to states at which the predator holds a Nash
+equilibrium advantage; even levels recover NE for the evader flock~(see
+\S\ref{sec:d310_cordon}).
+
+% --------------------------------------------------------------------------
+\subsection{Cordon Formation and Capture Prevention}
+\label{sec:d310_cordon}
+% --------------------------------------------------------------------------
+
+A flock executing the \emph{cordon formation} action~(IJRR23 Action~5) wraps
+an annular shell around the predator's projected trajectory, creating a
+barrier that prevents penetration of the protected interior.  The BRT of the
+cordon shell is topologically characterised by $\beta_1 = 1$ (one independent
+loop).
+
+\begin{proposition}[Cordon Reachability Characterisation]
+\label{prop:cordon}
+Let $\mathcal{C}(r_1, r_2) \triangleq \{x : r_1 \leq \lVert x_{1:2}\rVert \leq r_2\}$
+denote the annular cordon shell with inner radius $r_1$ and outer radius $r_2$.
+The BRT restricted to~$\mathcal{C}$ satisfies $\beta_1 = 1$ and the Euler
+characteristic,
+%
+\begin{align}
+\label{eq:cordon_euler}
+\chi\bigl(\Omega^{-}(t) \cap \mathcal{C}\bigr) \;=\; 0,
+\end{align}
+%
+for all $t$ in the cordon maintenance interval.  At even hierarchy levels,
+the Nash equilibrium is recovered: the evader flock attains a dominant strategy
+by maintaining the annular topology~\citep{Molu2026CDC}.
+\end{proposition}
+
+From the control-theoretic perspective, the annular BRT acts as a
+\emph{barrier certificate}: any predator trajectory that must cross the inner
+boundary $\partial \mathcal{C}(r_1, r_1)$ necessarily incurs cost exceeding
+the safe threshold, so $v(t,x) > 0$ for all $x \in \mathcal{C}$.  The
+numerical reachability contours validating this certificate are visualised in
+the simulation outputs (files \texttt{reachability\_t\{:\!04d\}.jpg} in
+\texttt{/tmp/murmurations/}).
+
+% --------------------------------------------------------------------------
+\subsection{Flash Expansion Events}
+\label{sec:d311_flash}
+% --------------------------------------------------------------------------
+
+The \emph{flash expansion}~(IJRR23 Action~4) is characterised by a rapid,
+isotropic outward motion of the flock boundary in response to a predator
+approach.  In the BRT framework, this corresponds to a linear growth of the
+zero-level-set radius.
+
+\begin{lemma}[Linear Flash Expansion Rate]
+\label{lem:flash_rate}
+Under the 4D aerial dynamics~\eqref{eq:rel_dynamics_4d}, the maximum radial
+extent of the BRT zero-level-set in the horizontal plane grows at the rate,
+%
+\begin{align}
+\label{eq:flash_rate}
+\max_i \lVert x_i(t+1)_{1:2} \rVert
+- \max_i \lVert x_i(t)_{1:2} \rVert
+\;=\; \Theta\!\left(T_2^{-1}\right),
+\end{align}
+%
+where $T_2$ is the tipping time of the second hierarchy level~(CDC26
+Lemma~2).  The altitude component $x_3$ does not contribute to the radial
+growth rate because the capture set is a cylinder~\eqref{eq:terminal_cost_4d}.
+\end{lemma}
+
+\begin{proof}
+\label{proof:flash_rate}
+By the comparison principle for viscosity solutions, $v(t,x) \leq 0$ implies
+$v(t+\tau, x + \tau f(x,u)) \leq 0$ for any admissible trajectory.  The
+maximum horizontal speed of the free-agent dynamics is $v_e$ (linear speed
+bound), giving a radius growth of at most $v_e \Delta t$ per step.  The lower
+bound $\Omega(T_2^{-1})$ follows from CDC26 Lemma~1: below the tipping time
+$T_2$, the pursuer cannot reduce the evader's speed below a constant fraction
+of $v_e$, ensuring the growth rate is bounded away from zero.
+\end{proof}
+
+The 4D flash-expansion rate converges to the 3D rate as altitude variance
+$\sigma^2_{x_3} \to 0$, consistent with the altitude-decoupling property of
+the cylinder terminal cost (see Test~\texttt{test\_altitude\_decoupling} in
+\S\ref{sec:d312_markers}).
+
+% --------------------------------------------------------------------------
+\subsection{Phase Transition Markers in Numerical Solutions}
+\label{sec:d312_markers}
+% --------------------------------------------------------------------------
+
+We detect phase transitions computationally by monitoring the topological
+invariants $\chi(t)$, $\beta_1(t)$, and $n_{\mathrm{comp}}(t)$ of the
+zero-sublevel set across backward time steps.  The detection algorithm is:
+
+\begin{enumerate}
+  \item At each step~$t$, compute the 2D slice $v(t, x_1, x_2;\bar{x}_3, 0)$
+        on a grid of resolution $m \times m$.
+  \item Label connected components of $\{v \leq 0\}$ via
+        \textsc{scipy.ndimage.label}.
+  \item Estimate $\beta_1$ by counting encircled complementary components.
+  \item Compute $\chi(t) = n_{\mathrm{comp}}(t) - \beta_1(t)$.
+\end{enumerate}
+
+The threshold-crossing rules that trigger an event label are:
+%
+\begin{align}
+\label{eq:vacuole_marker}
+\Delta\chi_t \;\triangleq\; \chi_{t+1} - \chi_t \;<\; -0.5
+&\quad\Longrightarrow\quad \text{vacuole nucleation,} \\
+\label{eq:cordon_marker}
+\beta_1(t) \;\geq\; 1 \;\text{ and }\; \beta_1(t-1) = 0
+&\quad\Longrightarrow\quad \text{cordon formation,} \\
+\label{eq:frag_marker}
+n_{\mathrm{comp}}(t) \;>\; n_{\mathrm{comp}}(t-1)
+&\quad\Longrightarrow\quad \text{flock fragmentation.}
+\end{align}
+
+The phase-transition classification is validated against CDC26 Table~I, which
+partitions the state space into the five canonical murmuration phases: (i)
+cohesion, (ii) evasion, (iii) cordon, (iv) expansion, and (v) fragmentation.
+Each detected event is appended to \texttt{phase\_transitions.txt} with its
+time index, event type, $\chi$, $\beta_1$, and $n_{\mathrm{comp}}$ values.
+Figure~\ref{fig:topology_summary} shows the topology metrics $\chi(t)$,
+$\beta_1(t)$, and $n_{\mathrm{comp}}(t)$ over time, generated by the
+\texttt{OutputHandler.save\_topology\_summary} routine (file
+\texttt{/tmp/murmurations/topology\_summary.jpg}).
