@@ -135,6 +135,12 @@ def parse_args():
         default=64,
         help="Resolution of the 2D value-function grid for visualisation (default 64)",
     )
+    p.add_argument(
+        "--chunk-size",
+        type=int,
+        default=500_000,
+        help="Points per pmap call per GPU pair (default 500k; increase to saturate VRAM)",
+    )
     return p.parse_args()
 
 
@@ -240,7 +246,7 @@ def main():
         t_start=0.0,
         t_end=2.0,
         gradient_mode="b17",
-        chunk_size=50_000,
+        chunk_size=args.chunk_size,
         n_flocks=args.n_flocks,
         n_predators=args.n_predators,
         time_steps=args.time_steps,

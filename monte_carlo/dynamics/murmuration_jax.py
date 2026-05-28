@@ -255,55 +255,56 @@ class MurmuationSolverJAX4D:
     ) -> Tuple[List[jnp.ndarray], float, float]:
         """Solve BRT for multi-flock, multi-predator system.
 
-        Safety: min over all (flock, predator) pairs.
+        All flock states are concatenated into a single batch so each pmap
+        call processes the full bird population rather than one flock at a
+        time.  Safety value per agent = min over all predator solves.
 
         Parameters
         ----------
         flocks : list of FlockState
-            All flocks.
         predators : list of PredatorState
-            All predators.
         t : float
-            Query time.
 
         Returns
         -------
         safety_values : list of jnp.ndarray, length n_f
-            BRT value for each agent in each flock; ``safety_values[f]`` has
-            shape ``(n_agents_f,)`` and equals the per-agent minimum over all
-            predators for flock ``f``.
+            Per-agent BRT values; ``safety_values[f]`` shape ``(n_agents_f,)``.
         safe_fraction : float
-            Fraction of all agents across all flocks with v > 0 (safe).
         wall_time : float
-            Total wall-clock time.
         """
         import time
 
         start = time.time()
 
-        n_f = len(flocks)
-        n_p = len(predators)
+        flock_sizes = [f.n_agents for f in flocks]
 
-        # Solve all (flock, predator) pairs.
-        # safety_all_pairs[f] is a list of n_p arrays, each shape (n_agents_f,).
-        safety_all_pairs: List[List[jnp.ndarray]] = []
-        for flock in flocks:
-            flock_safety: List[jnp.ndarray] = []
-            for predator in predators:
-                v, _ = self.solve_single_flock(flock, predator, t)
-                flock_safety.append(v)
-            safety_all_pairs.append(flock_safety)
+        # One big state matrix: (total_agents, 4)
+        all_states = jnp.concatenate([f.states for f in flocks], axis=0)
 
-        # Per-flock safety: min over all predators for that flock.
-        # Result is a list of (n_agents_f,) arrays, one per flock.
-        safety_values: List[jnp.ndarray] = [
-            jnp.min(jnp.stack(flock_safety, axis=0), axis=0)
-            for flock_safety in safety_all_pairs
-        ]  # list of length n_f, each (n_agents_f,)
+        H = MurmuationHamiltonian4D(
+            omega_e_bar=self.omega_e_bar,
+            omega_p_bar=self.omega_p_bar,
+            gamma_max=self.gamma_max,
+        )
+        solver = HJReachabilitySampler(H, terminal_cost_4d, self.cfg, self.distributor)
 
-        # Global safe fraction: concatenate across all flocks, then threshold.
-        all_v = jnp.concatenate(safety_values, axis=0)  # (total_agents,)
-        safe_fraction = float(jnp.mean(all_v > 0))
+        # One solve per predator over the full concatenated batch.
+        v_per_predator: List[jnp.ndarray] = []
+        for predator in predators:
+            v_all, _ = solver.solve_quasi_linear(all_states, t=t)
+            v_per_predator.append(v_all)
+
+        # Min over predators: (total_agents,)
+        v_min = jnp.min(jnp.stack(v_per_predator, axis=0), axis=0)
+
+        # Split back per flock
+        safety_values: List[jnp.ndarray] = []
+        offset = 0
+        for size in flock_sizes:
+            safety_values.append(v_min[offset : offset + size])
+            offset += size
+
+        safe_fraction = float(jnp.mean(v_min > 0))
         wall_time = time.time() - start
 
         return safety_values, safe_fraction, wall_time
