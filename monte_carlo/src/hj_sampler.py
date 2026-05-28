@@ -54,42 +54,25 @@ class HJReachabilitySampler:
         t: float,
         c,
     ) -> jnp.ndarray:
-        """Evaluate value function with chunking and multi-GPU dispatch.
-
-        Chunks eval_points to reduce peak memory, dispatches to pmap when
-        multi-GPU available, falls back to vmap for single-GPU.
-        """
+        """Evaluate value function with chunking and multi-GPU dispatch."""
         M = eval_points.shape[0]
         chunk_size = self.cfg.chunk_size
 
         c_arr = jnp.asarray(c)
 
-        if M <= chunk_size:
-            # Small batch: process as-is
-            if self.distributor is not None and self.distributor.is_multi_gpu:
-                return mc_value_batch_distributed(
-                    key, eval_points, t, self.cfg.t_end,
-                    self.cfg.delta, c_arr, self.g, self.cfg.num_samples,
-                    self.distributor,
-                )
-            else:
-                return mc_value_batch(
-                    key, eval_points, t, self.cfg.t_end,
-                    self.cfg.delta, c_arr, self.g, self.cfg.num_samples,
-                )
-
-        # Large batch: chunk and accumulate
         results = []
         for i in range(0, M, chunk_size):
             chunk = eval_points[i:i + chunk_size]
             c_chunk = c_arr[i:i + chunk_size] if c_arr.ndim > 0 else c_arr
             self.key, subkey = jax.random.split(self.key)
 
+            # Dispatch to pmap if multi-GPU available, else vmap
             if self.distributor is not None and self.distributor.is_multi_gpu:
                 v_chunk = mc_value_batch_distributed(
                     subkey, chunk, t, self.cfg.t_end,
                     self.cfg.delta, c_chunk, self.g, self.cfg.num_samples,
                     self.distributor,
+                    chunk_size=self.cfg.chunk_size,
                 )
             else:
                 v_chunk = mc_value_batch(
@@ -113,33 +96,19 @@ class HJReachabilitySampler:
 
         c_arr = jnp.asarray(c)
 
-        if M <= chunk_size:
-            # Small batch: process as-is
-            if self.distributor is not None and self.distributor.is_multi_gpu:
-                return mc_gradient_batch_distributed(
-                    key, eval_points, t, self.cfg.t_end,
-                    self.cfg.delta, c_arr, self.g, self.cfg.num_samples,
-                    self.cfg.gradient_mode, self.distributor,
-                )
-            else:
-                return mc_gradient_batch(
-                    key, eval_points, t, self.cfg.t_end,
-                    self.cfg.delta, c_arr, self.g, self.cfg.num_samples,
-                    self.cfg.gradient_mode,
-                )
-
-        # Large batch: chunk and accumulate
         results = []
         for i in range(0, M, chunk_size):
             chunk = eval_points[i:i + chunk_size]
             c_chunk = c_arr[i:i + chunk_size] if c_arr.ndim > 0 else c_arr
             self.key, subkey = jax.random.split(self.key)
 
+            # Dispatch to pmap if multi-GPU available, else vmap
             if self.distributor is not None and self.distributor.is_multi_gpu:
                 Dv_chunk = mc_gradient_batch_distributed(
                     subkey, chunk, t, self.cfg.t_end,
                     self.cfg.delta, c_chunk, self.g, self.cfg.num_samples,
                     self.cfg.gradient_mode, self.distributor,
+                    chunk_size=self.cfg.chunk_size,
                 )
             else:
                 Dv_chunk = mc_gradient_batch(
@@ -216,8 +185,13 @@ class HJReachabilitySampler:
         # Initialize: c^(0) = 1/delta (exact Cole-Hopf baseline)
         c_current = jnp.full((M,), 1.0 / self.cfg.delta, dtype=jnp.float32)
 
-        # Initialize value from terminal cost
-        v_current = vmap(self.g)(eval_points)
+        # Initialize value from terminal cost (with chunking to avoid memory spikes)
+        chunk_size = self.cfg.chunk_size
+        v_init_chunks = []
+        for i in range(0, M, chunk_size):
+            chunk = eval_points[i:i + chunk_size]
+            v_init_chunks.append(vmap(self.g)(chunk))
+        v_current = jnp.concatenate(v_init_chunks, axis=0)
         history: List[float] = []
 
         for _ in range(self.cfg.max_quasi_iters):
@@ -230,9 +204,16 @@ class HJReachabilitySampler:
 
             # 2. Evaluate Hamiltonian H^delta at current (x, Dv)
             #    (Algorithm 1 line 4: c^(k) <- (2/delta) H^delta(x, p_hat) / |Dv|^2)
-            H_vals = vmap(
-                lambda x, p: self.H(t, x, p)
-            )(eval_points, Dv)
+            # Chunk Hamiltonian evaluation to avoid memory spikes
+            H_chunks = []
+            for i in range(0, M, chunk_size):
+                chunk_x = eval_points[i:i + chunk_size]
+                chunk_p = Dv[i:i + chunk_size]
+                H_chunk = vmap(
+                    lambda x, p: self.H(t, x, p)
+                )(chunk_x, chunk_p)
+                H_chunks.append(H_chunk)
+            H_vals = jnp.concatenate(H_chunks, axis=0)
 
             # 3. Freeze coefficient c^(k) = (2/delta) * H / |Dv|^2
             #    Clip to [c_min, c_max] per Assumption 2.8.
@@ -316,35 +297,42 @@ class HJReachabilitySampler:
 
         print(f"[HJReachabilitySampler] Distributed solve on {distributor}")
 
+        M = eval_points.shape[0]
+        chunk_size = self.cfg.chunk_size
+
         # Coefficient bounds per Assumption 2.8
         c_min = 1e-4
         c_max = 1e4
 
         # Initialize: c^(0) = 1/delta
-        M = eval_points.shape[0]
         c_current = jnp.full((M,), 1.0 / self.cfg.delta, dtype=jnp.float32)
 
-        v_current = vmap(self.g)(eval_points)
-        history = []
+        # Initialize value from terminal cost (with chunking to avoid memory spikes)
+        v_init_chunks = []
+        for i in range(0, M, chunk_size):
+            chunk = eval_points[i:i + chunk_size]
+            v_init_chunks.append(vmap(self.g)(chunk))
+        v_current = jnp.concatenate(v_init_chunks, axis=0)
+        history: List[float] = []
 
         for _ in range(self.cfg.max_quasi_iters):
             # 1. Recover spatial gradient using c^(k-1) (Algorithm 1 line 3)
             self.key, k1 = jax.random.split(self.key)
-            Dv = mc_gradient_batch_distributed(
-                k1,
-                eval_points,
-                t,
-                self.cfg.t_end,
-                self.cfg.delta,
-                c_current,
-                self.g,
-                self.cfg.num_samples,
-                self.cfg.gradient_mode,
-                distributor,
+            Dv = self._gradient_batch_distributed(
+                k1, eval_points, t, c_current
             )
 
             # 2. Evaluate Hamiltonian at (x, Dv)
-            H_vals = vmap(lambda x, p: self.H(t, x, p))(eval_points, Dv)
+            # Chunk Hamiltonian evaluation to avoid memory spikes
+            H_chunks = []
+            for i in range(0, M, chunk_size):
+                chunk_x = eval_points[i:i + chunk_size]
+                chunk_p = Dv[i:i + chunk_size]
+                H_chunk = vmap(
+                    lambda x, p: self.H(t, x, p)
+                )(chunk_x, chunk_p)
+                H_chunks.append(H_chunk)
+            H_vals = jnp.concatenate(H_chunks, axis=0)
 
             # 3. Freeze coefficient c^(k) = (2/delta) * H / |Dv|^2
             #    Clip to [c_min, c_max] per Assumption 2.8 — no abs.
@@ -354,16 +342,8 @@ class HJReachabilitySampler:
 
             # 4. Solve heat equation (distributed) with frozen c^(k)
             self.key, k2 = jax.random.split(self.key)
-            v_new = mc_value_batch_distributed(
-                k2,
-                eval_points,
-                t,
-                self.cfg.t_end,
-                self.cfg.delta,
-                c_frozen,
-                self.g,
-                self.cfg.num_samples,
-                distributor,
+            v_new = self._value_batch_distributed(
+                k2, eval_points, t, c_frozen
             )
 
             # 5. Check convergence; carry c forward for next gradient recovery

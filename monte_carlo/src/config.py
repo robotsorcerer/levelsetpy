@@ -19,6 +19,6 @@ class SolverConfig(NamedTuple):
     seed: int = 123
     smoothing_eps: float = 1e-4
     gradient_mode: str = "b17"
-    chunk_size: int = 50_000
+    chunk_size: int = 5_000
     n_flocks: int = 1
     n_predators: int = 1

@@ -17,9 +17,19 @@ from typing import Callable, Optional, TYPE_CHECKING
 import jax
 import jax.numpy as jnp
 from jax import vmap, pmap
+import time
 
 if TYPE_CHECKING:
     from .gpu_distribution import GPUDistributor
+
+
+def _ensure_device_ready(devices):
+    """Ensure all devices are ready for computation (blocks for synchronization)."""
+    for device in devices:
+        try:
+            _ = jax.device_get(jnp.array(0.0, device=device))
+        except Exception:
+            pass  # Device may not support device_get; continue
 
 
 # ---------------------------------------------------------------------------
@@ -216,52 +226,119 @@ def mc_value_batch_distributed(
     terminal_cost_fn: Callable,
     num_samples: int,
     distributor: "GPUDistributor",
+    chunk_size: int = 10000,
 ) -> jnp.ndarray:
     """Evaluate v(t, .) at M points via pmap across available GPUs.
 
-    Automatically falls back to single-GPU vmap if only one device available.
+    Processes in chunks to manage memory; each chunk is distributed via pmap.
+    Falls back to single-GPU vmap for single-device setups.
 
     Parameters
     ----------
     distributor : GPUDistributor
         Device distributor with auto-detected GPU count.
+    chunk_size : int
+        Points per chunk for streaming (default 10k).
 
     Returns
     -------
     (M,) array of v values.
     """
+    M = eval_points.shape[0]
+
     if not distributor.is_multi_gpu:
-        # Fallback: single GPU
-        return mc_value_batch(
-            key, eval_points, t, T, delta, c, terminal_cost_fn, num_samples
+        # Fallback: single GPU (uses vmap in loop for memory efficiency)
+        return _mc_value_batch_chunked_vmap(
+            key, eval_points, t, T, delta, c, terminal_cost_fn, num_samples, chunk_size
         )
 
-    # Multi-GPU: shard and pmap
-    eval_points_sharded, orig_shape = distributor.shard_batch(eval_points)
-    M, M_per_device = orig_shape
+    # Multi-GPU: process chunks via pmap
+    c_arr = jnp.asarray(c, dtype=jnp.float32)
+    if c_arr.ndim == 0:
+        c_arr = jnp.broadcast_to(c_arr, (M,))
+    else:
+        c_arr = jnp.broadcast_to(c_arr, (M,))
 
-    # Broadcast c if scalar
-    c_arr = jnp.broadcast_to(jnp.asarray(c, dtype=jnp.float32), (M,))
-    c_sharded, _ = distributor.shard_batch(c_arr)
+    # Ensure devices are ready before computation
+    _ensure_device_ready(distributor.device_list)
 
-    # Create keys for each device
-    keys_sharded = distributor.create_keys_per_device(int(key[0]), M_per_device)
+    results = []
+    for chunk_idx in range(0, M, chunk_size):
+        chunk_slice = slice(chunk_idx, min(chunk_idx + chunk_size, M))
+        chunk_points = eval_points[chunk_slice]
+        chunk_c = c_arr[chunk_slice]
 
-    def _solve_one_distributed(k_per_device, x_per_device, c_per_device):
-        """Vectorized solve on one device (called by pmap)."""
-        def _solve_one(k, xi, ci):
-            return mc_value_at_point(
-                k, xi, t, T, delta, ci, terminal_cost_fn, num_samples
-            )
-        return vmap(_solve_one)(k_per_device, x_per_device, c_per_device)
+        # Shard this chunk across devices
+        chunk_sharded, (n_chunk, m_per_dev) = distributor.shard_batch(chunk_points)
+        c_sharded, _ = distributor.shard_batch(chunk_c)
 
-    # pmap over devices (axis 0)
-    pmapped_solve = pmap(_solve_one_distributed, axis_name="i")
-    v_sharded = pmapped_solve(keys_sharded, eval_points_sharded, c_sharded)
+        # Synchronize before kernel launch
+        _ensure_device_ready(distributor.device_list)
 
-    # Unshard and remove padding
-    v = distributor.unshard_batch(v_sharded, orig_shape)
-    return v
+        # Create per-device keys for this chunk
+        key = jax.random.fold_in(key, chunk_idx)
+        keys_sharded = distributor.create_keys_per_device(int(key[0]), m_per_dev)
+
+        def _solve_one_distributed(k_per_device, x_per_device, c_per_device):
+            """Vectorized solve on one device (called by pmap).
+
+            All inputs are sharded; c_per_device is replicated across devices.
+            """
+            def _solve_one(k, xi, ci):
+                return mc_value_at_point(
+                    k, xi, t, T, delta, ci, terminal_cost_fn, num_samples
+                )
+            return vmap(_solve_one)(k_per_device, x_per_device, c_per_device)
+
+        # pmap with explicit sharding: shard keys and x, replicate c
+        pmapped_solve = pmap(
+            _solve_one_distributed,
+            axis_name="i",
+            in_axes=(0, 0, 0),  # All sharded
+            out_axes=0,
+            devices=distributor.device_list
+        )
+        v_chunk_sharded = pmapped_solve(keys_sharded, chunk_sharded, c_sharded)
+
+        # Unshard this chunk
+        v_chunk = distributor.unshard_batch(v_chunk_sharded, (n_chunk, m_per_dev))
+        results.append(v_chunk)
+
+    return jnp.concatenate(results, axis=0)
+
+
+def _mc_value_batch_chunked_vmap(
+    key: jax.Array,
+    eval_points: jnp.ndarray,
+    t: float,
+    T: float,
+    delta: float,
+    c: jnp.ndarray,
+    terminal_cost_fn: Callable,
+    num_samples: int,
+    chunk_size: int,
+) -> jnp.ndarray:
+    """Single-GPU chunked vmap for value batch (used as fallback)."""
+    M = eval_points.shape[0]
+    c_arr = jnp.asarray(c, dtype=jnp.float32)
+    if c_arr.ndim == 0:
+        c_arr = jnp.broadcast_to(c_arr, (M,))
+    else:
+        c_arr = jnp.broadcast_to(c_arr, (M,))
+
+    results = []
+    for chunk_idx in range(0, M, chunk_size):
+        chunk_slice = slice(chunk_idx, min(chunk_idx + chunk_size, M))
+        chunk_points = eval_points[chunk_slice]
+        chunk_c = c_arr[chunk_slice]
+
+        key = jax.random.fold_in(key, chunk_idx)
+        v_chunk = mc_value_batch(
+            key, chunk_points, t, T, delta, chunk_c, terminal_cost_fn, num_samples
+        )
+        results.append(v_chunk)
+
+    return jnp.concatenate(results, axis=0)
 
 
 def mc_gradient_batch_distributed(
@@ -275,15 +352,19 @@ def mc_gradient_batch_distributed(
     num_samples: int,
     gradient_mode: str = "b17",
     distributor: Optional["GPUDistributor"] = None,
+    chunk_size: int = 10000,
 ) -> jnp.ndarray:
     """Evaluate Dv(t, .) at M points via pmap across available GPUs.
 
-    Automatically falls back to single-GPU vmap if only one device available.
+    Processes in chunks to manage memory; each chunk is distributed via pmap.
+    Falls back to single-GPU vmap for single-device setups.
 
     Parameters
     ----------
     distributor : GPUDistributor, optional
         Device distributor. If None, creates one automatically.
+    chunk_size : int
+        Points per chunk for streaming (default 10k).
 
     Returns
     -------
@@ -293,35 +374,94 @@ def mc_gradient_batch_distributed(
         from .gpu_distribution import GPUDistributor
         distributor = GPUDistributor(auto_detect=True)
 
+    M = eval_points.shape[0]
+
     if not distributor.is_multi_gpu:
-        # Fallback: single GPU
-        return mc_gradient_batch(
-            key, eval_points, t, T, delta, c, terminal_cost_fn, num_samples, gradient_mode
+        # Fallback: single GPU (uses vmap in loop for memory efficiency)
+        return _mc_gradient_batch_chunked_vmap(
+            key, eval_points, t, T, delta, c, terminal_cost_fn, num_samples,
+            gradient_mode, chunk_size
         )
 
-    # Multi-GPU: shard and pmap
-    eval_points_sharded, orig_shape = distributor.shard_batch(eval_points)
-    M, M_per_device = orig_shape
+    # Multi-GPU: process chunks via pmap
+    c_arr = jnp.asarray(c, dtype=jnp.float32)
+    if c_arr.ndim == 0:
+        c_arr = jnp.broadcast_to(c_arr, (M,))
+    else:
+        c_arr = jnp.broadcast_to(c_arr, (M,))
 
-    # Broadcast c if scalar
-    c_arr = jnp.broadcast_to(jnp.asarray(c, dtype=jnp.float32), (M,))
-    c_sharded, _ = distributor.shard_batch(c_arr)
+    results = []
+    for chunk_idx in range(0, M, chunk_size):
+        chunk_slice = slice(chunk_idx, min(chunk_idx + chunk_size, M))
+        chunk_points = eval_points[chunk_slice]
+        chunk_c = c_arr[chunk_slice]
 
-    # Create keys for each device
-    keys_sharded = distributor.create_keys_per_device(int(key[0]), M_per_device)
+        # Shard this chunk across devices
+        chunk_sharded, (n_chunk, m_per_dev) = distributor.shard_batch(chunk_points)
+        c_sharded, _ = distributor.shard_batch(chunk_c)
 
-    def _grad_one_distributed(k_per_device, x_per_device, c_per_device):
-        """Vectorized gradient on one device (called by pmap)."""
-        def _grad_one(k, xi, ci):
-            return mc_gradient_at_point(
-                k, xi, t, T, delta, ci, terminal_cost_fn, num_samples, gradient_mode
-            )
-        return vmap(_grad_one)(k_per_device, x_per_device, c_per_device)
+        # Create per-device keys for this chunk
+        key = jax.random.fold_in(key, chunk_idx)
+        keys_sharded = distributor.create_keys_per_device(int(key[0]), m_per_dev)
 
-    # pmap over devices (axis 0)
-    pmapped_grad = pmap(_grad_one_distributed, axis_name="i")
-    Dv_sharded = pmapped_grad(keys_sharded, eval_points_sharded, c_sharded)
+        def _grad_one_distributed(k_per_device, x_per_device, c_per_device):
+            """Vectorized gradient on one device (called by pmap).
 
-    # Unshard and remove padding
-    Dv = distributor.unshard_batch(Dv_sharded, orig_shape)
-    return Dv
+            All inputs are sharded.
+            """
+            def _grad_one(k, xi, ci):
+                return mc_gradient_at_point(
+                    k, xi, t, T, delta, ci, terminal_cost_fn, num_samples, gradient_mode
+                )
+            return vmap(_grad_one)(k_per_device, x_per_device, c_per_device)
+
+        # pmap with explicit sharding: shard all inputs
+        pmapped_grad = pmap(
+            _grad_one_distributed,
+            axis_name="i",
+            in_axes=(0, 0, 0),  # All sharded
+            out_axes=0,
+            devices=distributor.device_list
+        )
+        Dv_chunk_sharded = pmapped_grad(keys_sharded, chunk_sharded, c_sharded)
+
+        # Unshard this chunk
+        Dv_chunk = distributor.unshard_batch(Dv_chunk_sharded, (n_chunk, m_per_dev))
+        results.append(Dv_chunk)
+
+    return jnp.concatenate(results, axis=0)
+
+
+def _mc_gradient_batch_chunked_vmap(
+    key: jax.Array,
+    eval_points: jnp.ndarray,
+    t: float,
+    T: float,
+    delta: float,
+    c: jnp.ndarray,
+    terminal_cost_fn: Callable,
+    num_samples: int,
+    gradient_mode: str,
+    chunk_size: int,
+) -> jnp.ndarray:
+    """Single-GPU chunked vmap for gradient batch (used as fallback)."""
+    M = eval_points.shape[0]
+    c_arr = jnp.asarray(c, dtype=jnp.float32)
+    if c_arr.ndim == 0:
+        c_arr = jnp.broadcast_to(c_arr, (M,))
+    else:
+        c_arr = jnp.broadcast_to(c_arr, (M,))
+
+    results = []
+    for chunk_idx in range(0, M, chunk_size):
+        chunk_slice = slice(chunk_idx, min(chunk_idx + chunk_size, M))
+        chunk_points = eval_points[chunk_slice]
+        chunk_c = c_arr[chunk_slice]
+
+        key = jax.random.fold_in(key, chunk_idx)
+        Dv_chunk = mc_gradient_batch(
+            key, chunk_points, t, T, delta, chunk_c, terminal_cost_fn, num_samples, gradient_mode
+        )
+        results.append(Dv_chunk)
+
+    return jnp.concatenate(results, axis=0)

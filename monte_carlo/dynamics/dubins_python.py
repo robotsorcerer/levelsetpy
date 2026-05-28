@@ -3,8 +3,8 @@
 
 Implements the quasi-linearization algorithm (Algorithm 1) from:
 
-    "Approximately Correct and Scalable HJ-Reachability: A Sampling Scheme"
-    ICML 2026
+    "HJ-Gauss: A Monte-Carlo HJ Reachability Scheme"
+    NeurIPS 2026
 
 for a 3D Dubins vehicle model.
 

@@ -17,9 +17,9 @@ __all__= [
 """Shared utilities for the quasi-linearization HJ reachability solver.
 
 Implements the core machinery of Algorithm 1 (Quasi-Linearized Cole-Hopf)
-from the ICML 2026 paper:
+from the NeurIPS 2026 paper:
 
-  "Approximately Correct and Scalable HJ-Reachability: A Sampling Scheme"
+  "HJ-Gauss: A Monte-Carlo HJ Reachability Scheme"
 
 Notation follows the paper:
   - v(t; x)  : value function (viscosity solution of HJ PDE)
@@ -34,9 +34,9 @@ Notation follows the paper:
 Key equations:
   - (Linear-Trans):  omega^delta := exp(-c * v^delta)
   - (Linear-HJ):     omega_t - (delta/2) Delta omega = 0
-  - (Lemma 3.2):     v^delta(t;x) = -(1/c) log E_{y~N(x, delta*t)} [exp(-c g(y))]
-  - (Eq 13/B.14):    Dv = (1/(t*delta*c)) (x - E[y exp(-cg(y))]/E[exp(-cg(y))])
-  - (Eq 18):         v(t;x) = -(1/c) log (1/N) sum exp(-c g(x + sqrt(delta*(T-t)) y_i))
+  - (Lemma D.2 / lem:value):     v^delta(t;x) = -(1/c) log E_{y~N(x, delta*(T-t))} [exp(-c g(y))]
+  - (Corollary B.5 / cor:mc_gradient, eq:mc_grad):    Dv = (1/((T-t)*delta*c)) (x - E[y exp(-cg(y))]/E[exp(-cg(y))])
+  - (Corollary B.4 / cor:logsumexp, eq:logsumexp):         v(t;x) = -(1/c) log (1/N) sum exp(-c g(x + sqrt(delta*(T-t)) y_i))
 
 References to the paper are given as (Eq N) or (Lemma N.M) throughout.
 """
@@ -60,7 +60,7 @@ class SolverConfig:
         Viscosity parameter. Controls smoothing of the HJ PDE.
         The approximation error is O(sqrt(delta)) by Crandall-Lions.
     num_samples : int
-        Number of Monte Carlo samples (N in Eq 18).
+        Number of Monte Carlo samples (N in Corollary B.4 / cor:logsumexp).
     max_iters : int
         Maximum quasi-linearization iterations (Algorithm 1 loop bound).
     tol : float
@@ -204,15 +204,15 @@ def mc_value_at_point(
 ) -> float:
     r"""Compute v^delta(t; x) via Monte Carlo Gaussian expectation.
 
-    Implements Corollary 3.4 / Eq (18) with log-sum-exp for stability:
+    Implements Corollary B.4 (cor:logsumexp, eq:logsumexp) with log-sum-exp for stability:
 
         v^delta(t; x) = -(1/c) log (1/N) sum_{i=1}^{N}
                          exp(-c * g(x + sqrt(delta*(T-t)) * y_i))
 
-    where y_i ~ N(x, \delta * t * I_n).
+    where y_i ~ N(0, I_n) and y = x + sqrt(delta*(T-t)) * y_i.
 
     For BRT (backward reachable tube), g(y) transforms to
-    g(x + sqrt(delta*(T-t)) * y) per Corollary B.2.
+    g(x + sqrt(delta*(T-t)) * y) per Corollary B.3 (backward time covariance).
 
     Parameters
     ----------
@@ -248,7 +248,7 @@ def mc_value_at_point(
     # Evaluate terminal cost at samples
     g_vals = np.array([g_fn(yi) for yi in y])  # (N,)
 
-    # Log-sum-exp for numerical stability (Eq 18)
+    # Log-sum-exp for numerical stability (Corollary B.4 / cor:logsumexp)
     exponents = -c * g_vals
     max_exp = np.max(exponents)
     log_mean_exp = max_exp + np.log(np.mean(np.exp(exponents - max_exp)))
@@ -268,15 +268,15 @@ def mc_gradient_at_point(
 ) -> np.ndarray:
     r"""Compute Dv^delta(t; x) via importance-weighted MC.
 
-    Implements Corollary 3.5 / Eq (19):
+    Implements Corollary B.5 (cor:mc_gradient, eq:mc_grad):
 
-        Dv^delta(t; x) = (1/(t*delta*c)) * (x - sum w_i d_i / sum w_i)
+        Dv^delta(t; x) = (1/((T-t)*delta*c)) * (x - sum w_i s_i / sum w_i)
 
-    where d_i = x + sqrt(delta*(T-t)) * y_i, w_i = exp(-c * g(d_i)),
-    and y_i ~ N(x, \delta(T-t)y_i).
+    where s_i = x + sqrt(delta*(T-t)) * y_i, w_i = exp(-c * g(s_i)),
+    and y_i ~ N(0, I_n).
 
-    Equivalently (Eq 13 / B.14):
-        Dv = (1/(t*delta*c)) (x - E[y exp(-cg(y))] / E[exp(-cg(y))])
+    Equivalently (Corollary B.5 / cor:mc_gradient):
+        Dv = (1/((T-t)*delta*c)) (x - E[y exp(-cg(y))] / E[exp(-cg(y))])
 
     Parameters
     ----------
@@ -292,9 +292,9 @@ def mc_gradient_at_point(
     t_eff = max(T - t, 1e-30)  # effective time for gradient formula
 
     z = rng.standard_normal((num_samples, n))
-    d = x[np.newaxis, :] + sigma * z  # (N, n) -- sample points
+    s = x[np.newaxis, :] + sigma * z  # (N, n) -- sample points
 
-    g_vals = np.array([g_fn(di) for di in d])  # (N,)
+    g_vals = np.array([g_fn(si) for si in s])  # (N,)
 
     # Importance weights (stabilized)
     log_w = -c * g_vals
@@ -303,9 +303,9 @@ def mc_gradient_at_point(
     weights = weights / np.sum(weights)  # normalized
 
     # Weighted mean of sample points
-    weighted_mean = np.sum(weights[:, np.newaxis] * d, axis=0)  # (n,)
+    weighted_mean = np.sum(weights[:, np.newaxis] * s, axis=0)  # (n,)
 
-    # Gradient from Eq (19) / (B.14)
+    # Gradient from Corollary B.5 (cor:mc_gradient, eq:mc_grad)
     Dv = (1.0 / (t_eff * delta * c)) * (x - weighted_mean)
     return Dv
 
@@ -400,9 +400,9 @@ def solve_quasi_linear(
       1. Freeze c^{(k)} at the current iterate.
       2. Solve heat equation omega_t = (delta/2) Delta omega
          with initial data omega^{(k)}(0; x) = exp(-c^{(k)} * g(x)).
-         [Done via MC Gaussian expectation, Eq (18)]
+         [Done via MC Gaussian expectation, Corollary B.4 / cor:logsumexp]
       3. Recover v^{(k+1)} = -(1/c^{(k)}) * log(omega^{(k)}).
-      4. Update Dv^{(k+1)} [via Eq (19)] and
+      4. Update Dv^{(k+1)} [via Eq (B.{16/19})] and
          c^{(k+1)} = 2 H(t;x, Dv^{(k+1)}) / (delta |Dv^{(k+1)}|^2).
       5. Check convergence: ||v^{(k+1)} - v^{(k)}|| / ||v^{(k)}|| < epsilon.
 
@@ -450,7 +450,7 @@ def solve_quasi_linear(
         # Step 1: c^{(k)} is frozen from previous iteration (or initialization)
 
         # Step 2 & 3: Solve heat equation and recover v^{(k+1)}
-        # The MC expectation (Eq 18) directly gives v, combining steps 2-3
+        # The MC expectation (Corollary B.4 / cor:logsumexp) directly gives v, combining steps 2-3
         v_new = mc_value_batch(
             eval_points, t, T, delta, c_frozen,
             g_fn, num_samples, rng,

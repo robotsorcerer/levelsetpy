@@ -3,8 +3,8 @@
 
 Implements the quasi-linearization algorithm (Algorithm 1) from:
 
-    "Approximately Correct and Scalable HJ-Reachability: A Sampling Scheme"
-    ICML 2026
+    "HJ-Gauss: A Monte-Carlo HJ Reachability Scheme"
+    NeurIPS 2026
 
 for the rocket launch problem described in Section 4.1.
 
@@ -103,7 +103,7 @@ def rockets_terminal_cost(
 
 
 # ============================================================================
-#  MC value function (Eq 18) -- JIT-compiled
+#  MC value function (Corollary B.4 / cor:logsumexp, eq:logsumexp) -- JIT-compiled
 # ============================================================================
 
 @partial(jit, static_argnums=(6,))
@@ -118,7 +118,7 @@ def mc_value_at_point(
 ) -> jnp.ndarray:
     r"""Compute v^delta(t; x) via MC Gaussian expectation.
 
-    Eq (18): v(t;x) = -(1/c) log (1/N) sum exp(-c g(x + sigma*z_i))
+    Corollary B.4 (cor:logsumexp, eq:logsumexp): v(t;x) = -(1/c) log (1/N) sum exp(-c g(x + sigma*z_i))
 
     where sigma = sqrt(delta*(T-t)), z_i ~ N(0, I).
     """
@@ -261,9 +261,9 @@ def solve_quasi_linear_jax(
 
     This is the JAX-accelerated version of Algorithm 1. Each iteration:
       1. Freeze c^{(k)}
-      2. Solve heat equation via MC Gaussian (Eq 18)
+      2. Solve heat equation via MC Gaussian (Corollary B.4 / cor:logsumexp, eq:logsumexp)
       3. Recover v^{(k+1)} = -(1/c^{(k)}) log omega^{(k)}
-      4. Update Dv^{(k+1)} (Eq 19) and c^{(k+1)}
+      4. Update Dv^{(k+1)} (Corollary B.5 / cor:mc_gradient) and c^{(k+1)}
       5. Check convergence
 
     Parameters

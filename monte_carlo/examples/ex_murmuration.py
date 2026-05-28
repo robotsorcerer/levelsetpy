@@ -16,6 +16,9 @@ Usage:
     python examples/ex_murmuration.py --device cpu --n-birds 10000 --save-anim
     python examples/ex_murmuration.py --device gpu --n-birds 1000000 \\
         --n-flocks 10 --n-predators 3 --save-results
+    
+    # On Lambda 
+    python examples/ex_murmuration.py --device gpu --n-birds 1000000 --n-flocks 100 --n-predators 10 --save-results --save-anim --delta 0.05 --max-iters 100 --out-dir /murmurs
 """
 
 import argparse
