@@ -194,7 +194,10 @@ class HJReachabilitySampler:
         v_current = jnp.concatenate(v_init_chunks, axis=0)
         history: List[float] = []
 
-        for _ in range(self.cfg.max_quasi_iters):
+        # Check convergence every CONV_CHECK_STRIDE iterations to avoid stalling
+        # the GPU with a blocking device→host transfer each step.
+        CONV_CHECK_STRIDE = 5
+        for iter_idx in range(self.cfg.max_quasi_iters):
             # 1. Recover spatial gradient Dv^(k-1) using c^(k-1)
             #    (Algorithm 1 line 3: p_hat <- nabla v^(k-1) / |nabla v^(k-1)|)
             self.key, k1 = jax.random.split(self.key)
@@ -230,14 +233,18 @@ class HJReachabilitySampler:
                 k2, eval_points, t, c_frozen
             )
 
-            # 5. Check convergence; update c for next gradient recovery step
-            residual = float(quasi_linear_residual(v_new, v_current))
-            history.append(residual)
+            # 5. Check convergence every CONV_CHECK_STRIDE iters to reduce
+            #    GPU→CPU sync stalls; always check on the last allowed iteration.
             v_current = v_new
-            c_current = c_frozen  # carry frozen c forward for next gradient recovery
-
-            if residual < self.cfg.quasi_tol:
-                break
+            c_current = c_frozen
+            is_last = (iter_idx == self.cfg.max_quasi_iters - 1)
+            if (iter_idx % CONV_CHECK_STRIDE == CONV_CHECK_STRIDE - 1) or is_last:
+                residual = float(quasi_linear_residual(v_new, v_current))
+                history.append(residual)
+                if residual < self.cfg.quasi_tol:
+                    break
+            else:
+                history.append(float("nan"))
 
         return v_current, history
 
@@ -315,7 +322,8 @@ class HJReachabilitySampler:
         v_current = jnp.concatenate(v_init_chunks, axis=0)
         history: List[float] = []
 
-        for _ in range(self.cfg.max_quasi_iters):
+        CONV_CHECK_STRIDE = 5
+        for iter_idx in range(self.cfg.max_quasi_iters):
             # 1. Recover spatial gradient using c^(k-1) (Algorithm 1 line 3)
             self.key, k1 = jax.random.split(self.key)
             Dv = self._gradient_batch_distributed(
@@ -346,13 +354,17 @@ class HJReachabilitySampler:
                 k2, eval_points, t, c_frozen
             )
 
-            # 5. Check convergence; carry c forward for next gradient recovery
-            residual = float(quasi_linear_residual(v_new, v_current))
-            history.append(residual)
+            # 5. Check convergence every CONV_CHECK_STRIDE iters to reduce
+            #    GPU→CPU sync stalls; always check on the last allowed iteration.
             v_current = v_new
             c_current = c_frozen
-
-            if residual < self.cfg.quasi_tol:
-                break
+            is_last = (iter_idx == self.cfg.max_quasi_iters - 1)
+            if (iter_idx % CONV_CHECK_STRIDE == CONV_CHECK_STRIDE - 1) or is_last:
+                residual = float(quasi_linear_residual(v_new, v_current))
+                history.append(residual)
+                if residual < self.cfg.quasi_tol:
+                    break
+            else:
+                history.append(float("nan"))
 
         return v_current, history

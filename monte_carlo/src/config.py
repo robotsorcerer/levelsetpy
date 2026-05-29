@@ -10,7 +10,7 @@ class SolverConfig(NamedTuple):
     when registered, or can be passed as static_argnums.
     """
     delta: float = 0.1
-    num_samples: int = 10_000
+    num_samples: int = 1_000
     max_quasi_iters: int = 20
     quasi_tol: float = 1e-6
     time_steps: int = 50

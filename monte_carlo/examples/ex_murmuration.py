@@ -22,7 +22,16 @@ Usage:
 """
 
 import argparse
+import os
 import time
+
+# Must be set before JAX is imported. JAX's BFC allocator pre-reserves
+# MEM_FRACTION × VRAM; the gradient kernel needs 6×(chunk/gpus)×samples×4 B
+# live simultaneously (z + g_vals + log_w). At 0.75 (default) on a 16 GB V100
+# that cap is 12 GB — too small for large chunks. 0.90 gives 14.4 GB.
+# Override at runtime: XLA_PYTHON_CLIENT_MEM_FRACTION=0.95 python ...
+os.environ.setdefault("XLA_PYTHON_CLIENT_MEM_FRACTION", "0.90")
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -92,14 +101,14 @@ def parse_args():
     p.add_argument(
         "--n-samples",
         type=int,
-        default=100_000,
+        default=10_000,
         help="MC samples (default 100k)",
     )
     p.add_argument(
         "--max-iters",
         type=int,
-        default=25,
-        help="Max quasi-linearization iterations (default 25)",
+        default=100,
+        help="Max quasi-linearization iterations (default 100)",
     )
     p.add_argument(
         "--time-steps",
@@ -120,13 +129,13 @@ def parse_args():
     p.add_argument(
         "--out-dir",
         type=str,
-        default="results/",
+        default="/tmp/murmurs/results/",
         help="Output directory for summary figures (default results/)",
     )
     p.add_argument(
         "--viz-dir",
         type=str,
-        default="/tmp/murmurations",
+        default="/tmp/murmurs",
         help="Directory for per-timestep visualisation outputs",
     )
     p.add_argument(

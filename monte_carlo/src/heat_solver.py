@@ -314,6 +314,12 @@ def mc_value_batch_distributed(
 
     value_fn = _make_value_shard_fn(terminal_cost_fn, num_samples, distributor.mesh)
 
+    # Extract seed to Python once. jax.device_get materialises ANY sharding to host,
+    # so this is safe even when `key` carries P('d',) from a previous shard_map call.
+    # We must not call fold_in on a distributed (2,) key: JAX applies it per-shard,
+    # corrupting the PRNGKey. Derive per-chunk keys from a fresh PRNGKey instead.
+    key_seed = int(jax.device_get(key).ravel()[0])
+
     results = []
     for chunk_idx in range(0, M, chunk_size):
         chunk_slice = slice(chunk_idx, min(chunk_idx + chunk_size, M))
@@ -323,8 +329,8 @@ def mc_value_batch_distributed(
         # Pad to multiple of n_devices and reshape to flat (n_devices*m_per_dev, ...).
         chunk_sharded, (n_chunk, m_per_dev) = distributor.shard_batch(chunk_points)
         c_sharded, _ = distributor.shard_batch(chunk_c)
-        key = jax.random.fold_in(key, chunk_idx)
-        keys_sharded = distributor.create_keys_per_device(int(key[0]), m_per_dev)
+        _ck = jax.device_get(jax.random.fold_in(jax.random.PRNGKey(key_seed), chunk_idx))
+        keys_sharded = distributor.create_keys_per_device(int(_ck[0]), m_per_dev)
 
         chunk_flat = chunk_sharded.reshape(-1, chunk_points.shape[-1])
         c_flat = c_sharded.reshape(-1)
@@ -431,6 +437,9 @@ def mc_gradient_batch_distributed(
 
     grad_fn = _make_grad_shard_fn(terminal_cost_fn, num_samples, gradient_mode, distributor.mesh)
 
+    # See mc_value_batch_distributed for the rationale behind device_get + fresh PRNGKey.
+    key_seed = int(jax.device_get(key).ravel()[0])
+
     results = []
     for chunk_idx in range(0, M, chunk_size):
         chunk_slice = slice(chunk_idx, min(chunk_idx + chunk_size, M))
@@ -439,8 +448,8 @@ def mc_gradient_batch_distributed(
 
         chunk_sharded, (n_chunk, m_per_dev) = distributor.shard_batch(chunk_points)
         c_sharded, _ = distributor.shard_batch(chunk_c)
-        key = jax.random.fold_in(key, chunk_idx)
-        keys_sharded = distributor.create_keys_per_device(int(key[0]), m_per_dev)
+        _ck = jax.device_get(jax.random.fold_in(jax.random.PRNGKey(key_seed), chunk_idx))
+        keys_sharded = distributor.create_keys_per_device(int(_ck[0]), m_per_dev)
 
         chunk_flat = chunk_sharded.reshape(-1, chunk_points.shape[-1])
         c_flat = c_sharded.reshape(-1)

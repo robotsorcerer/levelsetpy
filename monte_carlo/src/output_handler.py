@@ -118,13 +118,15 @@ class OutputHandler:
             aspect="auto",
         )
         plt.colorbar(im, ax=ax, label="v(x, t)")
-        ax.contour(
-            v_grid,
-            levels=[0.0],
-            colors="red",
-            linewidths=1.5,
-            extent=[x1_min, x1_max, x2_min, x2_max],
-        )
+        v_min_hm, v_max_hm = float(np.nanmin(v_grid)), float(np.nanmax(v_grid))
+        if v_min_hm <= 0.0 <= v_max_hm:
+            ax.contour(
+                v_grid,
+                levels=[0.0],
+                colors="red",
+                linewidths=1.5,
+                extent=[x1_min, x1_max, x2_min, x2_max],
+            )
         ax.set_xlabel("x1 (m)")
         ax.set_ylabel("x2 (m)")
         ax.set_title(f"Value function heatmap  (t={t:04d})")
@@ -223,8 +225,12 @@ class OutputHandler:
         fig, ax = plt.subplots(figsize=(9, 8))
         x1_grid = np.linspace(x1_min, x1_max, v_grid.shape[1])
         x2_grid = np.linspace(x2_min, x2_max, v_grid.shape[0])
-        cs = ax.contour(x1_grid, x2_grid, v_grid, levels=levels, cmap="plasma")
-        ax.clabel(cs, inline=True, fontsize=9)
+        v_min_rc = float(np.nanmin(v_grid))
+        v_max_rc = float(np.nanmax(v_grid))
+        valid_levels = [lv for lv in levels if v_min_rc <= lv <= v_max_rc]
+        if valid_levels:
+            cs = ax.contour(x1_grid, x2_grid, v_grid, levels=valid_levels, cmap="plasma")
+            ax.clabel(cs, inline=True, fontsize=9)
         ax.set_xlabel("x1 (m)")
         ax.set_ylabel("x2 (m)")
         ax.set_title(f"Reachability level sets  (t={t:04d})")
