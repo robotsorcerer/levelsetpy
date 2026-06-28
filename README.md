@@ -99,7 +99,7 @@ viz.visGrid([g], g.dim, title='Simple 2D Grid')
 
  - Spheres on a 2D grid: a single sphere, two spheres, union of two spheres, and difference of a sphere and a rectangle.
 
-<div align="center">
+<!-- <div align="center">
  <img src="figures/shapes2d/sphere_2d.jpeg" height="250px" width="250px">
  <img src="figures/shapes2d/sphere2_2d.jpeg" height="250px" width="250px">
  <img src="figures/shapes2d/sphere_union_2d.jpeg" height="250px" width="250px">
@@ -113,8 +113,59 @@ viz.visGrid([g], g.dim, title='Simple 2D Grid')
  <img src="figures/shapes2d/rect4_2d.jpeg" height="250px" width="250px">
  <img src="figures/shapes2d/rect_union_2d.jpeg" height="250px" width="250px">
  <img src="figures/shapes2d/cylinder_2d.jpeg" height="250px" width="250px">
-</div>
+</div> -->
 
+<p align="center"><b>Spheres and Sphere Operations on a 2D Grid</b></p>
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="figures/shapes2d/sphere_2d.jpeg" width="250"><br>
+      Single sphere
+    </td>
+    <td align="center">
+      <img src="figures/shapes2d/sphere2_2d.jpeg" width="250"><br>
+      Second sphere
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="figures/shapes2d/sphere_union_2d.jpeg" width="250"><br>
+      Union of two spheres
+    </td>
+    <td align="center">
+      <img src="figures/shapes2d/sph_rect_diff_2d.jpeg" width="250"><br>
+      Sphere-rectangle difference
+    </td>
+  </tr>
+</table>
+
+<br>
+
+<p align="center"><b>Rectangles and Cylinders on a 2D Grid</b></p>
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="figures/shapes2d/rect3_2d.jpeg" width="250"><br>
+      Single rectangle
+    </td>
+    <td align="center">
+      <img src="figures/shapes2d/rect4_2d.jpeg" width="250"><br>
+      Two rectangles
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="figures/shapes2d/rect_union_2d.jpeg" width="250"><br>
+      Union of two rectangles
+    </td>
+    <td align="center">
+      <img src="figures/shapes2d/cylinder_2d.jpeg" width="250"><br>
+      Cylinder
+    </td>
+  </tr>
+</table>
 
 + 3D Grids
 
@@ -251,7 +302,7 @@ def main(savedict):
 
 - Initial Conditions for a 3D Grid: a sphere, a cylinder, a sphere and a cylinder difference, a sphere and a cylinder union, and a sphere and a an iconosphere.
 
-<div align="center">
+<!-- <div align="center">
  <img src="figures/shapes3d/sphere.jpeg" height="250px" width="250px">
  <img src="figures/shapes3d/cylinder.jpeg" height="250px" width="250px">
  <img src="figures/shapes3d/sphere_cyl_diff.jpeg" height="250px" width="250px">
@@ -260,7 +311,34 @@ def main(savedict):
 <div align="center">
  <img src="figures/shapes3d/sphere_cyl_union.jpeg" height="250px" width="250px">
  <img src="figures/shapes3d/sphere_cyl_intersect.jpeg" height="250px" width="250px">
-</div>
+</div> -->
+
+<p align="center"><b>3D Shapes and Set Operations</b></p>
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="figures/shapes3d/sphere.jpeg" width="250"><br>
+      Sphere
+    </td>
+    <td align="center">
+      <img src="figures/shapes3d/cylinder.jpeg" width="250"><br>
+      Cylinder
+    </td>
+    <td align="center">
+      <img src="figures/shapes3d/sphere_cyl_diff.jpeg" width="250"><br>
+      Difference
+    </td>
+    <td align="center">
+      <img src="figures/shapes3d/sphere_cyl_union.jpeg" width="250"><br>
+      Union
+    </td>
+    <td align="center">
+      <img src="figures/shapes3d/sphere_cyl_intersect.jpeg" width="250"><br>
+      Intersection
+    </td>
+  </tr>
+</table>
 
 #### Robustly Controlled Backward Reachable Tubes (RCBRTs)
 
@@ -296,25 +374,25 @@ python levelsetpy/examples/dint_basic.py
 + Double integrator on a plane: Analytical Time to Reach the Target Set. Switching Curve. Initial Conditions.
 
 <div align="center">
- <img src="figures/dint/attr.jpg" height="300px" width="350px">
- <img src="figures/dint/switching_curve.jpg" height="300px" width="350px">
- <img src="figures/dint/doub_int_trajos.jpg" height="300px" width="350px">
+ <img src="figures/dint/attr.jpg" height="250px" width="250px">
+ <img src="figures/dint/switching_curve.jpg" height="250px" width="250px">
+ <img src="figures/dint/doub_int_trajos.jpg" height="250px" width="250px">
 </div>
 
 + Double integrator on a plane: Isochoner above switching curve. Isochoner below switching curve. Isochoner above and below switching curve. 
 
 <div align="center">
- <img src="figures/dint/isochoner_above.jpg" height="300px" width="350px">
- <img src="figures/dint/isochoner_below.jpg" height="300px" width="350px">
- <img src="figures/dint/isochoner_all.jpg" height="300px" width="350px">
+ <img src="figures/dint/isochoner_above.jpg" height="250px" width="250px">
+ <img src="figures/dint/isochoner_below.jpg" height="250px" width="250px">
+ <img src="figures/dint/isochoner_all.jpg" height="250px" width="250px">
 </div>
 
 + Double integrator trajectories evolution.
 
 <div align="center">
- <img src="figures/dint/dint_0.jpeg" height="300px" width="350px">
- <img src="figures/dint/dint_03.jpeg" height="300px" width="350px">
- <img src="figures/dint/dint_06.jpeg" height="300px" width="350px">
+ <img src="figures/dint/dint_0.jpeg" height="250px" width="250px">
+ <img src="figures/dint/dint_03.jpeg" height="250px" width="250px">
+ <img src="figures/dint/dint_06.jpeg" height="250px" width="250px">
 </div>
 
 
