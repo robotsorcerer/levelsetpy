@@ -114,28 +114,27 @@ viz.visGrid([g], g.dim, title='Simple 2D Grid')
  <img src="figures/shapes2d/rect_union_2d.jpeg" height="250px" width="250px">
  <img src="figures/shapes2d/cylinder_2d.jpeg" height="250px" width="250px">
 </div> -->
-
 <p align="center"><b>Spheres and Sphere Operations on a 2D Grid</b></p>
 
 <table align="center">
   <tr>
-    <td align="center">
-      <img src="figures/shapes2d/sphere_2d.jpeg" width="250"><br>
-      Single sphere
-    </td>
-    <td align="center">
-      <img src="figures/shapes2d/sphere2_2d.jpeg" width="250"><br>
-      Second sphere
-    </td>
+    <th align="center">Single Sphere</th>
+    <th align="center">Second Sphere</th>
+    <th align="center">Union of Two Spheres</th>
+    <th align="center">Sphere-Rectangle Difference</th>
   </tr>
   <tr>
     <td align="center">
-      <img src="figures/shapes2d/sphere_union_2d.jpeg" width="250"><br>
-      Union of two spheres
+      <img src="figures/shapes2d/sphere_2d.jpeg" width="250">
     </td>
     <td align="center">
-      <img src="figures/shapes2d/sph_rect_diff_2d.jpeg" width="250"><br>
-      Sphere-rectangle difference
+      <img src="figures/shapes2d/sphere2_2d.jpeg" width="250">
+    </td>
+    <td align="center">
+      <img src="figures/shapes2d/sphere_union_2d.jpeg" width="250">
+    </td>
+    <td align="center">
+      <img src="figures/shapes2d/sph_rect_diff_2d.jpeg" width="250">
     </td>
   </tr>
 </table>
@@ -146,23 +145,23 @@ viz.visGrid([g], g.dim, title='Simple 2D Grid')
 
 <table align="center">
   <tr>
-    <td align="center">
-      <img src="figures/shapes2d/rect3_2d.jpeg" width="250"><br>
-      Single rectangle
-    </td>
-    <td align="center">
-      <img src="figures/shapes2d/rect4_2d.jpeg" width="250"><br>
-      Two rectangles
-    </td>
+    <th align="center">Single Rectangle</th>
+    <th align="center">Two Rectangles</th>
+    <th align="center">Union of Two Rectangles</th>
+    <th align="center">Cylinder</th>
   </tr>
   <tr>
     <td align="center">
-      <img src="figures/shapes2d/rect_union_2d.jpeg" width="250"><br>
-      Union of two rectangles
+      <img src="figures/shapes2d/rect3_2d.jpeg" width="250">
     </td>
     <td align="center">
-      <img src="figures/shapes2d/cylinder_2d.jpeg" width="250"><br>
-      Cylinder
+      <img src="figures/shapes2d/rect4_2d.jpeg" width="250">
+    </td>
+    <td align="center">
+      <img src="figures/shapes2d/rect_union_2d.jpeg" width="250">
+    </td>
+    <td align="center">
+      <img src="figures/shapes2d/cylinder_2d.jpeg" width="250">
     </td>
   </tr>
 </table>
@@ -301,17 +300,6 @@ def main(savedict):
 ```
 
 - Initial Conditions for a 3D Grid: a sphere, a cylinder, a sphere and a cylinder difference, a sphere and a cylinder union, and a sphere and a an iconosphere.
-
-<!-- <div align="center">
- <img src="figures/shapes3d/sphere.jpeg" height="250px" width="250px">
- <img src="figures/shapes3d/cylinder.jpeg" height="250px" width="250px">
- <img src="figures/shapes3d/sphere_cyl_diff.jpeg" height="250px" width="250px">
-</div>
-
-<div align="center">
- <img src="figures/shapes3d/sphere_cyl_union.jpeg" height="250px" width="250px">
- <img src="figures/shapes3d/sphere_cyl_intersect.jpeg" height="250px" width="250px">
-</div> -->
 
 <p align="center"><b>3D Shapes and Set Operations</b></p>
 
