@@ -14,13 +14,61 @@ where  sigma = sqrt(delta * (T - t))  and  c  is the Cole-Hopf coefficient.
 
 from typing import Callable, Optional, TYPE_CHECKING
 
+import functools
+
 import jax
 import jax.numpy as jnp
-from jax import vmap, pmap
+from jax import vmap
+from jax.experimental.shard_map import shard_map
+from jax.sharding import PartitionSpec as P
 import time
 
 if TYPE_CHECKING:
     from .gpu_distribution import GPUDistributor
+
+
+# ---------------------------------------------------------------------------
+#  shard_map-based multi-GPU kernels
+#  (replaces pmap; shard_map auto-reshards inputs so there are no JIT sharding
+#   cache mismatches across quasi-linear iterations)
+# ---------------------------------------------------------------------------
+
+@functools.lru_cache(maxsize=16)
+def _make_value_shard_fn(terminal_cost_fn, num_samples, mesh):
+    """Return a jit+shard_map value kernel for the given (fn, n_samples, mesh)."""
+    def _body(keys, x, c, t, T, delta):
+        @functools.partial(
+            shard_map,
+            mesh=mesh,
+            in_specs=(P("d"), P("d"), P("d"), P(), P(), P()),
+            out_specs=P("d"),
+            check_rep=False,
+        )
+        def _shard(k_loc, x_loc, c_loc, t_, T_, d_):
+            def _one(k, xi, ci):
+                return mc_value_at_point(k, xi, t_, T_, d_, ci, terminal_cost_fn, num_samples)
+            return vmap(_one)(k_loc, x_loc, c_loc)
+        return _shard(keys, x, c, t, T, delta)
+    return jax.jit(_body)
+
+
+@functools.lru_cache(maxsize=16)
+def _make_grad_shard_fn(terminal_cost_fn, num_samples, gradient_mode, mesh):
+    """Return a jit+shard_map gradient kernel for the given (fn, n_samples, mode, mesh)."""
+    def _body(keys, x, c, t, T, delta):
+        @functools.partial(
+            shard_map,
+            mesh=mesh,
+            in_specs=(P("d"), P("d"), P("d"), P(), P(), P()),
+            out_specs=P("d"),
+            check_rep=False,
+        )
+        def _shard(k_loc, x_loc, c_loc, t_, T_, d_):
+            def _one(k, xi, ci):
+                return mc_gradient_at_point(k, xi, t_, T_, d_, ci, terminal_cost_fn, num_samples, gradient_mode)
+            return vmap(_one)(k_loc, x_loc, c_loc)
+        return _shard(keys, x, c, t, T, delta)
+    return jax.jit(_body)
 
 
 def _ensure_device_ready(devices):
@@ -252,15 +300,25 @@ def mc_value_batch_distributed(
             key, eval_points, t, T, delta, c, terminal_cost_fn, num_samples, chunk_size
         )
 
-    # Multi-GPU: process chunks via pmap
+    # Multi-GPU via shard_map: one JIT call dispatches to all devices with no
+    # per-chunk Python loop over devices and no manual gather.
     c_arr = jnp.asarray(c, dtype=jnp.float32)
     if c_arr.ndim == 0:
         c_arr = jnp.broadcast_to(c_arr, (M,))
     else:
         c_arr = jnp.broadcast_to(c_arr, (M,))
 
-    # Ensure devices are ready before computation
-    _ensure_device_ready(distributor.device_list)
+    t_s = jnp.float32(t)
+    T_s = jnp.float32(T)
+    d_s = jnp.float32(delta)
+
+    value_fn = _make_value_shard_fn(terminal_cost_fn, num_samples, distributor.mesh)
+
+    # Extract seed to Python once. jax.device_get materialises ANY sharding to host,
+    # so this is safe even when `key` carries P('d',) from a previous shard_map call.
+    # We must not call fold_in on a distributed (2,) key: JAX applies it per-shard,
+    # corrupting the PRNGKey. Derive per-chunk keys from a fresh PRNGKey instead.
+    key_seed = int(jax.device_get(key).ravel()[0])
 
     results = []
     for chunk_idx in range(0, M, chunk_size):
@@ -268,41 +326,24 @@ def mc_value_batch_distributed(
         chunk_points = eval_points[chunk_slice]
         chunk_c = c_arr[chunk_slice]
 
-        # Shard this chunk across devices
+        # Pad to multiple of n_devices and reshape to flat (n_devices*m_per_dev, ...).
         chunk_sharded, (n_chunk, m_per_dev) = distributor.shard_batch(chunk_points)
         c_sharded, _ = distributor.shard_batch(chunk_c)
+        _ck = jax.device_get(jax.random.fold_in(jax.random.PRNGKey(key_seed), chunk_idx))
+        keys_sharded = distributor.create_keys_per_device(int(_ck[0]), m_per_dev)
 
-        # Synchronize before kernel launch
-        _ensure_device_ready(distributor.device_list)
+        chunk_flat = chunk_sharded.reshape(-1, chunk_points.shape[-1])
+        c_flat = c_sharded.reshape(-1)
+        keys_flat = keys_sharded.reshape(-1, 2)
 
-        # Create per-device keys for this chunk
-        key = jax.random.fold_in(key, chunk_idx)
-        keys_sharded = distributor.create_keys_per_device(int(key[0]), m_per_dev)
+        # Pre-distribute inputs across devices so shard_map reads local data.
+        chunk_flat = jax.device_put(chunk_flat, distributor.row_sharding)
+        c_flat = jax.device_put(c_flat, distributor.row_sharding)
+        keys_flat = jax.device_put(keys_flat, distributor.row_sharding)
 
-        def _solve_one_distributed(k_per_device, x_per_device, c_per_device):
-            """Vectorized solve on one device (called by pmap).
-
-            All inputs are sharded; c_per_device is replicated across devices.
-            """
-            def _solve_one(k, xi, ci):
-                return mc_value_at_point(
-                    k, xi, t, T, delta, ci, terminal_cost_fn, num_samples
-                )
-            return vmap(_solve_one)(k_per_device, x_per_device, c_per_device)
-
-        # pmap with explicit sharding: shard keys and x, replicate c
-        pmapped_solve = pmap(
-            _solve_one_distributed,
-            axis_name="i",
-            in_axes=(0, 0, 0),  # All sharded
-            out_axes=0,
-            devices=distributor.device_list
-        )
-        v_chunk_sharded = pmapped_solve(keys_sharded, chunk_sharded, c_sharded)
-
-        # Unshard this chunk
-        v_chunk = distributor.unshard_batch(v_chunk_sharded, (n_chunk, m_per_dev))
-        results.append(v_chunk)
+        # Single jit+shard_map call; output already assembled as (n_devices*m_per_dev,).
+        v_flat = value_fn(keys_flat, chunk_flat, c_flat, t_s, T_s, d_s)
+        results.append(v_flat[:n_chunk])
 
     return jnp.concatenate(results, axis=0)
 
@@ -383,12 +424,21 @@ def mc_gradient_batch_distributed(
             gradient_mode, chunk_size
         )
 
-    # Multi-GPU: process chunks via pmap
+    # Multi-GPU via shard_map (see mc_value_batch_distributed for rationale).
     c_arr = jnp.asarray(c, dtype=jnp.float32)
     if c_arr.ndim == 0:
         c_arr = jnp.broadcast_to(c_arr, (M,))
     else:
         c_arr = jnp.broadcast_to(c_arr, (M,))
+
+    t_s = jnp.float32(t)
+    T_s = jnp.float32(T)
+    d_s = jnp.float32(delta)
+
+    grad_fn = _make_grad_shard_fn(terminal_cost_fn, num_samples, gradient_mode, distributor.mesh)
+
+    # See mc_value_batch_distributed for the rationale behind device_get + fresh PRNGKey.
+    key_seed = int(jax.device_get(key).ravel()[0])
 
     results = []
     for chunk_idx in range(0, M, chunk_size):
@@ -396,38 +446,23 @@ def mc_gradient_batch_distributed(
         chunk_points = eval_points[chunk_slice]
         chunk_c = c_arr[chunk_slice]
 
-        # Shard this chunk across devices
         chunk_sharded, (n_chunk, m_per_dev) = distributor.shard_batch(chunk_points)
         c_sharded, _ = distributor.shard_batch(chunk_c)
+        _ck = jax.device_get(jax.random.fold_in(jax.random.PRNGKey(key_seed), chunk_idx))
+        keys_sharded = distributor.create_keys_per_device(int(_ck[0]), m_per_dev)
 
-        # Create per-device keys for this chunk
-        key = jax.random.fold_in(key, chunk_idx)
-        keys_sharded = distributor.create_keys_per_device(int(key[0]), m_per_dev)
+        chunk_flat = chunk_sharded.reshape(-1, chunk_points.shape[-1])
+        c_flat = c_sharded.reshape(-1)
+        keys_flat = keys_sharded.reshape(-1, 2)
 
-        def _grad_one_distributed(k_per_device, x_per_device, c_per_device):
-            """Vectorized gradient on one device (called by pmap).
+        # Pre-distribute inputs across devices so shard_map reads local data.
+        chunk_flat = jax.device_put(chunk_flat, distributor.row_sharding)
+        c_flat = jax.device_put(c_flat, distributor.row_sharding)
+        keys_flat = jax.device_put(keys_flat, distributor.row_sharding)
 
-            All inputs are sharded.
-            """
-            def _grad_one(k, xi, ci):
-                return mc_gradient_at_point(
-                    k, xi, t, T, delta, ci, terminal_cost_fn, num_samples, gradient_mode
-                )
-            return vmap(_grad_one)(k_per_device, x_per_device, c_per_device)
-
-        # pmap with explicit sharding: shard all inputs
-        pmapped_grad = pmap(
-            _grad_one_distributed,
-            axis_name="i",
-            in_axes=(0, 0, 0),  # All sharded
-            out_axes=0,
-            devices=distributor.device_list
-        )
-        Dv_chunk_sharded = pmapped_grad(keys_sharded, chunk_sharded, c_sharded)
-
-        # Unshard this chunk
-        Dv_chunk = distributor.unshard_batch(Dv_chunk_sharded, (n_chunk, m_per_dev))
-        results.append(Dv_chunk)
+        # Single jit+shard_map call; output already assembled as (n_devices*m_per_dev, n).
+        Dv_flat = grad_fn(keys_flat, chunk_flat, c_flat, t_s, T_s, d_s)
+        results.append(Dv_flat[:n_chunk])
 
     return jnp.concatenate(results, axis=0)
 

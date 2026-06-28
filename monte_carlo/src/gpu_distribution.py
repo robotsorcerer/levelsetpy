@@ -20,7 +20,8 @@ Usage:
 from typing import Optional, Tuple
 import jax
 import jax.numpy as jnp
-from jax import devices, pmap
+from jax import devices
+from jax.sharding import Mesh, NamedSharding, PartitionSpec as P
 import numpy as np
 
 
@@ -71,6 +72,15 @@ class GPUDistributor:
             self.n_devices = 1
 
         self.is_multi_gpu = self.n_devices > 1
+
+        # Stable mesh for shard_map — axis 'd' spans all devices.
+        # shard_map uses this instead of pmap to avoid JIT sharding cache issues.
+        if self.is_multi_gpu:
+            self.mesh = Mesh(np.array(self.device_list), axis_names=("d",))
+            self.row_sharding = NamedSharding(self.mesh, P("d"))
+        else:
+            self.mesh = None
+            self.row_sharding = None
 
         print(f"[GPUDistributor] Using {self.n_devices} devices (available: {self.n_available})")
         if self.is_multi_gpu:
