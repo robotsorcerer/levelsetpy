@@ -273,7 +273,7 @@ if __name__ == "__main__":
         ax.contour(X_np, Y_np, np.array(V_mc), levels=[0.0], colors="k",
                    linewidths=2.5)
         ax.set_title(
-            rf"$\delta$={DELTA}$"
+            rf"$\delta={DELTA}$"
             f"\n{len(history)} iters, {elapsed_mc:.1f}s",
             fontdict=TITLE_FONTDICT,
         )
