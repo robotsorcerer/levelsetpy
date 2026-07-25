@@ -392,7 +392,7 @@ In addition to the grid-based level set approach above, **LevelSetPy** now inclu
 
 ### Why Monte Carlo HJ Reachability?
 
-Classical grid-based solvers require $O(M^n)$ memory for $M$ grid points per dimension. For $n=6$ with $M=100$, this is $10^{12}$ cells — prohibitive. **HJ-Gauss** uses $N$ Monte Carlo samples instead, achieving $O(N \cdot n)$ memory **independent of grid resolution**. Demonstrates all 7 swarm behaviors from IJRR23 (European starling murmurations) with automated phase-transition topology tracking.
+Classical grid-based solvers require $O(M^n)$ memory for $M$ grid points per dimension. For $n=6$ with $M=100$, this is $10^{12}$ cells — prohibitive. **HJ-Gauss** uses $N$ Monte Carlo samples instead, achieving $O(N \cdot n)$ memory **independent of grid resolution**. Demonstrates 7 swarm behaviors on European starling murmurations with automated phase-transition topology tracking.
 
 **See [`monte_carlo/README.md`](monte_carlo/README.md) for the full deployment guide, 1M-bird demo, and GPU scaling results.**
 
@@ -413,7 +413,7 @@ pip install -e ".[dev,gpu]"
 # Run 1M-bird certification
 python examples/ex_murmuration.py --device gpu --n-birds 1000000 --save-results
 
-# Run tests (all 7 IJRR23 swarm actions)
+# Run tests (all 7 swarm actions)
 pytest tests/test_murmuration_safety.py -m slow --device gpu -v
 ```
 
