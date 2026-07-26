@@ -26,6 +26,7 @@ import jax.numpy as jnp
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 from math import pi
 from functools import partial
 from scipy.interpolate import RegularGridInterpolator
@@ -333,8 +334,13 @@ if __name__ == "__main__":
     )
     xs_eval = np.linspace(*SPATIAL_DOMAIN, GRID_N_MC_2D)
 
+    # ── Pass 1: solve every slice and cache the fields ──────────────────
+    # We must know the global value range across BOTH value rows
+    # (levelsetpy and MC) before plotting, so the top two rows can share a
+    # single color scale and one common colorbar.
+    slice_data = []
     total_mc_2d = 0.0
-    for col, theta_val in enumerate(THETA_SLICES):
+    for theta_val in THETA_SLICES:
         print(f"\n--- theta = {theta_val:.2f} ---")
 
         # MC solver
@@ -354,46 +360,81 @@ if __name__ == "__main__":
                   / max(np.sqrt(np.nanmean(V_ref[mask] ** 2)), 1e-12))
         print(f"  L_inf = {l_inf:.4f},  L2_rel = {l2_rel:.4f}")
 
-        X_np, Z_np = np.array(X), np.array(Z)
+        slice_data.append({
+            "theta": theta_val,
+            "X": np.array(X), "Z": np.array(Z),
+            "V_ref": V_ref, "V_mc": np.array(V_mc), "diff": diff,
+            "l_inf": l_inf, "l2_rel": l2_rel,
+            "n_iters": len(history), "elapsed": elapsed,
+        })
 
-        # Row 0: levelsetpy
+    # ── Shared value scale for the top two rows (rows 0 and 1) ──────────
+    # Single symmetric range so levelsetpy and MC panels are directly
+    # comparable pixel-for-pixel; TwoSlopeNorm keeps the diverging colormap
+    # centered at the zero level set.
+    val_stack = np.concatenate([
+        np.array([d["V_ref"] for d in slice_data]).ravel(),
+        np.array([d["V_mc"] for d in slice_data]).ravel(),
+    ])
+    val_stack = val_stack[np.isfinite(val_stack)]
+    vmin = float(np.nanmin(val_stack))
+    vmax = float(np.nanmax(val_stack))
+    print(f"\nShared value-row color scale: v in [{vmin:.3f}, {vmax:.3f}]")
+    # Center the diverging colormap on the zero level set.
+    vabs = max(abs(vmin), abs(vmax))
+    val_norm = mcolors.TwoSlopeNorm(vmin=-vabs, vcenter=0.0, vmax=vabs)
+    val_levels = np.linspace(-vabs, vabs, 21)
+    err_max = max(d["l_inf"] for d in slice_data
+                  if np.isfinite(d["l_inf"]))
+
+    val_mappable = None
+    err_mappable = None
+    for col, d in enumerate(slice_data):
+        X_np, Z_np, theta_val = d["X"], d["Z"], d["theta"]
+
+        # Row 0: levelsetpy (shared scale)
         ax = axes[0, col]
-        ax.contourf(X_np, Z_np, V_ref, levels=20, cmap="RdBu_r")
-        ax.contour(X_np, Z_np, V_ref, levels=[0.0], colors="k", linewidths=2.5)
+        cf0 = ax.contourf(X_np, Z_np, d["V_ref"], levels=val_levels,
+                          cmap="RdBu_r", norm=val_norm, extend="both")
+        ax.contour(X_np, Z_np, d["V_ref"], levels=[0.0], colors="k",
+                   linewidths=2.5)
         ax.set_title(rf"levelsetpy  $\theta={theta_val:.2f}$",
                      fontdict=TITLE_FONTDICT)
         ax.set_xlabel(r"$\mathbf{x}$ (m)", fontdict=FONTDICT)
         ax.set_ylabel(r"$\mathbf{z}$ (m)", fontdict=FONTDICT)
         ax.set_aspect("equal")
+        val_mappable = cf0
 
-        # Row 1: MC solver
+        # Row 1: MC solver (same shared scale as row 0)
         ax = axes[1, col]
-        ax.contourf(X_np, Z_np, np.array(V_mc), levels=20, cmap="RdBu_r")
-        ax.contour(X_np, Z_np, np.array(V_mc), levels=[0.0], colors="k",
+        ax.contourf(X_np, Z_np, d["V_mc"], levels=val_levels,
+                    cmap="RdBu_r", norm=val_norm, extend="both")
+        ax.contour(X_np, Z_np, d["V_mc"], levels=[0.0], colors="k",
                    linewidths=2.5)
         ax.set_title(
             rf"MC ($\delta$={DELTA})  $\theta={theta_val:.2f}$"
-            f"\n{len(history)} iters, {elapsed:.1f}s",
+            f"\n{d['n_iters']} iters, {d['elapsed']:.1f}s",
             fontdict=TITLE_FONTDICT,
         )
         ax.set_xlabel(r"$\mathbf{x}$ (m)", fontdict=FONTDICT)
         ax.set_ylabel(r"$\mathbf{z}$ (m)", fontdict=FONTDICT)
         ax.set_aspect("equal")
 
-        # Row 2: |error|
+        # Row 2: |error| (shared error scale across columns)
         ax = axes[2, col]
-        err_plot = ax.contourf(X_np, Z_np, diff, levels=20, cmap="hot_r")
-        cb = plt.colorbar(err_plot, ax=ax, fraction=0.046)
-        cb.ax.tick_params(labelsize=10)
-        ax.contour(X_np, Z_np, V_ref, levels=[0.0], colors="cyan",
+        err_plot = ax.contourf(X_np, Z_np, d["diff"],
+                               levels=np.linspace(0.0, err_max, 21),
+                               cmap="hot_r", extend="max")
+        ax.contour(X_np, Z_np, d["V_ref"], levels=[0.0], colors="cyan",
                    linewidths=2, linestyles="--")
         ax.set_title(
-            rf"|error|  L$_\infty$={l_inf:.3f}  L$_2$={l2_rel:.3f}",
+            rf"|error|  L$_\infty$={d['l_inf']:.3f}  L$_2$={d['l2_rel']:.3f}",
             fontdict=TITLE_FONTDICT,
         )
         ax.set_xlabel(r"$\mathbf{x}$ (m)", fontdict=FONTDICT)
         ax.set_ylabel(r"$\mathbf{z}$ (m)", fontdict=FONTDICT)
         ax.set_aspect("equal")
+        err_mappable = err_plot
 
     axes[0, 0].set_ylabel(r"$\mathbf{z}$ (m)" + "\n(levelsetpy)",
                           fontdict=FONTDICT)
@@ -402,13 +443,27 @@ if __name__ == "__main__":
     axes[2, 0].set_ylabel(r"$\mathbf{z}$ (m)" + "\n(|error|)",
                           fontdict=FONTDICT)
 
+    # ── One shared colorbar for the value rows, one for the error row ───
+    fig_slices.tight_layout(rect=[0.0, 0.0, 0.90, 1.0])
+    # Value colorbar spans rows 0-1 (top two thirds of the figure height).
+    cax_val = fig_slices.add_axes([0.92, 0.38, 0.015, 0.52])
+    cb_val = fig_slices.colorbar(val_mappable, cax=cax_val)
+    cb_val.set_label(r"value $\bm{v}^\delta$ (m)", fontsize=16,
+                     fontweight="bold")
+    cb_val.ax.tick_params(labelsize=12)
+    # Error colorbar for the bottom row.
+    cax_err = fig_slices.add_axes([0.92, 0.06, 0.015, 0.24])
+    cb_err = fig_slices.colorbar(err_mappable, cax=cax_err)
+    cb_err.set_label(r"$|$error$|$ (m)", fontsize=16, fontweight="bold")
+    cb_err.ax.tick_params(labelsize=12)
+
     fig_slices.suptitle(
-        f"Two-Rockets BRT: MC Cole-Hopf vs levelsetpy\n"
+        f"Two-Rockets BRT: MC Cole-Hopf vs Levelsetpy\n"
         # f"a={A_THRUST}, g={GRAV}, Grid: {GRID_N_LS}³ | "
-        f"MC: {MC_CFG.num_samples} samples, $\\delta={DELTA}$ | T={T_FINAL}",
+        f"MC: {MC_CFG.num_samples} samples, $\\delta={DELTA}$ | T={T_FINAL} | "
+        f"value rows share scale $v\\in[{-vabs:.2f},{vabs:.2f}]$ m",
         fontsize=16, fontweight="bold",
     )
-    fig_slices.tight_layout()
     out_slices = os.path.join(out_dir, "rockets_3d_slices.jpg")
     fig_slices.savefig(out_slices, dpi=150, bbox_inches="tight")
     print(f"\nSaved 2D slices → {out_slices}")
