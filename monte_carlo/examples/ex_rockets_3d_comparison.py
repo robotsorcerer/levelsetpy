@@ -16,9 +16,10 @@ import sys
 import os
 import copy
 import time
+from os.path import expanduser, join, dirname
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, "/home/lex/Documents/ML-Control-Rob/control/levelsetpy")
+sys.path.insert(0, join(expanduser("~"), "Documents", "ML-Control-Rob", "control", "levelsetpy"))
 
 import numpy as np
 import jax

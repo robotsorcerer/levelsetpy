@@ -167,7 +167,7 @@ class HJReachabilitySampler:
         Each Picard iteration k:
           1. Recover gradient Dv^(k-1) using c^(k-1) from the previous step.
           2. Compute H at (x, Dv^(k-1)) to form c^(k) = (2/delta) * H / |Dv|^2.
-          3. Clip c^(k) to [c_min, c_max] per Assumption 2.8 (no abs — sign preserved
+          3. Clip c^(k) to [c_min, c_max] per Remark 2.8 (no abs — sign preserved
              to maintain convexity of the frozen linear PDE).
           4. Solve the heat equation with c^(k) frozen for this iteration.
 
