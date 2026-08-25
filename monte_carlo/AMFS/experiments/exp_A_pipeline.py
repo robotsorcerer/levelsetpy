@@ -44,7 +44,7 @@ def make_grid():
 
 def run_episode(seed, policy, *, brt_path=DEFAULT_BRT, margin=0.0,
                 n_agents=8, window=6, exec_steps=3, total_ticks=40,
-                params: DubinsParams | None = None, grid=None):
+                params: DubinsParams | None = None, grid=None, trace=None):
     """Run one lifelong-MAPF episode under `policy`. CRN keyed by `seed`.
 
     Returns dict of headline metrics (all paired-comparable across policies for
@@ -91,7 +91,7 @@ def run_episode(seed, policy, *, brt_path=DEFAULT_BRT, margin=0.0,
         wait_steps += pstats["wait_steps"]
 
         info = rollout(grid, agents, plans, cpose, params, dist_rng,
-                       exec_steps, shield=shield)
+                       exec_steps, shield=shield, trace=trace)
         collisions += info["collisions"]
         interventions += info["interventions"]
         macro_steps += exec_steps

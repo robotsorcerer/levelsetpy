@@ -40,7 +40,8 @@ def init_cpose(agents):
 
 
 def rollout(grid, agents, plans, cpose, params: DubinsParams,
-            drng: np.random.Generator, exec_steps: int, shield=None):
+            drng: np.random.Generator, exec_steps: int, shield=None,
+            trace=None):
     """Advance `exec_steps` macro-steps on continuous dynamics.
 
     If `shield` (a BRTPredicate) is given, it actuates the certificate at
@@ -107,6 +108,7 @@ def rollout(grid, agents, plans, cpose, params: DubinsParams,
                 th = wrap_angle(th + omega * p.dt)
                 cpose[aid] = np.array([x, y, th])
             # collision check (continuous); count only onsets (sep -> contact)
+            contacts = []
             for i in range(len(ids)):
                 for j in range(i + 1, len(ids)):
                     a_i, a_j = ids[i], ids[j]
@@ -114,11 +116,21 @@ def rollout(grid, agents, plans, cpose, params: DubinsParams,
                                  cpose[a_i][1] - cpose[a_j][1])
                     key = (a_i, a_j)
                     if d < p.collision_dist:
+                        contacts.append(key)
                         if not in_contact[key]:
                             collisions += 1
                             in_contact[key] = True
                     else:
                         in_contact[key] = False
+            if trace is not None:
+                trace.append({
+                    "poses": {aid: cpose[aid].copy() for aid in ids},
+                    "goals": {aid: agent_by_id[aid].goal for aid in ids},
+                    "yielding": set(yield_to.keys()),
+                    "contacts": contacts,
+                    "collisions": collisions,
+                    "interventions": interventions,
+                })
         # discrete advance: snap planner state to the committed cell
         for aid in ids:
             tc = target_cell(aid, step)
