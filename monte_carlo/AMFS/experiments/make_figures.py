@@ -127,7 +127,7 @@ def fig_collisions_bar(outdir, results_json):
            capsize=10, error_kw=dict(lw=3))
     for x, m in zip(xs, [gm, hm]):
         ax.text(x, m + 2, f"{m:.1f}", ha="center", fontsize=22, fontweight="bold")
-    ax.set_xticks(xs); ax.set_xticklabels(["Geometric\n(dynamics-blind)", "HJ-Gauss\nshield"])
+    ax.set_xticks(xs); ax.set_xticklabels(["Geometric\n(dynamics-blind)", "Windowed-BRT\nshield"])
     ax.set_ylabel("Realized collisions / episode")
     red = 100 * (gm - hm) / gm if gm else float("nan")
     ax.set_title(f"HJ shield cuts realized collisions ~{red:.0f}%\n"
@@ -187,20 +187,21 @@ def main():
     ap.add_argument("--results", default=os.path.join(
         os.path.dirname(_HERE), "results", "multiseed_results.json"))
     ap.add_argument("--seeds", type=int, default=12)
+    ap.add_argument("--margin", type=float, default=0.0)
     args = ap.parse_args()
     os.makedirs(args.outdir, exist_ok=True)
     grid = make_grid()
     params = DubinsParams(dist_sigma=0.05)
-    kw = dict(brt_path=args.brt, n_agents=14, window=6, exec_steps=3,
-              total_ticks=40, params=params)
+    kw = dict(brt_path=args.brt, margin=args.margin, n_agents=14, window=6,
+              exec_steps=3, total_ticks=40, params=params)
 
     fig_warehouse(args.outdir, grid)
     fig_brt_slices(args.outdir, args.brt)
     fig_collisions_bar(args.outdir, args.results)
     fig_coll_series(args.outdir, args.brt, args.seeds, grid, kw)
     fig_reduction_sweep(args.outdir, args.brt, grid,
-                        dict(brt_path=args.brt, window=6, exec_steps=3,
-                             total_ticks=30, params=params),
+                        dict(brt_path=args.brt, margin=args.margin, window=6,
+                             exec_steps=3, total_ticks=30, params=params),
                         agent_counts=[8, 14, 20], seeds=4)
 
 
