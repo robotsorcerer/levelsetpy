@@ -1,0 +1,287 @@
+{
+  "n_seeds": 30,
+  "rockets": {
+    "-1.5708": {
+      "theta": -1.5707963267948966,
+      "l2_rel_mean": 0.09753807675556567,
+      "l2_rel_std": 0.00156816256767969,
+      "l_inf_mean": 0.8550955065684948,
+      "l_inf_std": 0.046865367124091874,
+      "time_mean": 13.488006663322448,
+      "time_std": 0.09571593435995109,
+      "residual_mean": 0.061995908121267956,
+      "residual_std": 0.002263249491862017,
+      "iters": 12
+    },
+    "0.0000": {
+      "theta": 0.0,
+      "l2_rel_mean": 0.10112729860423912,
+      "l2_rel_std": 0.0011791214209874057,
+      "l_inf_mean": 1.0338723375428818,
+      "l_inf_std": 0.06685719413251663,
+      "time_mean": 13.536285209655762,
+      "time_std": 0.07032439901074825,
+      "residual_mean": 0.057386919607718787,
+      "residual_std": 0.002895275855036136,
+      "iters": 12
+    },
+    "1.5708": {
+      "theta": 1.5707963267948966,
+      "l2_rel_mean": 0.08998993366431011,
+      "l2_rel_std": 0.0018464573419034109,
+      "l_inf_mean": 0.8945725368258751,
+      "l_inf_std": 0.10857038407927584,
+      "time_mean": 13.560657914479574,
+      "time_std": 0.08910726968525039,
+      "residual_mean": 0.056885832796494167,
+      "residual_std": 0.002203005313342541,
+      "iters": 12
+    }
+  },
+  "dubins": {
+    "-1.5708": {
+      "theta": -1.5707963267948966,
+      "l2_rel_mean": 0.13104542043468528,
+      "l2_rel_std": 0.002898912450795365,
+      "l_inf_mean": 1.3523917930340443,
+      "l_inf_std": 0.0018344838120056617,
+      "time_mean": 23.584583870569865,
+      "time_std": 0.10154750958862103,
+      "residual_mean": 0.054330575341979666,
+      "residual_std": 0.003038662675183039,
+      "iters": 15
+    },
+    "0.0000": {
+      "theta": 0.0,
+      "l2_rel_mean": 0.023709725252099165,
+      "l2_rel_std": 0.0011004862875263284,
+      "l_inf_mean": 0.7013168328370938,
+      "l_inf_std": 0.14383528227254833,
+      "time_mean": 23.657525396347047,
+      "time_std": 0.14159043963089285,
+      "residual_mean": 0.019610809317479532,
+      "residual_std": 0.002541489986864657,
+      "iters": 15
+    },
+    "1.5708": {
+      "theta": 1.5707963267948966,
+      "l2_rel_mean": 0.13240095417801845,
+      "l2_rel_std": 0.0028847172345179556,
+      "l_inf_mean": 1.3524164254665625,
+      "l_inf_std": 0.002116537316486478,
+      "time_mean": 23.69069122473399,
+      "time_std": 0.11549289747627488,
+      "residual_mean": 0.05360035722454389,
+      "residual_std": 0.004078174942748502,
+      "iters": 15
+    }
+  },
+  "multiagent": {
+    "A": {
+      "label": "Evader faster",
+      "a_p": 1.0,
+      "a_e": 2.0,
+      "time_mean": 12.6861248254776,
+      "time_std": 0.1828544032371385,
+      "residual_mean": 0.00024740778850779557,
+      "residual_std": 0.00045321270358159206,
+      "iters": 15
+    },
+    "B": {
+      "label": "Same speed",
+      "a_p": 1.0,
+      "a_e": 1.0,
+      "time_mean": 12.610482327143352,
+      "time_std": 0.13997672830014457,
+      "residual_mean": 0.00025727951773054275,
+      "residual_std": 0.0005410779815624375,
+      "iters": 15
+    },
+    "C": {
+      "label": "Pursuers faster",
+      "a_p": 2.0,
+      "a_e": 1.0,
+      "time_mean": 12.581387503941853,
+      "time_std": 0.14455961077338933,
+      "residual_mean": 0.0005738849625534689,
+      "residual_std": 0.0013227326617405513,
+      "iters": 15
+    }
+  },
+  "test_family_A_mc_vs_grid": [
+    {
+      "system": "Rockets",
+      "theta": -1.5707963267948966,
+      "statistic": 217505.0,
+      "p_raw": 7.496616476680383e-116,
+      "p_holm": 2.9986465906721533e-115,
+      "reject_at_0.05": true
+    },
+    {
+      "system": "Rockets",
+      "theta": 0.0,
+      "statistic": 405678.0,
+      "p_raw": 6.00827955105032e-37,
+      "p_holm": 1.802483865315096e-36,
+      "reject_at_0.05": true
+    },
+    {
+      "system": "Rockets",
+      "theta": 1.5707963267948966,
+      "statistic": 162814.0,
+      "p_raw": 3.320229436374599e-147,
+      "p_holm": 1.6601147181872993e-146,
+      "reject_at_0.05": true
+    },
+    {
+      "system": "Dubins",
+      "theta": -1.5707963267948966,
+      "statistic": 530159.0,
+      "p_raw": 2.458753390979321e-09,
+      "p_holm": 2.458753390979321e-09,
+      "reject_at_0.05": true
+    },
+    {
+      "system": "Dubins",
+      "theta": 0.0,
+      "statistic": 4374.0,
+      "p_raw": 1.8000445460340827e-259,
+      "p_holm": 1.0800267276204497e-258,
+      "reject_at_0.05": true
+    },
+    {
+      "system": "Dubins",
+      "theta": 1.5707963267948966,
+      "statistic": 524872.0,
+      "p_raw": 4.0990977522979234e-10,
+      "p_holm": 8.198195504595847e-10,
+      "reject_at_0.05": true
+    }
+  ],
+  "test_family_B_l2_vs_crandall_lions": [
+    {
+      "system": "Rockets",
+      "theta": -1.5707963267948966,
+      "mean_l2_rel": 0.09753807675556567,
+      "std_l2_rel": 0.00156816256767969,
+      "bound": 0.282842712474619,
+      "statistic": -647.225811184739,
+      "p_raw": 3.5456671085460063e-62,
+      "p_holm": 1.4182668434184025e-61,
+      "reject_at_0.05": true
+    },
+    {
+      "system": "Rockets",
+      "theta": 0.0,
+      "mean_l2_rel": 0.10112729860423912,
+      "std_l2_rel": 0.0011791214209874057,
+      "bound": 0.282842712474619,
+      "statistic": -844.0999328113918,
+      "p_raw": 1.6034990938415612e-65,
+      "p_holm": 8.017495469207807e-65,
+      "reject_at_0.05": true
+    },
+    {
+      "system": "Rockets",
+      "theta": 1.5707963267948966,
+      "mean_l2_rel": 0.08998993366431011,
+      "std_l2_rel": 0.0018464573419034109,
+      "bound": 0.282842712474619,
+      "statistic": -572.0674658157689,
+      "p_raw": 1.2712431268315633e-60,
+      "p_holm": 3.81372938049469e-60,
+      "reject_at_0.05": true
+    },
+    {
+      "system": "Dubins",
+      "theta": -1.5707963267948966,
+      "mean_l2_rel": 0.13104542043468528,
+      "std_l2_rel": 0.002898912450795365,
+      "bound": 0.282842712474619,
+      "statistic": -286.8068712998196,
+      "p_raw": 6.287728115412176e-52,
+      "p_holm": 1.2575456230824351e-51,
+      "reject_at_0.05": true
+    },
+    {
+      "system": "Dubins",
+      "theta": 0.0,
+      "mean_l2_rel": 0.023709725252099165,
+      "std_l2_rel": 0.0011004862875263284,
+      "bound": 0.282842712474619,
+      "statistic": -1289.7296777273693,
+      "p_raw": 7.348022967873014e-71,
+      "p_holm": 4.408813780723808e-70,
+      "reject_at_0.05": true
+    },
+    {
+      "system": "Dubins",
+      "theta": 1.5707963267948966,
+      "mean_l2_rel": 0.13240095417801845,
+      "std_l2_rel": 0.0028847172345179556,
+      "bound": 0.282842712474619,
+      "statistic": -285.64444245627226,
+      "p_raw": 7.073358330132208e-52,
+      "p_holm": 1.2575456230824351e-51,
+      "reject_at_0.05": true
+    }
+  ],
+  "test_family_C_cross_condition": [
+    {
+      "comparison": "Rockets vs Dubins @ theta=-1.57",
+      "statistic": 0.0,
+      "p_raw": 3.019859359162157e-11,
+      "p_holm": 2.4158874873297256e-10,
+      "reject_at_0.05": true
+    },
+    {
+      "comparison": "Rockets vs Dubins @ theta=0.00",
+      "statistic": 900.0,
+      "p_raw": 3.019859359162157e-11,
+      "p_holm": 2.4158874873297256e-10,
+      "reject_at_0.05": true
+    },
+    {
+      "comparison": "Rockets vs Dubins @ theta=1.57",
+      "statistic": 0.0,
+      "p_raw": 3.019859359162157e-11,
+      "p_holm": 2.4158874873297256e-10,
+      "reject_at_0.05": true
+    },
+    {
+      "comparison": "Rockets: theta=-pi/2 vs theta=+pi/2",
+      "statistic": 899.0,
+      "p_raw": 3.3383888204288e-11,
+      "p_holm": 2.4158874873297256e-10,
+      "reject_at_0.05": true
+    },
+    {
+      "comparison": "Dubins: theta=-pi/2 vs theta=+pi/2",
+      "statistic": 348.0,
+      "p_raw": 0.13345408758779304,
+      "p_holm": 0.5338163503511721,
+      "reject_at_0.05": false
+    },
+    {
+      "comparison": "Multiagent case A vs B (residual)",
+      "statistic": 446.0,
+      "p_raw": 0.9587257614058979,
+      "p_holm": 0.9587257614058979,
+      "reject_at_0.05": false
+    },
+    {
+      "comparison": "Multiagent case B vs C (residual)",
+      "statistic": 385.0,
+      "p_raw": 0.34028846509891686,
+      "p_holm": 0.9335629302308248,
+      "reject_at_0.05": false
+    },
+    {
+      "comparison": "Multiagent case A vs C (residual)",
+      "statistic": 381.0,
+      "p_raw": 0.31118764341027494,
+      "p_holm": 0.9335629302308248,
+      "reject_at_0.05": false
+    }
+  ]
+}
