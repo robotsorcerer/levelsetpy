@@ -235,16 +235,20 @@ class HJReachabilitySampler:
 
             # 5. Check convergence every CONV_CHECK_STRIDE iters to reduce
             #    GPU→CPU sync stalls; always check on the last allowed iteration.
-            v_current = v_new
-            c_current = c_frozen
+            #    Residual must be computed against the *previous* v_current,
+            #    before it is overwritten with v_new.
             is_last = (iter_idx == self.cfg.max_quasi_iters - 1)
-            if (iter_idx % CONV_CHECK_STRIDE == CONV_CHECK_STRIDE - 1) or is_last:
+            check_now = (iter_idx % CONV_CHECK_STRIDE == CONV_CHECK_STRIDE - 1) or is_last
+            if check_now:
                 residual = float(quasi_linear_residual(v_new, v_current))
                 history.append(residual)
-                if residual < self.cfg.quasi_tol:
-                    break
             else:
+                residual = None
                 history.append(float("nan"))
+            v_current = v_new
+            c_current = c_frozen
+            if check_now and residual < self.cfg.quasi_tol:
+                break
 
         return v_current, history
 
@@ -356,15 +360,19 @@ class HJReachabilitySampler:
 
             # 5. Check convergence every CONV_CHECK_STRIDE iters to reduce
             #    GPU→CPU sync stalls; always check on the last allowed iteration.
-            v_current = v_new
-            c_current = c_frozen
+            #    Residual must be computed against the *previous* v_current,
+            #    before it is overwritten with v_new.
             is_last = (iter_idx == self.cfg.max_quasi_iters - 1)
-            if (iter_idx % CONV_CHECK_STRIDE == CONV_CHECK_STRIDE - 1) or is_last:
+            check_now = (iter_idx % CONV_CHECK_STRIDE == CONV_CHECK_STRIDE - 1) or is_last
+            if check_now:
                 residual = float(quasi_linear_residual(v_new, v_current))
                 history.append(residual)
-                if residual < self.cfg.quasi_tol:
-                    break
             else:
+                residual = None
                 history.append(float("nan"))
+            v_current = v_new
+            c_current = c_frozen
+            if check_now and residual < self.cfg.quasi_tol:
+                break
 
         return v_current, history

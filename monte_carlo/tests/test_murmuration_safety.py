@@ -51,7 +51,14 @@ def murmuration_brt_1M(request):
     print(f"\n[FIXTURE] Generating {n_birds:,}-bird BRT on {device.upper()} (GPU available: {is_gpu})")
 
     cfg = SolverConfig(
-        delta=0.05,
+        # delta=0.05 gives smoothing radius sqrt(delta*t_end)=0.316, LARGER
+        # than the 0.2 capture radius in terminal_cost_4d -- the heat kernel
+        # washes out the entire capture disc rather than just its boundary.
+        # delta=0.005 gives sigma=0.1, half the capture radius, confirmed by
+        # sweep (see murmuration_delta_sweep.py) to give zero sign errors on
+        # points well inside the capture set (r<0.15) across the deltas
+        # {0.05, 0.02, 0.01, 0.005, 0.002, 0.001}.
+        delta=0.005,
         num_samples=n_samples,
         max_quasi_iters=20,
         quasi_tol=1e-2,  # Relaxed for CPU/small samples
@@ -307,23 +314,54 @@ def test_altitude_decoupling(murmuration_brt_1M):
             assert cv < 0.5, f"v varies too much for fixed (x1,x2,θ): CV={cv:.2f}"
 
 
-def test_multi_predator_conservatism(murmuration_brt_1M):
-    """Multi-predator BRT should be subset of single-predator BRT (more conservative).
+def test_predator_agility_conservatism(murmuration_brt_1M):
+    """A more maneuverable predator should be at least as dangerous, never less.
 
-    Rationale: min over multiple predators gives more restrictive reachability.
+    Rationale: MurmuationHamiltonian4D models a single relative predator (the
+    state is already relative to *one* pursuer; `n_neighbors` is the evader
+    flock's own heading-consensus count, IJRR23 Eq. 13, not a predator count
+    -- there is no multi-predator min-over-costs anywhere in this Hamiltonian).
+    So "conservatism" can't be tested as "N predators subsume 1 predator" (the
+    previous version of this test tried to stand that claim up with a raw
+    population-percentage check instead, which broke once the fixture's delta
+    was corrected: the capture disc covers ~0.13% of the sampling domain's
+    area, so >99% safety is the expected geometric consequence of sampling a
+    domain much larger than the target, independent of the solver).
+
+    What *is* directly testable with this Hamiltonian: `omega_p_bar` is the
+    pursuer's angular-speed bound. Raising it makes the pursuer strictly more
+    maneuverable with everything else held fixed, so the game can only become
+    at least as easy to win for the pursuer -- the value function at any
+    query state must not *increase*: v_agile(x) <= v_baseline(x) (up to MC
+    noise). We re-solve the same query states with a doubled omega_p_bar and
+    check this monotonicity holds for the large majority of points.
     """
-    # This is hard to test directly with a single solve. Instead, we check
-    # that the BRT from a multi-predator solve is non-empty and has
-    # reasonable coverage.
-    v = murmuration_brt_1M["v"]
+    v_baseline = murmuration_brt_1M["v"]
     states = murmuration_brt_1M["states"]
+    cfg = murmuration_brt_1M["cfg"]
+    H_baseline = murmuration_brt_1M["H"]
 
-    n_safe = jnp.sum(v > 0)
-    n_total = v.shape[0]
-    safety_rate = float(n_safe) / float(n_total)
+    H_agile = MurmuationHamiltonian4D(
+        omega_e_bar=H_baseline.omega_e_bar,
+        omega_p_bar=2.0 * H_baseline.omega_p_bar,
+        gamma_max=H_baseline.gamma_max,
+        n_neighbors=H_baseline.n_neighbors,
+    )
+    solver_agile = HJReachabilitySampler(H_agile, terminal_cost_4d, cfg)
+    v_agile, _ = solver_agile.solve_quasi_linear(states, t=0.0)
 
-    # With a single predator at origin, expect 50-99% safe depending on sample distribution
-    assert 0.4 < safety_rate < 0.99, f"Safety rate {safety_rate:.2%} outside expected range"
+    # Scale the noise tolerance to the spread of the baseline field so this
+    # isn't sensitive to the absolute units of v.
+    tol = 0.05 * float(jnp.std(v_baseline))
+    respects_monotonicity = v_agile <= v_baseline + tol
+    frac_ok = float(jnp.mean(respects_monotonicity))
+
+    assert frac_ok >= 0.85, (
+        f"Only {frac_ok:.1%} of states satisfy v_agile <= v_baseline "
+        f"(+{tol:.4f} MC tolerance); a more maneuverable predator "
+        f"(omega_p_bar {H_baseline.omega_p_bar} -> {H_agile.omega_p_bar}) "
+        f"should not make the game safer at 85%+ of query states."
+    )
 
 
 # ============================================================================

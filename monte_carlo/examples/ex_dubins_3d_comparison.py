@@ -29,6 +29,7 @@ import jax.numpy as jnp
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 from math import pi
 from functools import partial
 from scipy.interpolate import RegularGridInterpolator
@@ -228,20 +229,27 @@ if __name__ == "__main__":
 
     # ── Run MC solver and compare ───────────────────────────────────
     n_slices = len(THETA_SLICES)
-    fig, axes = plt.subplots(3, n_slices, figsize=(5 * n_slices, 14))
+    fig, axes = plt.subplots(3, n_slices, figsize=(6 * n_slices, 16))
 
     # Shared spatial coordinates for interpolating the levelsetpy result
     xs_eval = np.linspace(*SPATIAL_DOMAIN, GRID_RES_MC)
 
+    # ── Pass 1: solve every slice and cache the fields ──────────────────
+    # We must know the global value range across BOTH value rows
+    # (levelsetpy and MC) before plotting, so the top two rows can share a
+    # single color scale and one common colorbar (matches
+    # ex_rockets_3d_comparison.py's layout).
+    slice_data = []
     total_mc_time = 0.0
-    for col, theta_val in enumerate(THETA_SLICES):
+    for theta_val in THETA_SLICES:
         print(f"\n--- theta = {theta_val:.2f} ---")
 
         # MC solver
         print(f"  MC solver ...")
         X, Y, V_mc, history, elapsed_mc = run_mc_solver(theta_val)
         total_mc_time += elapsed_mc
-        print(f"  MC done in {elapsed_mc:.1f}s ({len(history)} iters)")
+        print(f"  MC done in {elapsed_mc:.1f}s ({len(history)} iters, "
+              f"final residual={history[-1]:.4f})")
 
         # Interpolate levelsetpy onto the same grid
         V_ref = interpolate_3d_slice(g_ls, v_ls, xs_eval, xs_eval, theta_val)
@@ -255,46 +263,80 @@ if __name__ == "__main__":
         print(f"  L_inf error = {l_inf:.3f},  L2_rel = {l2_rel:.3f}")
         print(f"  Expected O(sqrt(delta)) = {np.sqrt(DELTA):.4f}")
 
-        X_np, Y_np = np.array(X), np.array(Y)
+        slice_data.append({
+            "theta": theta_val,
+            "X": np.array(X), "Y": np.array(Y),
+            "V_ref": V_ref, "V_mc": np.array(V_mc), "diff": diff,
+            "l_inf": l_inf, "l2_rel": l2_rel,
+            "n_iters": len(history), "elapsed": elapsed_mc,
+        })
 
-        # ── Row 0: levelsetpy ───────────────────────────────────
+    # ── Shared value scale for the top two rows (rows 0 and 1) ──────────
+    # Single symmetric range so levelsetpy and MC panels are directly
+    # comparable pixel-for-pixel; TwoSlopeNorm keeps the diverging colormap
+    # centered at the zero level set.
+    val_stack = np.concatenate([
+        np.array([d["V_ref"] for d in slice_data]).ravel(),
+        np.array([d["V_mc"] for d in slice_data]).ravel(),
+    ])
+    val_stack = val_stack[np.isfinite(val_stack)]
+    vmin = float(np.nanmin(val_stack))
+    vmax = float(np.nanmax(val_stack))
+    print(f"\nShared value-row color scale: v in [{vmin:.3f}, {vmax:.3f}]")
+    vabs = max(abs(vmin), abs(vmax))
+    val_norm = mcolors.TwoSlopeNorm(vmin=-vabs, vcenter=0.0, vmax=vabs)
+    val_levels = np.linspace(-vabs, vabs, 21)
+    err_max = max(d["l_inf"] for d in slice_data
+                  if np.isfinite(d["l_inf"]))
+
+    val_mappable = None
+    err_mappable = None
+    for col, d in enumerate(slice_data):
+        X_np, Y_np, theta_val = d["X"], d["Y"], d["theta"]
+
+        # Row 0: levelsetpy (shared scale)
         ax = axes[0, col]
-        cf = ax.contourf(X_np, Y_np, V_ref, levels=20, cmap="RdBu_r")
-        ax.contour(X_np, Y_np, V_ref, levels=[0.0], colors="k", linewidths=2.5)
-        ax.set_title(rf"$\theta={theta_val:.2f}$",
-                     fontdict=TITLE_FONTDICT)
-        # ax.set_xlabel(r"$\mathbf{x_1}$ (m)", fontdict=FONTDICT)
+        cf0 = ax.contourf(X_np, Y_np, d["V_ref"], levels=val_levels,
+                          cmap="RdBu_r", norm=val_norm, extend="both")
+        ax.contour(X_np, Y_np, d["V_ref"], levels=[0.0], colors="k",
+                   linewidths=2.5)
+        ax.set_title(rf"levelsetpy  $\theta={theta_val:.2f}$",
+                     fontdict={"fontsize": 25, "fontweight": "bold"})
+        ax.set_xlabel(r"$\mathbf{x_1}$ (m)", fontdict=FONTDICT)
         ax.set_ylabel(r"$\mathbf{x_2}$ (m)", fontdict=FONTDICT)
         ax.set_aspect("equal")
+        val_mappable = cf0
 
-        # ── Row 1: MC solver ───────────────────────────────────
+        # Row 1: MC solver (same shared scale as row 0)
         ax = axes[1, col]
-        ax.contourf(X_np, Y_np, np.array(V_mc), levels=20, cmap="RdBu_r")
-        ax.contour(X_np, Y_np, np.array(V_mc), levels=[0.0], colors="k",
+        ax.contourf(X_np, Y_np, d["V_mc"], levels=val_levels,
+                    cmap="RdBu_r", norm=val_norm, extend="both")
+        ax.contour(X_np, Y_np, d["V_mc"], levels=[0.0], colors="k",
                    linewidths=2.5)
         ax.set_title(
-            rf"$\delta={DELTA}$"
-            f"\n{len(history)} iters, {elapsed_mc:.1f}s",
-            fontdict=TITLE_FONTDICT,
-        )
-        # ax.set_xlabel(r"$\mathbf{x_1}$ (m)", fontdict=FONTDICT)
-        ax.set_ylabel(r"$\mathbf{x_2}$ (m)", fontdict=FONTDICT)
-        ax.set_aspect("equal")
-
-        # ── Row 2: |error| ─────────────────────────────────────
-        ax = axes[2, col]
-        err_plot = ax.contourf(X_np, Y_np, diff, levels=20, cmap="hot_r")
-        cb = plt.colorbar(err_plot, ax=ax, fraction=0.046)
-        cb.ax.tick_params(labelsize=10)
-        ax.contour(X_np, Y_np, V_ref, levels=[0.0], colors="cyan",
-                   linewidths=2, linestyles="--")
-        ax.set_title(
-            rf"L$_\infty$={l_inf:.3f}  L$_2$={l2_rel:.3f}",
+            rf"MC ($\delta$={DELTA})  $\theta={theta_val:.2f}$"
+            f"\n{d['n_iters']} iters, {d['elapsed']:.1f}s",
             fontdict=TITLE_FONTDICT,
         )
         ax.set_xlabel(r"$\mathbf{x_1}$ (m)", fontdict=FONTDICT)
         ax.set_ylabel(r"$\mathbf{x_2}$ (m)", fontdict=FONTDICT)
         ax.set_aspect("equal")
+
+        # Row 2: |error| (shared error scale across columns)
+        ax = axes[2, col]
+        err_plot = ax.contourf(X_np, Y_np, d["diff"],
+                               levels=np.linspace(0.0, err_max, 21),
+                               cmap="hot_r", extend="max")
+        ax.contour(X_np, Y_np, d["V_ref"], levels=[0.0], colors="cyan",
+                   linewidths=2, linestyles="--")
+        ax.set_title(
+            rf"|error|  L$_\infty$={d['l_inf']:.3f}  L$_2$={d['l2_rel']:.3f}",
+            fontdict=TITLE_FONTDICT,
+        )
+        ax.set_xlabel(r"$\mathbf{x_1}$ (m)", fontdict=FONTDICT)
+        ax.set_ylabel(r"$\mathbf{x_2}$ (m)", fontdict=FONTDICT)
+        ax.set_aspect("equal")
+        err_mappable = err_plot
 
     axes[0, 0].set_ylabel(r"$\mathbf{x_2}$ (m)" + "\n(levelsetpy)",
                           fontdict=FONTDICT)
@@ -303,13 +345,29 @@ if __name__ == "__main__":
     axes[2, 0].set_ylabel(r"$\mathbf{x_2}$ (m)" + "\n(|error|)",
                           fontdict=FONTDICT)
 
+    # Set the suptitle before tight_layout so tight_layout reserves vertical
+    # space for it; otherwise the top-row subplot titles get laid out flush
+    # to the figure edge and the suptitle added afterward overlaps them
+    # (matches ex_rockets_3d_comparison.py).
     fig.suptitle(
-        f"Dubins Pursuit-Evasion BRS: MC Cole-Hopf vs levelsetpy\n"
-        f"Grid: {GRID_N_LS}³ | MC: {cfg.num_samples} samples, "
-        f"$\\delta={DELTA}$ | T={T_FINAL}",
-        fontsize=22, fontweight="bold",
+        f"Dubins Pursuit-Evasion BRT: MC Cole-Hopf vs Levelsetpy\n"
+        f"MC: {cfg.num_samples} samples, $\\delta={DELTA}$ | T={T_FINAL} | "
+        f"value rows share scale $v\\in[{-vabs:.2f},{vabs:.2f}]$ m",
+        fontsize=24, fontweight="bold",
     )
-    fig.tight_layout()
+
+    # ── One shared colorbar for the value rows, one for the error row ───
+    fig.tight_layout(rect=[0.0, 0.0, 0.90, 1.0])
+    cax_val = fig.add_axes([0.92, 0.38, 0.015, 0.52])
+    cb_val = fig.colorbar(val_mappable, cax=cax_val)
+    cb_val.set_label(r"value $\mathbf{v}^\delta$ (m)", fontsize=26,
+                     fontweight="bold")
+    cb_val.ax.tick_params(labelsize=12)
+    cax_err = fig.add_axes([0.92, 0.06, 0.015, 0.24])
+    cb_err = fig.colorbar(err_mappable, cax=cax_err)
+    cb_err.set_label(r"$|$error$|$ (m)", fontsize=26, fontweight="bold")
+    cb_err.ax.tick_params(labelsize=12)
+
     out = os.path.join(out_dir, "dubins_3d_comparison.jpg")
     fig.savefig(out, dpi=150, bbox_inches="tight")
     print(f"\nSaved → {out}")

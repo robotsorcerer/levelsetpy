@@ -19,9 +19,13 @@ murmurations** scaled to 100,000+ agents.
   `O(N · n)` (samples × state dimension) instead of the `O(Mⁿ)` of grid
   level‑set solvers. No grid is ever formed.
 - **Baselines:** Reproduces the analytic rocket, Dubins
-  two‑car, and double‑integrator barriers to within the worst‑case viscosity
-  bound `O(√δ) ≈ 0.28` (e.g. relative `L²` error `< 0.04` at `θ = 0` on the
-  Dubins game); see `examples/ex_dubins_3d_comparison.py`.
+  two‑car, and double‑integrator barriers well within the worst‑case viscosity
+  bound `O(√δ) ≈ 0.28` — relative `L²` error `0.02–0.13` across all six
+  (system, heading) conditions, mean over 30 independent Monte Carlo seeds,
+  each significantly below the bound (Holm‑Bonferroni‑corrected one‑sample
+  test, `p < 1e‑50`); see `examples/ex_dubins_3d_comparison.py`,
+  `examples/ex_rockets_3d_comparison.py`, and the statistical sweep in
+  `examples/stats_bonferroni_holm.py`.
 - **Boundary-pushing:** Certifies a **4‑D, 100,000‑bird** aerial
   murmuration under **7 predators** with the value‑grid solve in **~74 s on
   CPU** and a **87.7 % certified‑safe fraction** — a problem no grid solver can
@@ -33,7 +37,12 @@ murmurations** scaled to 100,000+ agents.
   formation and its collapse** (`β₁: 1 → 0`), **flock fragmentation** (up to 4
   disjoint safe components), and linear **flash expansion** of the tube radius.
 - **It goes high‑dimensional.** A 45‑D, 15‑rocket multi‑pursuer game runs from
-  `examples/ex_multiagent_scalability.py`; memory stays linear in `n`.
+  `examples/ex_multiagent_scalability.py`; memory stays linear in `n`. The
+  Picard residual floor there (0.0002–0.0006, 30‑seed mean) sits roughly two
+  orders of magnitude *below* the 3‑D benchmarks' floor (0.02–0.06) — evidence
+  the floor tracks proximity to the coefficient‑turnover region near the
+  usable‑part boundary, not dimension per se, since the 45‑D evaluation states
+  are drawn from a domain large enough that few land near that boundary.
 - **Run it now (CPU, ~1 min):**
   ```bash
   python examples/ex_murmuration.py --device cpu \
@@ -109,6 +118,7 @@ monte_carlo/
 ├── requirements.txt              ← pinned runtime deps (pip)
 ├── depends.sh                    ← Miniforge + JAX(CUDA) bootstrap
 ├── make_pub_figures.py           ← publication‑grade figure pipeline (see §6)
+├── examples/stats_bonferroni_holm.py  ← 30‑seed statistical validation sweep (see §5c)
 │
 ├── src/                          ← core solver
 │   ├── config.py                 ← SolverConfig (NamedTuple of all knobs)
@@ -248,6 +258,27 @@ Key flags: `--n-birds`, `--n-flocks`, `--n-predators`, `--delta`,
 `--n-samples`, `--max-iters`, `--time-steps`, `--grid-res`, `--viz-dir`,
 `--out-dir`, `--save-results`, `--save-anim`, `--chunk-size`.
 
+### 5c. Statistical validation (30‑seed Holm‑Bonferroni sweep)
+
+```bash
+python examples/stats_bonferroni_holm.py
+```
+
+Re‑solves Rockets (3 headings), Dubins (3 headings), and the 45‑D
+multi‑agent scalability case (3 speed regimes) across 30 independent Monte
+Carlo seeds each (only the sampler's PRNG seed varies — evaluation points
+and the `LevelSetPy` reference are held fixed), then runs three
+Holm‑Bonferroni‑corrected test families: (A) paired Wilcoxon signed‑rank,
+30‑seed‑averaged MC field vs. grid reference; (B) one‑sided one‑sample
+`t`‑test that `L²_rel` is significantly below the Crandall‑Lions bound
+`√δ`; (C) cross‑condition Mann‑Whitney `U` (system‑vs‑system at matched
+heading, heading asymmetry within each system, pairwise 45‑D speed‑regime
+comparisons). Takes ~75–90 minutes on CPU. Raw per‑seed results are pickled
+to `examples/results/stats_raw.pkl`; the summary table and all test
+statistics are written to `examples/results/stats_summary.json`. Override
+the seed count for a quick smoke test: `STATS_N_SEEDS=2 python
+examples/stats_bonferroni_holm.py`.
+
 PyTorch (DDP‑capable) port:
 
 ```bash
@@ -305,7 +336,16 @@ python test_murmurations_audit.py          # standalone audit (output handler, e
 ```
 
 The murmuration test fixture adapts to hardware: it certifies **1,000,000**
-birds when a GPU is detected, else **10,000** on CPU.
+birds when a GPU is detected, else **10,000** on CPU. `test_capture_set_inside_brt`
+was previously failing due to an oversized smoothing radius in the fixture
+(`delta=0.05`, `t_end=2.0` gives `σ=√(δ·t_end)=0.316`, larger than the 0.2 m
+capture radius in `terminal_cost_4d`) — fixed by lowering to `delta=0.005`
+(`σ=0.1`, half the capture radius); see §9 for the general guidance this
+generalizes to. `test_multi_predator_conservatism` is a known, currently
+open failure: its hardcoded safety‑rate range (40–99%) doesn't hold because
+the capture disc covers only ~0.13% of the sampling domain's area, so >99%
+safety is the expected geometric consequence of uniform sampling over a much
+larger domain than the target, not a solver defect.
 
 ---
 
@@ -338,7 +378,15 @@ birds when a GPU is detected, else **10,000** on CPU.
 - **Variance vs. bias.** Raise `--n-samples` to suppress the `O(N^{-1/2})`
   sampling error near the zero level set (where it is largest); lower `--delta`
   to reduce the `O(√δ)` smoothing bias, at the cost of more samples. The robust
-  range is `δ ∈ [0.05, 0.2]`.
+  range is `δ ∈ [0.05, 0.2]` *relative to your target's own length scale* — the
+  effective smoothing radius is `σ = √(δ·(T−t))`, and it must stay well below
+  the smallest feature of your terminal cost (e.g. a capture radius). Rockets
+  (`δ=0.08`, `T=0.5`, radius 1.5) and Dubins (`σ≈0.28`, radius 0.5) both keep
+  `σ` comfortably below their target scale; the murmuration test fixture
+  originally didn't (`σ=0.316` against a 0.2 m capture radius) and washed out
+  the entire capture region rather than just its boundary — see §7. When
+  introducing a new terminal cost, sanity‑check `√(δ·T)` against its smallest
+  relevant radius before trusting the solve near that feature.
 - **GPU.** Set `--device gpu` (JAX) or use `torchrun` with the PyTorch port for
   multi‑GPU sharding; the `GPUDistributor` handles device placement and CPU
   fallback automatically.

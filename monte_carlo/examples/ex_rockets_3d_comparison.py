@@ -348,7 +348,8 @@ if __name__ == "__main__":
         print("  MC 2D slice ...")
         X, Z, V_mc, history, elapsed = run_mc_2d_slice(theta_val)
         total_mc_2d += elapsed
-        print(f"  done {elapsed:.1f}s ({len(history)} iters)")
+        print(f"  done {elapsed:.1f}s ({len(history)} iters, "
+              f"final residual={history[-1]:.4f})")
 
         # Interpolate levelsetpy onto same grid
         V_ref = interp_3d_slice(g_ls, v_ls, xs_eval, xs_eval, theta_val)
@@ -400,7 +401,7 @@ if __name__ == "__main__":
         ax.contour(X_np, Z_np, d["V_ref"], levels=[0.0], colors="k",
                    linewidths=2.5)
         ax.set_title(rf"levelsetpy  $\theta={theta_val:.2f}$",
-                     fontdict=TITLE_FONTDICT)
+                     fontdict={"fontsize": 25, "fontweight": "bold"})
         ax.set_xlabel(r"$\mathbf{x}$ (m)", fontdict=FONTDICT)
         ax.set_ylabel(r"$\mathbf{z}$ (m)", fontdict=FONTDICT)
         ax.set_aspect("equal")
@@ -444,27 +445,32 @@ if __name__ == "__main__":
     axes[2, 0].set_ylabel(r"$\mathbf{z}$ (m)" + "\n(|error|)",
                           fontdict=FONTDICT)
 
-    # ── One shared colorbar for the value rows, one for the error row ───
-    fig_slices.tight_layout(rect=[0.0, 0.0, 0.90, 1.0])
-    # Value colorbar spans rows 0-1 (top two thirds of the figure height).
-    cax_val = fig_slices.add_axes([0.92, 0.38, 0.015, 0.52])
-    cb_val = fig_slices.colorbar(val_mappable, cax=cax_val)
-    cb_val.set_label(r"value $\bm{v}^\delta$ (m)", fontsize=16,
-                     fontweight="bold")
-    cb_val.ax.tick_params(labelsize=12)
-    # Error colorbar for the bottom row.
-    cax_err = fig_slices.add_axes([0.92, 0.06, 0.015, 0.24])
-    cb_err = fig_slices.colorbar(err_mappable, cax=cax_err)
-    cb_err.set_label(r"$|$error$|$ (m)", fontsize=16, fontweight="bold")
-    cb_err.ax.tick_params(labelsize=12)
-
+    # Set the suptitle before tight_layout so tight_layout reserves vertical
+    # space for it (matches the working fig_3d/fig_overlay pattern below);
+    # otherwise the top-row subplot titles get laid out flush to the figure
+    # edge and the suptitle added afterward overlaps them.
     fig_slices.suptitle(
         f"Two-Rockets BRT: MC Cole-Hopf vs Levelsetpy\n"
         # f"a={A_THRUST}, g={GRAV}, Grid: {GRID_N_LS}³ | "
         f"MC: {MC_CFG.num_samples} samples, $\\delta={DELTA}$ | T={T_FINAL} | "
         f"value rows share scale $v\\in[{-vabs:.2f},{vabs:.2f}]$ m",
-        fontsize=16, fontweight="bold",
+        fontsize=24, fontweight="bold",
     )
+
+    # ── One shared colorbar for the value rows, one for the error row ───
+    fig_slices.tight_layout(rect=[0.0, 0.0, 0.90, 1.0])
+    # Value colorbar spans rows 0-1 (top two thirds of the figure height).
+    cax_val = fig_slices.add_axes([0.92, 0.38, 0.015, 0.52])
+    cb_val = fig_slices.colorbar(val_mappable, cax=cax_val)
+    cb_val.set_label(r"value $\mathbf{v}^\delta$ (m)", fontsize=26,
+                     fontweight="bold")
+    cb_val.ax.tick_params(labelsize=12)
+    # Error colorbar for the bottom row.
+    cax_err = fig_slices.add_axes([0.92, 0.06, 0.015, 0.24])
+    cb_err = fig_slices.colorbar(err_mappable, cax=cax_err)
+    cb_err.set_label(r"$|$error$|$ (m)", fontsize=26, fontweight="bold")
+    cb_err.ax.tick_params(labelsize=12)
+
     out_slices = os.path.join(out_dir, "rockets_3d_slices.jpg")
     fig_slices.savefig(out_slices, dpi=150, bbox_inches="tight")
     print(f"\nSaved 2D slices → {out_slices}")
