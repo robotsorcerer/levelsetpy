@@ -1,0 +1,4376 @@
+{
+  "protocol": "CCBS MAPF_R one-task snapshots; three paired tracking arms, makespan + 5 s",
+  "source_commit": "b8f45e166cf39ee7e8e06f0bfe4fbab0dee68932",
+  "binary_sha256": "722fae8df71fea590e56f16f297fcc102ba60ecc971e27fc0c2715f4b0a5b159",
+  "table_sha256": "facfa5dfea474de1e7e02203581fd6589c18c5c4bc107de23d46d43499b04f45",
+  "arguments": {
+    "source": "/tmp/icra-ccbs-source",
+    "out": "/tmp/icra-baseline-work/results/ccbs_30seeds",
+    "seeds": 30,
+    "agents": 14,
+    "time_limit": 10,
+    "brt": "/tmp/icra-baseline-work/cache/compatible_brt.npz"
+  },
+  "limitations": [
+    "Not lifelong episodes",
+    "No continuous obstacle filter",
+    "Chen assignment uses finite-horizon table"
+  ],
+  "records": [
+    {
+      "seed": 0,
+      "solved": true,
+      "process_seconds": 0.01460065203718841,
+      "starts": [
+        [
+          11,
+          13
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          5,
+          13
+        ],
+        [
+          11,
+          17
+        ],
+        [
+          4,
+          16
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          11,
+          3
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          11,
+          11
+        ],
+        [
+          3,
+          9
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          0
+        ]
+      ],
+      "goals": [
+        [
+          6,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          7,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 24.0,
+      "duration": 29.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 20,
+          "min_swept_separation": 0.0035394745539111304,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 290,
+          "final_mean_goal_error": 1.1247271572187756
+        },
+        "chen_mip": {
+          "contacts": 6,
+          "min_swept_separation": 0.0035394745539111304,
+          "common_interval_infeasible_agent_steps": 1107,
+          "control_seconds": 4.21887887979392,
+          "steps": 290,
+          "final_mean_goal_error": 1.3142789136139281
+        },
+        "simultaneous": {
+          "contacts": 1,
+          "min_swept_separation": 0.234806981092728,
+          "common_interval_infeasible_agent_steps": 263,
+          "control_seconds": 0.390995554625988,
+          "steps": 290,
+          "final_mean_goal_error": 5.4389074531142025
+        }
+      }
+    },
+    {
+      "seed": 1,
+      "solved": true,
+      "process_seconds": 0.0021595789585262537,
+      "starts": [
+        [
+          10,
+          10
+        ],
+        [
+          10,
+          12
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          0,
+          13
+        ],
+        [
+          10,
+          7
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          4,
+          13
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          0,
+          18
+        ],
+        [
+          6,
+          9
+        ],
+        [
+          9,
+          5
+        ],
+        [
+          1,
+          13
+        ],
+        [
+          8,
+          18
+        ]
+      ],
+      "goals": [
+        [
+          4,
+          18
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          5,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 21.0,
+      "duration": 26.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 21,
+          "min_swept_separation": 0.017801225278252553,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 260,
+          "final_mean_goal_error": 0.9747659035819825
+        },
+        "chen_mip": {
+          "contacts": 5,
+          "min_swept_separation": 0.24082470967088182,
+          "common_interval_infeasible_agent_steps": 873,
+          "control_seconds": 3.4228370800847188,
+          "steps": 260,
+          "final_mean_goal_error": 1.1989729210933173
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.7458260609611553,
+          "common_interval_infeasible_agent_steps": 194,
+          "control_seconds": 0.3547347893472761,
+          "steps": 260,
+          "final_mean_goal_error": 4.123948471934445
+        }
+      }
+    },
+    {
+      "seed": 2,
+      "solved": true,
+      "process_seconds": 0.008453093934804201,
+      "starts": [
+        [
+          8,
+          18
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          9,
+          5
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          3,
+          9
+        ],
+        [
+          11,
+          12
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          0,
+          11
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          4,
+          15
+        ],
+        [
+          10,
+          15
+        ],
+        [
+          0,
+          13
+        ],
+        [
+          1,
+          17
+        ],
+        [
+          7,
+          17
+        ]
+      ],
+      "goals": [
+        [
+          7,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          2,
+          18
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 21.0,
+      "duration": 26.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 15,
+          "min_swept_separation": 0.05840073772304884,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 260,
+          "final_mean_goal_error": 0.8498290823079901
+        },
+        "chen_mip": {
+          "contacts": 10,
+          "min_swept_separation": 0.06676494090672908,
+          "common_interval_infeasible_agent_steps": 845,
+          "control_seconds": 3.159114075358957,
+          "steps": 260,
+          "final_mean_goal_error": 1.451469824285642
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.9413892751433202,
+          "common_interval_infeasible_agent_steps": 195,
+          "control_seconds": 0.30676242080517113,
+          "steps": 260,
+          "final_mean_goal_error": 11.293166290535256
+        }
+      }
+    },
+    {
+      "seed": 3,
+      "solved": true,
+      "process_seconds": 0.0120717539684847,
+      "starts": [
+        [
+          11,
+          15
+        ],
+        [
+          1,
+          15
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          8
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          1,
+          13
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          0,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          1,
+          9
+        ],
+        [
+          10,
+          7
+        ],
+        [
+          4,
+          16
+        ]
+      ],
+      "goals": [
+        [
+          6,
+          18
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 22.0,
+      "duration": 27.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 17,
+          "min_swept_separation": 0.026051116527334505,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 270,
+          "final_mean_goal_error": 0.8571530406147162
+        },
+        "chen_mip": {
+          "contacts": 5,
+          "min_swept_separation": 0.08513447604428515,
+          "common_interval_infeasible_agent_steps": 1405,
+          "control_seconds": 4.045582895982079,
+          "steps": 270,
+          "final_mean_goal_error": 2.08558859197968
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.7724531520306401,
+          "common_interval_infeasible_agent_steps": 282,
+          "control_seconds": 0.4402714525349438,
+          "steps": 270,
+          "final_mean_goal_error": 4.948854165492466
+        }
+      }
+    },
+    {
+      "seed": 4,
+      "solved": true,
+      "process_seconds": 0.3992138230241835,
+      "starts": [
+        [
+          4,
+          12
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          4,
+          15
+        ],
+        [
+          6,
+          13
+        ],
+        [
+          9,
+          13
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          11,
+          2
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          10,
+          9
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          11,
+          0
+        ],
+        [
+          4,
+          8
+        ]
+      ],
+      "goals": [
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          2,
+          18
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 25.707106828689575,
+      "duration": 30.707106828689575,
+      "execution": {
+        "unfiltered": {
+          "contacts": 18,
+          "min_swept_separation": 0.004343182664388384,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 308,
+          "final_mean_goal_error": 0.9544811462805863
+        },
+        "chen_mip": {
+          "contacts": 10,
+          "min_swept_separation": 0.023895662521292015,
+          "common_interval_infeasible_agent_steps": 1115,
+          "control_seconds": 3.9077274156734347,
+          "steps": 308,
+          "final_mean_goal_error": 1.5442748380976359
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.944895994908307,
+          "common_interval_infeasible_agent_steps": 194,
+          "control_seconds": 0.35942515439819545,
+          "steps": 308,
+          "final_mean_goal_error": 8.117334204583335
+        }
+      }
+    },
+    {
+      "seed": 5,
+      "solved": false,
+      "process_seconds": 10.012197752017528,
+      "starts": [
+        [
+          4,
+          6
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          11,
+          0
+        ],
+        [
+          11,
+          9
+        ],
+        [
+          5,
+          17
+        ],
+        [
+          7,
+          10
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          11,
+          18
+        ],
+        [
+          7,
+          15
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          10,
+          13
+        ],
+        [
+          4,
+          9
+        ],
+        [
+          11,
+          5
+        ],
+        [
+          6,
+          9
+        ]
+      ],
+      "goals": [
+        [
+          6,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          7,
+          18
+        ]
+      ]
+    },
+    {
+      "seed": 6,
+      "solved": true,
+      "process_seconds": 0.002452819957397878,
+      "starts": [
+        [
+          6,
+          0
+        ],
+        [
+          11,
+          11
+        ],
+        [
+          1,
+          11
+        ],
+        [
+          7,
+          13
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          11,
+          5
+        ],
+        [
+          6,
+          17
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          0,
+          11
+        ],
+        [
+          11,
+          2
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          11,
+          9
+        ],
+        [
+          1,
+          8
+        ]
+      ],
+      "goals": [
+        [
+          5,
+          18
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          3,
+          18
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 23.0,
+      "duration": 28.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 12,
+          "min_swept_separation": 0.001580234924677077,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 280,
+          "final_mean_goal_error": 1.0155409126005446
+        },
+        "chen_mip": {
+          "contacts": 4,
+          "min_swept_separation": 0.0914532617830262,
+          "common_interval_infeasible_agent_steps": 1127,
+          "control_seconds": 3.904825374833308,
+          "steps": 280,
+          "final_mean_goal_error": 1.5009291752089078
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.7127535031640916,
+          "common_interval_infeasible_agent_steps": 248,
+          "control_seconds": 0.3527318815467879,
+          "steps": 280,
+          "final_mean_goal_error": 6.009606177658427
+        }
+      }
+    },
+    {
+      "seed": 7,
+      "solved": true,
+      "process_seconds": 0.030165452044457197,
+      "starts": [
+        [
+          7,
+          16
+        ],
+        [
+          1,
+          9
+        ],
+        [
+          11,
+          18
+        ],
+        [
+          10,
+          16
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          10,
+          8
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          4,
+          13
+        ],
+        [
+          7,
+          2
+        ],
+        [
+          11,
+          13
+        ],
+        [
+          10,
+          6
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          7,
+          5
+        ]
+      ],
+      "goals": [
+        [
+          2,
+          18
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          8,
+          18
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 27.0,
+      "duration": 32.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 22,
+          "min_swept_separation": 0.01275650141839323,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 320,
+          "final_mean_goal_error": 1.0366556445351125
+        },
+        "chen_mip": {
+          "contacts": 8,
+          "min_swept_separation": 0.07594746108544924,
+          "common_interval_infeasible_agent_steps": 1534,
+          "control_seconds": 5.27852117898874,
+          "steps": 320,
+          "final_mean_goal_error": 0.889189512220317
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.73163947062164,
+          "common_interval_infeasible_agent_steps": 427,
+          "control_seconds": 0.4014699022518471,
+          "steps": 320,
+          "final_mean_goal_error": 11.954747546293097
+        }
+      }
+    },
+    {
+      "seed": 8,
+      "solved": true,
+      "process_seconds": 0.026668073958717287,
+      "starts": [
+        [
+          4,
+          6
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          14
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          1,
+          11
+        ],
+        [
+          11,
+          8
+        ],
+        [
+          4,
+          13
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          1,
+          17
+        ],
+        [
+          10,
+          2
+        ],
+        [
+          8,
+          17
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          8,
+          18
+        ]
+      ],
+      "goals": [
+        [
+          7,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          6,
+          18
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 23.0,
+      "duration": 28.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 15,
+          "min_swept_separation": 0.06539763918436962,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 280,
+          "final_mean_goal_error": 0.8131884032284739
+        },
+        "chen_mip": {
+          "contacts": 14,
+          "min_swept_separation": 0.015403683554860985,
+          "common_interval_infeasible_agent_steps": 1428,
+          "control_seconds": 4.444186339038424,
+          "steps": 280,
+          "final_mean_goal_error": 1.4707122280188631
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.5532504486544411,
+          "common_interval_infeasible_agent_steps": 503,
+          "control_seconds": 0.3733124932041392,
+          "steps": 280,
+          "final_mean_goal_error": 9.215870975363032
+        }
+      }
+    },
+    {
+      "seed": 9,
+      "solved": true,
+      "process_seconds": 0.0021600689506158233,
+      "starts": [
+        [
+          0,
+          11
+        ],
+        [
+          11,
+          3
+        ],
+        [
+          3,
+          9
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          1,
+          8
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          11,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          7,
+          15
+        ],
+        [
+          11,
+          11
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          11,
+          1
+        ]
+      ],
+      "goals": [
+        [
+          7,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          9,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 23.0,
+      "duration": 28.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 21,
+          "min_swept_separation": 0.039391200885031535,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 280,
+          "final_mean_goal_error": 1.08784739952975
+        },
+        "chen_mip": {
+          "contacts": 6,
+          "min_swept_separation": 0.03877024015173756,
+          "common_interval_infeasible_agent_steps": 1364,
+          "control_seconds": 4.105178398429416,
+          "steps": 280,
+          "final_mean_goal_error": 1.801588557895782
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.6643945157059301,
+          "common_interval_infeasible_agent_steps": 426,
+          "control_seconds": 0.37283183028921485,
+          "steps": 280,
+          "final_mean_goal_error": 10.464714169535396
+        }
+      }
+    },
+    {
+      "seed": 10,
+      "solved": true,
+      "process_seconds": 0.12191976699978113,
+      "starts": [
+        [
+          7,
+          9
+        ],
+        [
+          10,
+          3
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          1,
+          9
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          10,
+          15
+        ],
+        [
+          10,
+          16
+        ],
+        [
+          11,
+          18
+        ],
+        [
+          5,
+          17
+        ],
+        [
+          1,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          0,
+          11
+        ]
+      ],
+      "goals": [
+        [
+          8,
+          0
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          6,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 23.0,
+      "duration": 28.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 17,
+          "min_swept_separation": 0.01346936843582337,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 280,
+          "final_mean_goal_error": 0.7938184981148734
+        },
+        "chen_mip": {
+          "contacts": 6,
+          "min_swept_separation": 0.2668280137556078,
+          "common_interval_infeasible_agent_steps": 806,
+          "control_seconds": 3.8019604581641033,
+          "steps": 280,
+          "final_mean_goal_error": 1.2385517296591526
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.8628490619921312,
+          "common_interval_infeasible_agent_steps": 258,
+          "control_seconds": 0.3665637708036229,
+          "steps": 280,
+          "final_mean_goal_error": 10.917660511603941
+        }
+      }
+    },
+    {
+      "seed": 11,
+      "solved": false,
+      "process_seconds": 10.018425038084388,
+      "starts": [
+        [
+          10,
+          7
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          1,
+          15
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          1,
+          17
+        ],
+        [
+          10,
+          9
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          10,
+          17
+        ],
+        [
+          7,
+          15
+        ],
+        [
+          4,
+          11
+        ],
+        [
+          3,
+          9
+        ],
+        [
+          7,
+          12
+        ]
+      ],
+      "goals": [
+        [
+          9,
+          0
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          7,
+          0
+        ]
+      ]
+    },
+    {
+      "seed": 12,
+      "solved": true,
+      "process_seconds": 0.008717491058632731,
+      "starts": [
+        [
+          0,
+          12
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          11,
+          9
+        ],
+        [
+          1,
+          15
+        ],
+        [
+          11,
+          8
+        ],
+        [
+          0,
+          11
+        ],
+        [
+          10,
+          16
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          3,
+          17
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          11,
+          15
+        ],
+        [
+          11,
+          12
+        ],
+        [
+          11,
+          18
+        ]
+      ],
+      "goals": [
+        [
+          2,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          5,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 26.0,
+      "duration": 31.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 20,
+          "min_swept_separation": 0.03019282604913615,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 310,
+          "final_mean_goal_error": 1.2602183515180363
+        },
+        "chen_mip": {
+          "contacts": 11,
+          "min_swept_separation": 0.047099878102032144,
+          "common_interval_infeasible_agent_steps": 1140,
+          "control_seconds": 4.542464941856451,
+          "steps": 310,
+          "final_mean_goal_error": 1.6729958198564743
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.8622479253678635,
+          "common_interval_infeasible_agent_steps": 138,
+          "control_seconds": 0.3152689738199115,
+          "steps": 310,
+          "final_mean_goal_error": 13.53891208002157
+        }
+      }
+    },
+    {
+      "seed": 13,
+      "solved": true,
+      "process_seconds": 0.018852766952477396,
+      "starts": [
+        [
+          5,
+          17
+        ],
+        [
+          0,
+          13
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          11,
+          10
+        ],
+        [
+          0,
+          17
+        ],
+        [
+          11,
+          0
+        ],
+        [
+          1,
+          8
+        ],
+        [
+          2,
+          5
+        ],
+        [
+          6,
+          9
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          8,
+          13
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          7
+        ]
+      ],
+      "goals": [
+        [
+          9,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          7,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 21.0,
+      "duration": 26.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 8,
+          "min_swept_separation": 0.021888743424660965,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 260,
+          "final_mean_goal_error": 0.8536627284376028
+        },
+        "chen_mip": {
+          "contacts": 4,
+          "min_swept_separation": 0.28023155039784525,
+          "common_interval_infeasible_agent_steps": 597,
+          "control_seconds": 3.2812184263020754,
+          "steps": 260,
+          "final_mean_goal_error": 1.2580268352242725
+        },
+        "simultaneous": {
+          "contacts": 1,
+          "min_swept_separation": 0.32579759522881846,
+          "common_interval_infeasible_agent_steps": 181,
+          "control_seconds": 0.3529490646906197,
+          "steps": 260,
+          "final_mean_goal_error": 2.9141693454097273
+        }
+      }
+    },
+    {
+      "seed": 14,
+      "solved": true,
+      "process_seconds": 0.19003488402813673,
+      "starts": [
+        [
+          7,
+          3
+        ],
+        [
+          7,
+          2
+        ],
+        [
+          4,
+          17
+        ],
+        [
+          10,
+          3
+        ],
+        [
+          4,
+          8
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          5,
+          9
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          1,
+          15
+        ],
+        [
+          10,
+          15
+        ],
+        [
+          4,
+          15
+        ],
+        [
+          1,
+          17
+        ],
+        [
+          11,
+          5
+        ],
+        [
+          4,
+          7
+        ]
+      ],
+      "goals": [
+        [
+          8,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 22.0,
+      "duration": 27.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 20,
+          "min_swept_separation": 0.0823944643655466,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 270,
+          "final_mean_goal_error": 1.1148650167553704
+        },
+        "chen_mip": {
+          "contacts": 9,
+          "min_swept_separation": 0.06672362463917844,
+          "common_interval_infeasible_agent_steps": 947,
+          "control_seconds": 4.103460435057059,
+          "steps": 270,
+          "final_mean_goal_error": 1.3088884177711824
+        },
+        "simultaneous": {
+          "contacts": 1,
+          "min_swept_separation": 0.35709376143824906,
+          "common_interval_infeasible_agent_steps": 424,
+          "control_seconds": 0.3930979095166549,
+          "steps": 270,
+          "final_mean_goal_error": 7.211502474176927
+        }
+      }
+    },
+    {
+      "seed": 15,
+      "solved": true,
+      "process_seconds": 0.0028708999743685126,
+      "starts": [
+        [
+          6,
+          5
+        ],
+        [
+          10,
+          13
+        ],
+        [
+          4,
+          17
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          10,
+          18
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          4,
+          11
+        ],
+        [
+          7,
+          5
+        ],
+        [
+          11,
+          10
+        ],
+        [
+          3,
+          9
+        ],
+        [
+          6,
+          17
+        ],
+        [
+          1,
+          12
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          7,
+          9
+        ]
+      ],
+      "goals": [
+        [
+          8,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 18.0,
+      "duration": 23.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 18,
+          "min_swept_separation": 0.014849587659065992,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 230,
+          "final_mean_goal_error": 0.8469923816038953
+        },
+        "chen_mip": {
+          "contacts": 8,
+          "min_swept_separation": 0.016273102120499993,
+          "common_interval_infeasible_agent_steps": 1014,
+          "control_seconds": 3.4426279349718243,
+          "steps": 230,
+          "final_mean_goal_error": 0.9803542009171815
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.6328035958016273,
+          "common_interval_infeasible_agent_steps": 318,
+          "control_seconds": 0.3412707499228418,
+          "steps": 230,
+          "final_mean_goal_error": 5.505901628447144
+        }
+      }
+    },
+    {
+      "seed": 16,
+      "solved": false,
+      "process_seconds": 10.00467767904047,
+      "starts": [
+        [
+          4,
+          12
+        ],
+        [
+          10,
+          14
+        ],
+        [
+          5,
+          17
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          0,
+          15
+        ],
+        [
+          11,
+          17
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          7,
+          5
+        ],
+        [
+          11,
+          4
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "goals": [
+        [
+          2,
+          18
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          5,
+          0
+        ]
+      ]
+    },
+    {
+      "seed": 17,
+      "solved": true,
+      "process_seconds": 0.016394292004406452,
+      "starts": [
+        [
+          1,
+          9
+        ],
+        [
+          9,
+          9
+        ],
+        [
+          10,
+          8
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          10,
+          15
+        ],
+        [
+          4,
+          8
+        ],
+        [
+          4,
+          14
+        ],
+        [
+          1,
+          12
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          7,
+          15
+        ],
+        [
+          9,
+          0
+        ]
+      ],
+      "goals": [
+        [
+          5,
+          0
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 23.000000041211962,
+      "duration": 28.000000041211962,
+      "execution": {
+        "unfiltered": {
+          "contacts": 27,
+          "min_swept_separation": 0.05382390223299114,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 281,
+          "final_mean_goal_error": 1.1217763552698503
+        },
+        "chen_mip": {
+          "contacts": 13,
+          "min_swept_separation": 0.11058086076628812,
+          "common_interval_infeasible_agent_steps": 1376,
+          "control_seconds": 4.267905658809468,
+          "steps": 281,
+          "final_mean_goal_error": 1.3337724836385882
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.5939503025223858,
+          "common_interval_infeasible_agent_steps": 407,
+          "control_seconds": 0.3815738405101001,
+          "steps": 281,
+          "final_mean_goal_error": 5.628184973528418
+        }
+      }
+    },
+    {
+      "seed": 18,
+      "solved": true,
+      "process_seconds": 0.0021663709776476026,
+      "starts": [
+        [
+          11,
+          12
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          1,
+          14
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          9,
+          17
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          8
+        ],
+        [
+          11,
+          14
+        ],
+        [
+          10,
+          13
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          11,
+          3
+        ],
+        [
+          7,
+          12
+        ]
+      ],
+      "goals": [
+        [
+          7,
+          18
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 17.0,
+      "duration": 22.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 16,
+          "min_swept_separation": 0.02660783371286375,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 220,
+          "final_mean_goal_error": 0.8315685655662407
+        },
+        "chen_mip": {
+          "contacts": 5,
+          "min_swept_separation": 0.2988077864518482,
+          "common_interval_infeasible_agent_steps": 901,
+          "control_seconds": 2.9572862786008045,
+          "steps": 220,
+          "final_mean_goal_error": 0.9899115740434414
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.8379998622192885,
+          "common_interval_infeasible_agent_steps": 223,
+          "control_seconds": 0.327072259853594,
+          "steps": 220,
+          "final_mean_goal_error": 2.222199571762911
+        }
+      }
+    },
+    {
+      "seed": 19,
+      "solved": true,
+      "process_seconds": 0.010092235053889453,
+      "starts": [
+        [
+          10,
+          14
+        ],
+        [
+          3,
+          17
+        ],
+        [
+          3,
+          13
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          11,
+          13
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          10,
+          13
+        ],
+        [
+          4,
+          15
+        ],
+        [
+          10,
+          7
+        ],
+        [
+          4,
+          13
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          10,
+          9
+        ]
+      ],
+      "goals": [
+        [
+          4,
+          0
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          5,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 22.0,
+      "duration": 27.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 16,
+          "min_swept_separation": 0.025506533032376367,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 270,
+          "final_mean_goal_error": 1.0203214735787625
+        },
+        "chen_mip": {
+          "contacts": 6,
+          "min_swept_separation": 0.1750242992393266,
+          "common_interval_infeasible_agent_steps": 1054,
+          "control_seconds": 3.8324888803763315,
+          "steps": 270,
+          "final_mean_goal_error": 1.2515172136117076
+        },
+        "simultaneous": {
+          "contacts": 7,
+          "min_swept_separation": 0.03464806612801604,
+          "common_interval_infeasible_agent_steps": 219,
+          "control_seconds": 0.30852617125492543,
+          "steps": 270,
+          "final_mean_goal_error": 7.522010887790286
+        }
+      }
+    },
+    {
+      "seed": 20,
+      "solved": false,
+      "process_seconds": 10.008053787983954,
+      "starts": [
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          10
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          1,
+          12
+        ],
+        [
+          3,
+          13
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          11,
+          4
+        ],
+        [
+          0,
+          14
+        ],
+        [
+          11,
+          2
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          11,
+          0
+        ],
+        [
+          9,
+          13
+        ],
+        [
+          2,
+          17
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "goals": [
+        [
+          9,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          2,
+          18
+        ]
+      ]
+    },
+    {
+      "seed": 21,
+      "solved": true,
+      "process_seconds": 0.052048217970877886,
+      "starts": [
+        [
+          10,
+          11
+        ],
+        [
+          7,
+          17
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          0,
+          9
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          7,
+          13
+        ],
+        [
+          8,
+          5
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          11,
+          4
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          7,
+          14
+        ],
+        [
+          10,
+          3
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "goals": [
+        [
+          3,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          2,
+          18
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 26.0,
+      "duration": 31.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 17,
+          "min_swept_separation": 0.05150843088459799,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 310,
+          "final_mean_goal_error": 1.1149247940102958
+        },
+        "chen_mip": {
+          "contacts": 10,
+          "min_swept_separation": 0.16603413862502506,
+          "common_interval_infeasible_agent_steps": 1017,
+          "control_seconds": 4.762812912929803,
+          "steps": 310,
+          "final_mean_goal_error": 1.7298946094510153
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.5886776608910126,
+          "common_interval_infeasible_agent_steps": 223,
+          "control_seconds": 0.48922340339049697,
+          "steps": 310,
+          "final_mean_goal_error": 2.086626732091776
+        }
+      }
+    },
+    {
+      "seed": 22,
+      "solved": true,
+      "process_seconds": 0.002985009108670056,
+      "starts": [
+        [
+          4,
+          3
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          1,
+          11
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          10,
+          4
+        ],
+        [
+          2,
+          5
+        ],
+        [
+          11,
+          0
+        ],
+        [
+          6,
+          17
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          1,
+          13
+        ],
+        [
+          10,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          10,
+          1
+        ]
+      ],
+      "goals": [
+        [
+          5,
+          18
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          8,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 22.0,
+      "duration": 27.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 22,
+          "min_swept_separation": 0.0032175174266126224,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 270,
+          "final_mean_goal_error": 0.7531834551704435
+        },
+        "chen_mip": {
+          "contacts": 12,
+          "min_swept_separation": 0.07314582016317527,
+          "common_interval_infeasible_agent_steps": 1130,
+          "control_seconds": 4.117190452176146,
+          "steps": 270,
+          "final_mean_goal_error": 0.966512223720276
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.9217868800846198,
+          "common_interval_infeasible_agent_steps": 388,
+          "control_seconds": 0.3515030660200864,
+          "steps": 270,
+          "final_mean_goal_error": 10.081142235655623
+        }
+      }
+    },
+    {
+      "seed": 23,
+      "solved": true,
+      "process_seconds": 0.05470074899494648,
+      "starts": [
+        [
+          11,
+          7
+        ],
+        [
+          5,
+          9
+        ],
+        [
+          4,
+          8
+        ],
+        [
+          4,
+          11
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          10,
+          5
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          11,
+          5
+        ],
+        [
+          10,
+          18
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          10,
+          9
+        ],
+        [
+          11,
+          18
+        ]
+      ],
+      "goals": [
+        [
+          9,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          6,
+          18
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 23.0,
+      "duration": 28.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 17,
+          "min_swept_separation": 0.00954280190617021,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 280,
+          "final_mean_goal_error": 1.3834979834471537
+        },
+        "chen_mip": {
+          "contacts": 9,
+          "min_swept_separation": 0.16242929269070444,
+          "common_interval_infeasible_agent_steps": 1248,
+          "control_seconds": 4.32485395972617,
+          "steps": 280,
+          "final_mean_goal_error": 2.1029106178478587
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.9709732884809793,
+          "common_interval_infeasible_agent_steps": 113,
+          "control_seconds": 0.3362877459730953,
+          "steps": 280,
+          "final_mean_goal_error": 11.025388294704992
+        }
+      }
+    },
+    {
+      "seed": 24,
+      "solved": true,
+      "process_seconds": 0.030489017022773623,
+      "starts": [
+        [
+          3,
+          0
+        ],
+        [
+          7,
+          5
+        ],
+        [
+          10,
+          16
+        ],
+        [
+          4,
+          12
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          11,
+          2
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          13
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          13
+        ],
+        [
+          10,
+          4
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "goals": [
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          9,
+          18
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 25.0,
+      "duration": 30.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 19,
+          "min_swept_separation": 0.02912268015932068,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 300,
+          "final_mean_goal_error": 0.8518128964113098
+        },
+        "chen_mip": {
+          "contacts": 11,
+          "min_swept_separation": 0.03389051192174109,
+          "common_interval_infeasible_agent_steps": 957,
+          "control_seconds": 4.245538343442604,
+          "steps": 300,
+          "final_mean_goal_error": 1.4442884671360445
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.5524726893870957,
+          "common_interval_infeasible_agent_steps": 375,
+          "control_seconds": 0.39637793111614883,
+          "steps": 300,
+          "final_mean_goal_error": 3.543993182644012
+        }
+      }
+    },
+    {
+      "seed": 25,
+      "solved": true,
+      "process_seconds": 0.0024844680447131395,
+      "starts": [
+        [
+          1,
+          8
+        ],
+        [
+          0,
+          11
+        ],
+        [
+          10,
+          13
+        ],
+        [
+          0,
+          9
+        ],
+        [
+          10,
+          18
+        ],
+        [
+          4,
+          12
+        ],
+        [
+          1,
+          13
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          10,
+          12
+        ],
+        [
+          7,
+          13
+        ],
+        [
+          10,
+          3
+        ],
+        [
+          1,
+          18
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          11,
+          15
+        ]
+      ],
+      "goals": [
+        [
+          4,
+          0
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          7,
+          18
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          6,
+          0
+        ]
+      ],
+      "nominal_min_separation": 1.0,
+      "makespan": 20.0,
+      "duration": 25.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 16,
+          "min_swept_separation": 0.0181559687645747,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 250,
+          "final_mean_goal_error": 1.078833973587966
+        },
+        "chen_mip": {
+          "contacts": 6,
+          "min_swept_separation": 0.17502304305031832,
+          "common_interval_infeasible_agent_steps": 985,
+          "control_seconds": 3.3959867694647983,
+          "steps": 250,
+          "final_mean_goal_error": 1.2118507202182796
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.9386426522236668,
+          "common_interval_infeasible_agent_steps": 190,
+          "control_seconds": 0.30232823255937546,
+          "steps": 250,
+          "final_mean_goal_error": 8.553373094794605
+        }
+      }
+    },
+    {
+      "seed": 26,
+      "solved": true,
+      "process_seconds": 0.0038689079228788614,
+      "starts": [
+        [
+          11,
+          18
+        ],
+        [
+          1,
+          9
+        ],
+        [
+          11,
+          9
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          9,
+          13
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          5
+        ],
+        [
+          10,
+          4
+        ],
+        [
+          1,
+          14
+        ],
+        [
+          10,
+          17
+        ],
+        [
+          4,
+          16
+        ],
+        [
+          4,
+          8
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          7,
+          13
+        ]
+      ],
+      "goals": [
+        [
+          2,
+          18
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          6,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 21.0,
+      "duration": 26.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 9,
+          "min_swept_separation": 0.005187077963991212,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 260,
+          "final_mean_goal_error": 0.6483598270501906
+        },
+        "chen_mip": {
+          "contacts": 5,
+          "min_swept_separation": 0.07150563789553863,
+          "common_interval_infeasible_agent_steps": 1052,
+          "control_seconds": 3.808674156316556,
+          "steps": 260,
+          "final_mean_goal_error": 1.261204925275735
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.6318645377962425,
+          "common_interval_infeasible_agent_steps": 165,
+          "control_seconds": 0.3354693672154099,
+          "steps": 260,
+          "final_mean_goal_error": 6.165086691271914
+        }
+      }
+    },
+    {
+      "seed": 27,
+      "solved": true,
+      "process_seconds": 0.0029557340312749147,
+      "starts": [
+        [
+          4,
+          7
+        ],
+        [
+          7,
+          5
+        ],
+        [
+          10,
+          7
+        ],
+        [
+          3,
+          13
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          0,
+          18
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          1,
+          13
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          11,
+          7
+        ]
+      ],
+      "goals": [
+        [
+          9,
+          18
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          5,
+          0
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 24.0,
+      "duration": 29.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 15,
+          "min_swept_separation": 0.06566407652617687,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 290,
+          "final_mean_goal_error": 0.9211654345827915
+        },
+        "chen_mip": {
+          "contacts": 3,
+          "min_swept_separation": 0.3135646829013519,
+          "common_interval_infeasible_agent_steps": 1189,
+          "control_seconds": 3.9368329695425928,
+          "steps": 290,
+          "final_mean_goal_error": 1.3147632336584678
+        },
+        "simultaneous": {
+          "contacts": 0,
+          "min_swept_separation": 0.6486278934314071,
+          "common_interval_infeasible_agent_steps": 132,
+          "control_seconds": 0.3509258234407753,
+          "steps": 290,
+          "final_mean_goal_error": 6.594231693208504
+        }
+      }
+    },
+    {
+      "seed": 28,
+      "solved": false,
+      "process_seconds": 10.01001476100646,
+      "starts": [
+        [
+          0,
+          2
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          0,
+          16
+        ],
+        [
+          7,
+          4
+        ],
+        [
+          4,
+          16
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          1,
+          8
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          10,
+          14
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          7,
+          16
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          0,
+          14
+        ],
+        [
+          7,
+          5
+        ]
+      ],
+      "goals": [
+        [
+          7,
+          18
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          2,
+          18
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          6,
+          18
+        ]
+      ]
+    },
+    {
+      "seed": 29,
+      "solved": true,
+      "process_seconds": 0.00728085997980088,
+      "starts": [
+        [
+          8,
+          17
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          11,
+          14
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          11,
+          15
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          10,
+          4
+        ],
+        [
+          6,
+          13
+        ],
+        [
+          4,
+          15
+        ]
+      ],
+      "goals": [
+        [
+          9,
+          0
+        ],
+        [
+          5,
+          18
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          9,
+          18
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          8,
+          18
+        ],
+        [
+          4,
+          18
+        ],
+        [
+          2,
+          18
+        ]
+      ],
+      "nominal_min_separation": 0.7071067811865476,
+      "makespan": 22.0,
+      "duration": 27.0,
+      "execution": {
+        "unfiltered": {
+          "contacts": 21,
+          "min_swept_separation": 0.028121710043091035,
+          "common_interval_infeasible_agent_steps": 0,
+          "control_seconds": 0.0,
+          "steps": 270,
+          "final_mean_goal_error": 1.1722772430099813
+        },
+        "chen_mip": {
+          "contacts": 11,
+          "min_swept_separation": 0.11729104043811618,
+          "common_interval_infeasible_agent_steps": 1163,
+          "control_seconds": 3.844655816210434,
+          "steps": 270,
+          "final_mean_goal_error": 1.2042749735706286
+        },
+        "simultaneous": {
+          "contacts": 1,
+          "min_swept_separation": 0.485092822405728,
+          "common_interval_infeasible_agent_steps": 675,
+          "control_seconds": 0.34870347974356264,
+          "steps": 270,
+          "final_mean_goal_error": 12.41140778665881
+        }
+      }
+    }
+  ]
+}

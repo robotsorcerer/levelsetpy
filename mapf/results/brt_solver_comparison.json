@@ -1,0 +1,38 @@
+{
+ "convergence": [
+  {
+   "grid": "41x41x21",
+   "frac_inside": 0.021614118580210194,
+   "solve_s": 1.437637458962854
+  },
+  {
+   "grid": "61x61x31",
+   "frac_inside": 0.02215845549670137,
+   "solve_s": 3.5878517500241287
+  },
+  {
+   "grid": "81x81x41",
+   "frac_inside": 0.022464600503343854,
+   "solve_s": 10.714386708976235
+  }
+ ],
+ "ablation": {
+  "reference": "grid 81x81x41",
+  "compared": "HJ-Gauss 31x31x21 N=3000 delta=0.1",
+  "sup_value_err": 1.1696,
+  "sup_value_err_pct_rc": 234,
+  "rms_value_err": 0.3919,
+  "sup_err_in_zero_band": 1.1513,
+  "frac_inside_grid": 2.93,
+  "frac_inside_mc": 2.84,
+  "IoU_pct": 37.5,
+  "sym_diff_pct_of_union": 62.5,
+  "grid_only_missed_by_mc": 2066,
+  "mc_only_false_alarm": 1936
+ },
+ "solve_seconds": {
+  "grid_31x21": 0.7,
+  "grid_81x41": 10.7,
+  "hjgauss_31x21": 10.07
+ }
+}

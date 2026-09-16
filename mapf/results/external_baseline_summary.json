@@ -1,0 +1,176 @@
+{
+  "table_sha256": "facfa5dfea474de1e7e02203581fd6589c18c5c4bc107de23d46d43499b04f45",
+  "original_count_diagnostics_reproduced": true,
+  "lifelong": {
+    "chen_mip_0.1": {
+      "contacts_mean": 25.666666666666668,
+      "contact_free": 0,
+      "paired_difference": {
+        "mean": -24.6,
+        "ci95": [
+          -27.266666666666666,
+          -21.9
+        ],
+        "n": 30
+      }
+    },
+    "chen_mip_0.15": {
+      "contacts_mean": 23.0,
+      "contact_free": 0,
+      "paired_difference": {
+        "mean": -21.933333333333334,
+        "ci95": [
+          -24.233333333333334,
+          -19.666666666666668
+        ],
+        "n": 30
+      }
+    },
+    "compatible": {
+      "contacts_mean": 1.0666666666666667,
+      "contact_free": 22,
+      "paired_difference": {
+        "mean": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 30
+      }
+    },
+    "flee_matched": {
+      "contacts_mean": 27.033333333333335,
+      "contact_free": 0,
+      "paired_difference": {
+        "mean": -25.966666666666665,
+        "ci95": [
+          -28.2,
+          -23.7
+        ],
+        "n": 30
+      }
+    },
+    "geometric": {
+      "contacts_mean": 52.46666666666667,
+      "contact_free": 0,
+      "paired_difference": {
+        "mean": -51.4,
+        "ci95": [
+          -54.4,
+          -48.46666666666667
+        ],
+        "n": 30
+      }
+    },
+    "single_constraint": {
+      "contacts_mean": 0.7333333333333333,
+      "contact_free": 19,
+      "paired_difference": {
+        "mean": 0.3333333333333333,
+        "ci95": [
+          -0.7,
+          1.7333333333333334
+        ],
+        "n": 30
+      }
+    }
+  },
+  "three_agents": {
+    "chen_mip_0.15": {
+      "mean": -0.5,
+      "percentile_bootstrap_95": [
+        -0.7333333333333333,
+        -0.3
+      ],
+      "difference": "compatible minus chen_mip_0.15",
+      "paired_seeds": 30
+    }
+  },
+  "ccbs": {
+    "solved": 25,
+    "attempted": 30,
+    "failed_seeds": [
+      5,
+      11,
+      16,
+      20,
+      28
+    ],
+    "minimum_nominal_separation": 0.7071067811865476,
+    "mean_duration": 27.58828427479606,
+    "arms": {
+      "unfiltered": {
+        "mean_contacts": 17.56,
+        "contact_free": 0,
+        "mean_final_goal_error": 0.979258706720508,
+        "paired_difference": {
+          "mean": -17.12,
+          "ci95": [
+            -18.8,
+            -15.32
+          ],
+          "n": 25
+        }
+      },
+      "chen_mip": {
+        "mean_contacts": 7.88,
+        "contact_free": 0,
+        "mean_final_goal_error": 1.381068904320575,
+        "paired_difference": {
+          "mean": -7.44,
+          "ci95": [
+            -8.84,
+            -6.04
+          ],
+          "n": 25
+        }
+      },
+      "simultaneous": {
+        "mean_contacts": 0.44,
+        "contact_free": 20,
+        "mean_final_goal_error": 7.4995576255312315,
+        "paired_difference": {
+          "mean": 0.0,
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "n": 25
+        }
+      }
+    }
+  },
+  "environment": {
+    "python": "3.10.12 (main, Aug 31 2026, 10:18:17) [GCC 11.4.0]",
+    "numpy": "1.26.4",
+    "scipy": "1.15.3",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.35"
+  },
+  "source_sha256": {
+    "src/compatible_shield.py": "91a02d9eca2afe2ddcc7ee7b8b06e0075470bb70a4c181896c8d2eb34f21894e",
+    "src/mapf_world.py": "0d567cb29edc0258e091f57c88c0660e088eb49a53aed74fccaa0f0cdc30110d",
+    "src/chen_mip.py": "084bb35695c4eebcb88d78c418b490f0842ca9faffcae8bdf3d34b06cfa9335d",
+    "src/stats.py": "4a6b372e22edcf0a5abcbb5deeb39d4510d949929af0f4f4eb361f0079533e60",
+    "src/planner.py": "5e3b87d51e829a6e6005771e7978e14121bb0e2d9af1e1894be30017c9c01d3c",
+    "src/compatible_brt.py": "65f75088259395caf3b9bd574867248914ca4a538d5b3421e30573e3ce5f6a44",
+    "src/hj_conflict.py": "010f870f343d7c8e352aedbb1185e00d0270b0234d2cf6831f412454dfb7663c",
+    "src/executor.py": "d913cf983f06830159713889260dea22432905da26579bc2ada725694f69a24a",
+    "experiments/compatible_control_demo.py": "2b03efe979914e63b93b463bd4c90efa755ad0abf5d2e1b8c62a854bba548331",
+    "experiments/compare_shields.py": "744f8e65dbc7372fab8936866d13e4e6344842278ec9a5e018e2223803e3b83e",
+    "experiments/make_animation.py": "2d5dd76b3a242bf20672af42ba4b1b3b35ea60823c1cf706a32be4025979cb67",
+    "experiments/multiseed_harness.py": "d85e4ca762dc0c700e91f6b73990ed991a2b99c276bad0ee217739a1f1bd7062",
+    "experiments/compare_ccbs.py": "83905fb4e025b9cfb1864c72f47d9eb58e88b0c12650f82005b7a040492fcc7a",
+    "experiments/precompute_brt.py": "ce3def398a28d526ea23dbee4a33bb705993e2c94deea8b9a962332d56251b97",
+    "experiments/make_figures.py": "35133d22016806812397aea9461983f8ca6a226933a112a0acb0308d85d116f3",
+    "experiments/summarize_external_baselines.py": "e7c739f0200313c4b978048f44eda6611df96548c4bb88eed9589712e9d57132",
+    "experiments/make_brt_animation.py": "16fa06cec414fba78c224753f0bc5121d37ba2b38985e1b33cde722132990a86",
+    "experiments/precompute_brt_grid.py": "c1bba28482122801592dee760ede211890803d3b665b03388e55aeb4dbbe74a1",
+    "experiments/make_mapf_schematics.py": "b4dfc78ffccfe59f4ce273cabf47ae1e4865789f0f1ce57e7038a84eec10c8f9",
+    "experiments/precompute_compatible_brt.py": "46b11d6758156cb48b250b301ba6c27fb05c23296dc059e8f49166bb8eba95cc",
+    "experiments/exp_A_pipeline.py": "ef68b5d3ef17450f6d33af43345f4a1624809e7ce365a9c28a51cd80daf2237f",
+    "tests/test_external_baselines.py": "743214ebac150bd11bf68ff5d12952ea1870b39f360c518f4ce93ff7de1b4002",
+    "tests/conftest.py": "f29b91e57af43d6e44201fd8f2426f080fc63895aa045fc834f82ec127c910e8",
+    "tests/test_executor.py": "e3a6bea37db893cebd16b5b43b6a48c0df2dd17d051532f5d8784578bcb15c09",
+    "tests/test_compatible_control.py": "c34389281363d1ed39eb6ba921cebcc69de074528785ed393d1dff1dafa56437"
+  }
+}

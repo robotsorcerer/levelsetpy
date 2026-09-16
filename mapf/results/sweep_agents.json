@@ -1,0 +1,32 @@
+[
+  {
+    "n_agents": 8,
+    "geom": 25.25,
+    "hj": 21.5,
+    "reduction_pct": 14.9
+  },
+  {
+    "n_agents": 11,
+    "geom": 60.75,
+    "hj": 41.5,
+    "reduction_pct": 31.7
+  },
+  {
+    "n_agents": 14,
+    "geom": 90.625,
+    "hj": 65.375,
+    "reduction_pct": 27.9
+  },
+  {
+    "n_agents": 17,
+    "geom": 136.625,
+    "hj": 98.375,
+    "reduction_pct": 28.0
+  },
+  {
+    "n_agents": 20,
+    "geom": 174.875,
+    "hj": 131.625,
+    "reduction_pct": 24.7
+  }
+]

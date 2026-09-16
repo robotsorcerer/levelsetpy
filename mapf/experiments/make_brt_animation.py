@@ -1,24 +1,19 @@
 #!/usr/bin/env python
-"""Animate the cached pairwise Dubins conflict set across relative headings.
+"""Plot the same compatible table used by the paper's controller comparisons.
 
-Loads the cached windowed BRT (cache/dubins_brt.npz, solved by HJ-Gauss
-Algorithm 1 at the rolling-window horizon) and sweeps the relative-heading
-coordinate x3, overlaying the dynamics-blind capture disc. This is the
-heading dependence a geometric conflict check cannot represent.
+From mapf/:
+  python3 experiments/make_brt_animation.py --brt cache/compatible_brt.npz --out-dir /path/to/ICRA2027/figures --static-only
+Then from ICRA2027/: pdflatex icra27.tex; bibtex icra27; pdflatex icra27.tex; pdflatex icra27.tex
 
-Outputs (into --out-dir):
-  brt_heading.gif        -- animated sweep, for the HTML deck
-  brt_heading_strip.jpg  -- 2x2 static figure, for the paper
-
-Reproduce the paper figure from the revised cache:
-  python3 experiments/make_brt_animation.py \
-    --brt cache/dubins_brt_81x64.npz --out-dir /path/to/paper/figures
-
-Numpy only (no JAX): reads the cache written by precompute_brt.py.
+Outputs: brt_heading_top.jpg and brt_heading_bottom.jpg (two 1x2 panels),
+brt_heading_strip.jpg (2x2 preview); brt_heading.gif unless --static-only.
+Requires NumPy, Matplotlib, Pillow. The finite-horizon numerical level sets
+are not certified inevitability sets.
 """
 from __future__ import annotations
 import os
 import argparse
+import json
 
 import numpy as np
 import matplotlib
@@ -30,7 +25,7 @@ from PIL import Image
 
 INK = "#0a1730"
 _HERE = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_BRT = os.path.join(os.path.dirname(_HERE), "cache", "dubins_brt.npz")
+DEFAULT_BRT = os.path.join(os.path.dirname(_HERE), "cache", "compatible_brt.npz")
 
 
 def main():
@@ -38,19 +33,19 @@ def main():
     ap.add_argument("--out-dir", required=True)
     ap.add_argument("--brt", default=DEFAULT_BRT)
     ap.add_argument("--fps", type=int, default=5)
+    ap.add_argument("--static-only", action="store_true")
     args = ap.parse_args()
     os.makedirs(args.out_dir, exist_ok=True)
 
-    d = np.load(args.brt, allow_pickle=True)
+    d = np.load(args.brt, allow_pickle=False)
     V = np.asarray(d["V"], dtype=float)                  # (n_xy, n_xy, n_theta)
     x1, x2, th = (np.asarray(d[k], dtype=float)
                   for k in ("x1_axis", "x2_axis", "th_axis"))
-    try:
-        meta = eval(str(d["meta"][0]), {"__builtins__": {}})
-    except Exception:
-        meta = {}
-    r_c = float(meta.get("capture_radius", 0.8))
-    w = float(meta.get("window_horizon", 0.6))
+    if "metadata_json" not in d:
+        raise ValueError("Use cache/compatible_brt.npz, the controller table")
+    meta = json.loads(str(d["metadata_json"].item()))
+    r_c = float(meta["capture_radius"])
+    w = float(meta["horizon"])
     X1, X2 = np.meshgrid(x1, x2, indexing="ij")
     lim = float(x1[-1])
 
@@ -78,7 +73,7 @@ def main():
         ax.set_ylabel("$x_2$  (Cross heading)", fontsize=14 if small else 52, fontweight="bold")
         ax.tick_params(labelsize=11 if small else 52, width=1.5, length=6)
         ax.grid(alpha=0.25, zorder=0)
-        ax.set_title(f"Rel. heading: $x_3={a:+.2f}$ rad  ·  "
+        ax.set_title(f"Rel. heading: $x_3={a:+.2f}$ rad\n"
                      f"Within: {np.mean(Vs <= 0) * 100:.1f}%",
                      fontsize=14 if small else 52, fontweight="bold", color=INK)
         if small:
@@ -90,27 +85,27 @@ def main():
             ], loc="upper right", fontsize=10, framealpha=0.9,
                borderpad=0.35, handlelength=2.0, labelspacing=0.25)
 
-    frames = []
-    for k in order:
-        fig, ax = plt.subplots(figsize=(25, 15), dpi=92)
-        draw(ax, int(k))
-        fig.suptitle(f"Windowed pairwise conflict set, $w={w}$ s",
-                     fontsize=28.5, fontweight="bold", color=INK, y=0.985)
-        fig.subplots_adjust(left=0.14, right=0.97, top=0.88, bottom=0.13)
-        fig.canvas.draw()
-        frames.append(Image.fromarray(
-            np.asarray(fig.canvas.buffer_rgba())[..., :3]).convert(
-                "P", palette=Image.ADAPTIVE, colors=96))
-        plt.close(fig)
+    if not args.static_only:
+        frames = []
+        for k in order:
+            fig, ax = plt.subplots(figsize=(25, 15), dpi=92)
+            draw(ax, int(k))
+            fig.suptitle(f"Windowed pairwise conflict set, $w={w}$ s",
+                         fontsize=28.5, fontweight="bold", color=INK, y=0.985)
+            fig.subplots_adjust(left=0.14, right=0.97, top=0.88, bottom=0.13)
+            fig.canvas.draw()
+            frames.append(Image.fromarray(
+                np.asarray(fig.canvas.buffer_rgba())[..., :3]).convert(
+                    "P", palette=Image.ADAPTIVE, colors=96))
+            plt.close(fig)
 
-    gif = os.path.join(args.out_dir, "brt_heading.gif")
-    frames[0].save(gif, save_all=True, append_images=frames[1:], loop=0,
-                   duration=int(1000 / args.fps), optimize=True)
-    print(f"wrote {gif} ({len(frames)} frames, "
-          f"{os.path.getsize(gif) / 1e6:.1f} MB)")
+        gif = os.path.join(args.out_dir, "brt_heading.gif")
+        frames[0].save(gif, save_all=True, append_images=frames[1:], loop=0,
+                       duration=int(1000 / args.fps), optimize=True)
+        print(f"wrote {gif} ({len(frames)} frames, "
+              f"{os.path.getsize(gif) / 1e6:.1f} MB)")
 
-    picks = [int(order[i]) for i in
-             np.linspace(0, len(order) - 1, 4).round().astype(int)]
+    picks = [int(np.argmin(np.abs(th - angle))) for angle in (-np.pi, -np.pi/2, 0, np.pi/2)]
     fig, axes = plt.subplots(2, 2, figsize=(12, 11), dpi=170)
     for a, k in zip(axes.ravel(), picks):
         draw(a, k, small=True)
