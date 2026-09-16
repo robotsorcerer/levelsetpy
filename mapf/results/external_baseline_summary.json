@@ -163,7 +163,7 @@
     "experiments/precompute_brt.py": "ce3def398a28d526ea23dbee4a33bb705993e2c94deea8b9a962332d56251b97",
     "experiments/make_figures.py": "35133d22016806812397aea9461983f8ca6a226933a112a0acb0308d85d116f3",
     "experiments/summarize_external_baselines.py": "e7c739f0200313c4b978048f44eda6611df96548c4bb88eed9589712e9d57132",
-    "experiments/make_brt_animation.py": "16fa06cec414fba78c224753f0bc5121d37ba2b38985e1b33cde722132990a86",
+    "experiments/make_brt_animation.py": "3601503e57a670894f9c67f768ab8c0c3fec76aed7dfdd68cfe2e3ab036a8b5f",
     "experiments/precompute_brt_grid.py": "c1bba28482122801592dee760ede211890803d3b665b03388e55aeb4dbbe74a1",
     "experiments/make_mapf_schematics.py": "b4dfc78ffccfe59f4ce273cabf47ae1e4865789f0f1ce57e7038a84eec10c8f9",
     "experiments/precompute_compatible_brt.py": "46b11d6758156cb48b250b301ba6c27fb05c23296dc059e8f49166bb8eba95cc",
