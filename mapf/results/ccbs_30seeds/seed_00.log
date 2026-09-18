@@ -1,0 +1,9 @@
+Soulution found: true
+Runtime: 0.0130769
+Makespan: 24
+Flowtime: 192.707
+Initial Cost: 188
+Collision Checking Time: 0.00975301
+HL expanded: 190
+LL searches: 1866
+LL expanded(avg): 25.5895

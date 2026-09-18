@@ -1,0 +1,1 @@
+<root><algorithm><use_cardinal>true</use_cardinal><use_disjoint_splitting>true</use_disjoint_splitting><hlh_type>2</hlh_type><connectedness>2</connectedness><focal_weight>1.0</focal_weight><agent_size>0.25</agent_size><timelimit>10</timelimit><precision>1e-07</precision></algorithm></root>
