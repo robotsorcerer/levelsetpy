@@ -1,0 +1,21 @@
+[project]
+name = "hj-reach-murmuration"
+version = "0.2.0"
+description = "Generalized Cole-Hopf research solvers retaining the full residual"
+authors = [{name = "Lekan Molu", email = "lekan.molu@amazon.com"}]
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.24", "scipy>=1.10", "matplotlib>=3.7", "scikit-image>=0.20"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[tool.pytest.ini_options]
+testpaths = ["test_solver.py", "test_full_residual_nd.py", "test_full_residual_fd.py", "test_evidence_integrity.py"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m not slow')",
+]
+addopts = "-v --tb=short"
