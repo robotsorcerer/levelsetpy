@@ -18,6 +18,7 @@ The prescribed coefficient is positive and smooth. Both residual terms are retai
 - `plot_validation.py`: manufactured-solution figure and generated LaTeX numbers.
 - `multidimensional_validation.py`, `validation_loop.py`, and `refine_failed_cases.py`: manufactured verification, game refinement, and sensitivity loops.
 - `render_multidimensional_validation.py` and `render_population_validation.py`: figures from current native fields; producer font metadata is saved alongside each raster.
+- `generate_royal_soc_animations.py`: matched GIF comparisons of LevelsetPy reference fields, full residual approximations, and absolute value errors for starling, double-integrator, Dubins, and rocket cases.
 - `test_solver.py`: chain-rule, inverse-gradient, refinement, positivity, and Gaussian-integral checks.
 
 Run from this directory:
@@ -31,6 +32,19 @@ python -m validation_loop --stage refinement --workers 3
 python -m validation_loop --stage sensitivity --workers 3
 python -m validation_report --selection results/multidimensional/selection.json
 ```
+
+Generate the Royal Society GIFs from the saved archives without rerunning the PDEs. The source
+defaults to `results/multidimensional`; pass the blog animation directory explicitly:
+
+```sh
+python generate_royal_soc_animations.py \
+  --output /path/to/robotsorcerer.github.io/downloads/Papers/assets/anim
+```
+
+Each frame uses matching saved times and solver settings. Its columns show the independent
+LevelsetPy reference, the full residual approximation, and the absolute value difference. The
+error color scale is shared across time within each GIF and reported in the final animation
+manifest. Rocket comparisons require matching the coefficient, horizon, grid, and viscosity.
 
 The `full` mode is the theoretical model. The `drop_derivative` and `heat` modes in the manufactured benchmark are negative controls that solve altered equations; their presence tests the necessity of the full residual. The quadratic constant-coefficient heat limit remains a valid special case.
 
