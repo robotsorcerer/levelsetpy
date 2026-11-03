@@ -48,7 +48,7 @@ def render(root,out,case):
     for t,a,b,E in fields:
         fig,axs=plt.subplots(1,3,figsize=(12,4.5),dpi=90,layout='constrained')
         vmax=max(1.,float(np.max(np.abs(np.r_[a.ravel(),b.ravel()]))));im=None
-        for ax,z,ttl in zip(axs,[a,b,E],['LevelsetPy reference','Full residual approximation',f'Absolute error (0–{maxerr:.2g})']):
+        for ax,z,ttl in zip(axs,[a,b,E],['LevelsetPy reference','Full residual approximation',f'Absolute error (max {maxerr:.2e})']):
             error=ttl.startswith('Absolute')
             im=ax.contourf(X,Y,z,levels=np.linspace(0,maxerr,25) if error else np.linspace(-vmax,vmax,25),cmap='magma' if error else 'RdBu_r',extend='max' if error else 'both')
             if not ttl.startswith('Absolute') and z.min()<0<z.max(): ax.contour(X,Y,z,[0],colors='black',linewidths=1)
@@ -56,7 +56,9 @@ def render(root,out,case):
             ax.set_ylabel(labels[1] if ax is axs[0] else '')
         heading_text = title if 'validation' in title.lower() else f'{title} validation'
         fig.suptitle(f'{heading_text} · Elapsed horizon {t:g}',fontsize=14)
-        fig.colorbar(im,ax=axs.ravel().tolist(),shrink=.78,label='Absolute value error' if error else 'Value')
+        cb=fig.colorbar(im,ax=axs.ravel().tolist(),shrink=.78,label='Absolute error')
+        cb.set_ticks(np.linspace(0,maxerr,5))
+        cb.set_ticklabels([f'{v:.1e}' for v in np.linspace(0,maxerr,5)])
         if heading is not None: fig.text(.5,.005,f'Heading = {heading} rad · matched saved snapshots',ha='center',fontsize=8)
         with io.BytesIO() as bfr:
             fig.savefig(bfr,format='png');bfr.seek(0);frames.append(Image.open(bfr).convert('P',palette=Image.Palette.ADAPTIVE,colors=192).copy())
