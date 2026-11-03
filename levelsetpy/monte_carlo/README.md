@@ -44,7 +44,9 @@ python generate_royal_soc_animations.py \
 Each frame uses matching saved times and solver settings. Its columns show the independent
 LevelsetPy reference, the full residual approximation, and the absolute value difference. The
 error color scale is shared across time within each GIF and reported in the final animation
-manifest. Rocket comparisons require matching the coefficient, horizon, grid, and viscosity.
+manifest. Maximum errors appear in scientific notation in each frame heading, and colorbar ticks
+use scientific notation as well. Rocket comparisons require matching the coefficient, horizon,
+grid, and viscosity. The script checks these settings before rendering.
 
 The `full` mode is the theoretical model. The `drop_derivative` and `heat` modes in the manufactured benchmark are negative controls that solve altered equations; their presence tests the necessity of the full residual. The quadratic constant-coefficient heat limit remains a valid special case.
 
