@@ -8,18 +8,18 @@ from concurrent.futures import ProcessPoolExecutor,as_completed
 from pathlib import Path
 import argparse,hashlib,json,os,uuid
 import numpy as np
-from full_residual_nd import solve as solve_nd
-from multidimensional_validation import game_case,diagnostics
-from validation_report import load,key
-from validation_loop import _atomic_json,_digest
+from hjgauss.core.spectral import solve as solve_nd
+from hjgauss.validation.cases import game_case,diagnostics
+from hjgauss.validation.report import load,key
+from hjgauss.validation.run import _atomic_json,_digest
 
 
 def run(task):
     out,name,config=task;n=config['n'];steps=config['steps'];method=config.get('method','etd2')
     baseline=key(name,n,'reference',steps=steps,method=method);name_key=baseline+'_boundary'
-    here=Path(__file__).parent
-    sources=['full_residual_nd.py','multidimensional_validation.py','boundary_validation.py']
-    if method=='fd':sources.append('full_residual_fd.py')
+    here=Path(__file__).resolve().parents[1]
+    sources=['core/spectral.py','validation/cases.py','validation/boundary.py']
+    if method=='fd':sources.append('core/finite_diff.py')
     frozen={s:_digest(here/s) for s in sources}
     base=load(out,baseline);base_hash=_digest(out/(baseline+'.npz'));del base
     try:
@@ -36,7 +36,7 @@ def run(task):
         shape=(n*5//4,n*5//4)+((n//2,) if len(bounds)==3 else ())
         kwargs=dict(bounds=bounds,shape=shape,delta=case['delta'],horizon=case['horizon'],steps=steps)
         if method=='fd':
-            from full_residual_fd import original_reference
+            from hjgauss.core.finite_diff import original_reference
             sol=original_reference(case['initial'],case['hamiltonian'],**kwargs)
         else:sol=solve_nd(case['initial'],case['hamiltonian'],kind='reference',**kwargs)
         rec=diagnostics(sol,case['interior'])

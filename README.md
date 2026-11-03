@@ -208,17 +208,17 @@ viz.visGrid([g], g.dim, title='Simple 2D Grid')
 
 ## HJ-Gauss full residual computations
 
-The research code in [`levelsetpy/monte_carlo/`](levelsetpy/monte_carlo/) retains the complete generalized Cole–Hopf residual. It includes periodic transformed-equation solvers, a supplied-source Gaussian Duhamel estimator, and manufactured-solution checks. Multidimensional game figures remain exploratory diagnostics; high-dimensional accuracy and safety certification are not established by these implementations.
+The research code in [`levelsetpy/monte_carlo/`](levelsetpy/monte_carlo/) retains the complete generalized Cole–Hopf residual. It is organized as `hjgauss/core`, `hjgauss/validation`, and `hjgauss/render`, with tests under `tests/`. It includes transformed-equation solvers, a supplied-source Gaussian Duhamel estimator, manufactured-solution checks, and reproducible multidimensional validation workflows.
 
-See the [implementation README](levelsetpy/monte_carlo/README.md) and [theory audit](levelsetpy/monte_carlo/THEORY_AUDIT.md). Frozen coefficient implementations and their dependent examples have been removed.
+See the [implementation README](levelsetpy/monte_carlo/README.md) for commands, provenance checks, and numerical scope. Generated native fields and reports live under the ignored `results/` directory and are recreated by the validation commands.
 
 The separate [`levelsetpy/mapf/`](levelsetpy/mapf/) project retains its independent grid-reference precomputation. Its sampler-dependent precomputation requires a full residual implementation and currently raises an explicit error.
 
 ```sh
 cd levelsetpy/monte_carlo
-python -m pip install -r requirements.txt
-python -m pytest -q test_solver.py
-python -m benchmark
+python -m pip install -e '.[dev]'
+python -m pytest -q
+python -m hjgauss.validation.benchmark
 ```
 
 ---

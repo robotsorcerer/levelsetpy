@@ -1,3 +1,3 @@
-This package directory contains the grid-based solver modules and the research subprojects [`monte_carlo/`](monte_carlo/) and [`mapf/`](mapf/). Each subproject has its own README with usage, data provenance, and limitations. The Monte Carlo scripts are run from their directory root; the MAPF experiments are run from `mapf/`.
+This package directory contains the grid-based solver modules and the research subprojects [`monte_carlo/`](monte_carlo/) and [`mapf/`](mapf/). Each subproject has its own README with usage, data provenance, and limitations. Run both projects from their respective directory roots.
 
-Monte Carlo code retains the full residual transformation only. Its game computations are exploratory; see `monte_carlo/THEORY_AUDIT.md` for scope and removed implementations.
+The Monte Carlo project groups its scripts by function under `hjgauss/core`, `hjgauss/validation`, and `hjgauss/render`. It retains the full residual transformation, and generates its ignored `results/` tree on demand. See [`monte_carlo/README.md`](monte_carlo/README.md) for the validated workflow and its stated scope.

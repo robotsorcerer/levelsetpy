@@ -3,7 +3,7 @@ from pathlib import Path
 import argparse,hashlib,json,os,platform,sys
 import numpy as np
 import scipy
-from validation_report import load
+from hjgauss.validation.report import load
 
 
 def atomic_json(path,value):

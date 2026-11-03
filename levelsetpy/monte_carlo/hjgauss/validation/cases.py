@@ -1,6 +1,6 @@
 """Reproducible refinement loop for complete-residual multidimensional solves.
 
-Each run is retained with its settings, equation defects, timing and fields.
+Each run is retained with its settings, equation residuals, timing and fields.
 Acceptance is numerical and scoped to the specified equations and boxes.
 """
 from __future__ import annotations
@@ -11,10 +11,9 @@ from pathlib import Path
 import time
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
-try:
-    from .full_residual_nd import solve, variable_coefficient
-except ImportError:
-    from full_residual_nd import solve, variable_coefficient
+from hjgauss.core.spectral import solve, variable_coefficient
+
+PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 
 
 def manufactured(dimension, delta=.3):
@@ -68,9 +67,8 @@ def compare(coarse,fine,interior):
 
 def store(out,name,sol,record):
     out.mkdir(parents=True,exist_ok=True)
-    here=Path(__file__).parent
-    record['source_digests']={f:hashlib.sha256((here/f).read_bytes()).hexdigest()
-                              for f in ['full_residual_nd.py','multidimensional_validation.py']}
+    record['source_digests']={f:hashlib.sha256((PACKAGE_ROOT/f).read_bytes()).hexdigest()
+                              for f in ['core/spectral.py','validation/cases.py']}
     record['numpy_version']=np.__version__
     np.savez_compressed(out/(name+'.npz'),value=sol['value'],
         **{f'axis_{i}':a for i,a in enumerate(sol['axes'])},

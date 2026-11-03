@@ -1,11 +1,7 @@
 import numpy as np
 import pytest
-try:
-    from .solver import Coefficient, inverse, inverse_gradient, residual, source, solve_periodic, gaussian_duhamel
-    from .benchmark import varying_coefficient, reference
-except ImportError:  # direct pytest collection from this project root
-    from solver import Coefficient, inverse, inverse_gradient, residual, source, solve_periodic, gaussian_duhamel
-    from benchmark import varying_coefficient, reference
+from hjgauss.core.transform import Coefficient, inverse, inverse_gradient, residual, source, solve_periodic, gaussian_duhamel
+from hjgauss.validation.benchmark import varying_coefficient, reference
 
 
 def test_chain_rule_source_with_time_and_space_varying_coefficient():

@@ -2,15 +2,16 @@
 from pathlib import Path
 import hashlib,json
 import numpy as np
-from full_residual_fd import solve,original_reference
-from full_residual_nd import variable_coefficient
-from multidimensional_validation import game_case,diagnostics,manufactured
+from hjgauss.core.finite_diff import solve,original_reference
+from hjgauss.core.spectral import variable_coefficient
+from hjgauss.validation.cases import game_case,diagnostics,manufactured
 
-SOURCES=['full_residual_nd.py','multidimensional_validation.py','full_residual_fd.py','fd_validation.py']
+PACKAGE_ROOT=Path(__file__).resolve().parents[1]
+SOURCES=['core/spectral.py','validation/cases.py','core/finite_diff.py','validation/fd.py']
 
 
 def run_manufactured(out):
-    here=Path(__file__).parent;out=Path(out);out.mkdir(parents=True,exist_ok=True)
+    here=PACKAGE_ROOT;out=Path(out);out.mkdir(parents=True,exist_ok=True)
     digests={f:hashlib.sha256((here/f).read_bytes()).hexdigest() for f in SOURCES}
     records=[]
     for d in (2,3):
@@ -34,7 +35,7 @@ def run_manufactured(out):
 
 
 def run_game(out,name,n,steps,kind='full',length=6.,coefficient_base=.2,angle_n=None):
-    here=Path(__file__).parent
+    here=PACKAGE_ROOT
     digests={f:hashlib.sha256((here/f).read_bytes()).hexdigest() for f in SOURCES}
     case=game_case(name,length)
     shape=(n,n) if name=='double_integrator' else (n,n,angle_n or max(16,n//2))

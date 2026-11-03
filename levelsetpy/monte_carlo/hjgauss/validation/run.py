@@ -34,20 +34,20 @@ def _atomic_json(path,value):
 
 def job(task):
     global _WORKER_BASELINE
-    from multidimensional_validation import run_game
-    from validation_report import load
+    from hjgauss.validation.cases import run_game
+    from hjgauss.validation.report import load
     out,name,n,steps,kind,length,base,angle,*scheme=task
     method=scheme[0] if scheme else 'etd2'
     if method not in {'etd2','fd'}:raise ValueError(method)
     if method=='fd':
-        from fd_validation import run_game
+        from hjgauss.validation.fd import run_game
     key=f'{name}_{kind}_{n}_{steps}_L{length:g}_c{base:g}'
     if angle: key+=f'_A{angle}'
     if method=='fd':key+='_fd'
     path=out/(key+'.json')
-    here=Path(__file__).parent
-    sources=['full_residual_nd.py','multidimensional_validation.py']
-    if method=='fd':sources+=['full_residual_fd.py','fd_validation.py']
+    here=Path(__file__).resolve().parents[1]
+    sources=['core/spectral.py','validation/cases.py']
+    if method=='fd':sources+=['core/finite_diff.py','validation/fd.py']
     digests={f:hashlib.sha256((here/f).read_bytes()).hexdigest() for f in sources}
     if _WORKER_BASELINE is None:_WORKER_BASELINE={}
     if method not in _WORKER_BASELINE:_WORKER_BASELINE[method]=digests

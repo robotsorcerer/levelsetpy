@@ -68,7 +68,8 @@ def render(root,out,case):
     return dict(label=title,case=name,approximation_run=fr,reference_run=rr,approximation_sha256=fh,reference_sha256=rh,times=[t for t,k in times],max_absolute_difference=maxerr,error_scale_max=maxerr,gif_sha256=digest(gif))
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--source',type=Path,default=Path(__file__).resolve().parent/'results/multidimensional');p.add_argument('--output',type=Path,required=True,help='Output animation directory');a=p.parse_args();a.output.mkdir(parents=True,exist_ok=True)
+    default_source=Path(__file__).resolve().parents[2]/'results/multidimensional'
+    p=argparse.ArgumentParser();p.add_argument('--source',type=Path,default=default_source);p.add_argument('--output',type=Path,required=True,help='Output animation directory');a=p.parse_args();a.output.mkdir(parents=True,exist_ok=True)
     records=[render(a.source,a.output,c) for c in CASES]
     (a.output/'roysoc_animations.json').write_text(json.dumps(dict(animations=records,columns=['LevelsetPy reference','Full residual approximation','Absolute value error'],temporal_interpolation=False),indent=2)+'\n')
     print('Rendered four matched comparison animations.')

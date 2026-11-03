@@ -2,13 +2,13 @@
 from __future__ import annotations
 import argparse
 import json
+import hashlib
 from pathlib import Path
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
-from validation_report import load,key,interpolate,assess
+from hjgauss.validation.report import load,key,interpolate,assess
 
 plt.rcParams.update({'font.family':'DejaVu Sans','font.weight':'bold',
     'axes.labelweight':'bold','axes.titleweight':'bold','figure.titleweight':'bold',
@@ -16,7 +16,15 @@ plt.rcParams.update({'font.family':'DejaVu Sans','font.weight':'bold',
     'mathtext.fontset':'dejavusans','mathtext.default':'bf'})
 
 
-def save(fig,path,placement_width=384.1122/72.27):
+def native_identity(sol):
+    rec=sol['record']
+    archive=Path(sol['archive_path'])
+    return dict(run=sol['key'],archive_sha256=rec.get('archive_sha256') or hashlib.sha256(archive.read_bytes()).hexdigest(),
+                source_digests=rec['source_digests'],shape=rec['shape'],steps=rec['steps'],
+                delta=rec['delta'],horizon=rec['horizon'],method=rec.get('method',rec['kind']))
+
+
+def save(fig,path,placement_width=384.1122/72.27,provenance=None):
     """Save one raster, with font/placement provenance and live bounding boxes."""
     for text in fig.findobj(matplotlib.text.Text):text.set_fontweight('bold')
     fig.canvas.draw()
@@ -35,10 +43,13 @@ def save(fig,path,placement_width=384.1122/72.27):
     metadata=dict(canvas_inches=[float(width),float(height)],dpi=300,bbox_dpi=fig.dpi,
                   placement_width_inches=placement_width,uniform_scaling=True,
                   font_family='DejaVu Sans',font_weight='bold',text_roles=roles,
+                  display_unit_scales=dict(length_metres=1.,time_seconds=1.,velocity_metres_per_second=1.),
                   data_clipping='All data marks clipped by their axes; text is unclipped')
+    if provenance is not None:metadata['data_provenance']=provenance
     path.parent.mkdir(parents=True,exist_ok=True)
-    fig.savefig(path,dpi=300,metadata={'Software':'Matplotlib',
-        'Description':json.dumps(metadata,separators=(',',':'))})
+    fig.savefig(path,dpi=300,facecolor='white',pil_kwargs={'quality':98,'subsampling':0,'optimize':True})
+    metadata.update(image_format='JPEG',jpeg_quality=98,chroma_subsampling='4:4:4',
+                    figure_sha256=hashlib.sha256(path.read_bytes()).hexdigest())
     (path.with_suffix('.json')).write_text(json.dumps(metadata,indent=2)+'\n')
     plt.close(fig)
 
@@ -50,6 +61,8 @@ def plane(sol,theta,extent,n=161,field=None):
 
 
 def game(full,reference,path,title,headings,extent):
+    if any(full['record'][k]!=reference['record'][k] for k in ['case','delta','horizon','bounds','shape']):
+        raise ValueError('Figure comparison settings differ')
     ncols=len(headings)
     fig=plt.figure(figsize=(8,6.2),layout='constrained')
     grid=fig.add_gridspec(3,ncols+1,width_ratios=[1]*ncols+[.12])
@@ -77,8 +90,8 @@ def game(full,reference,path,title,headings,extent):
             ax.set_xticks([-extent,0,extent]);ax.set_yticks([-extent,0,extent])
             if row==0:ax.set_title(rf'$\theta={theta/np.pi:g}\pi$',fontsize=13,pad=8)
             if col==0:ax.set_ylabel(['Reference','Full residual','Abs. difference'][row],fontsize=13)
-    fig.supxlabel(r'Rel. pos. $x_1$ (dimensionless)',fontsize=14)
-    fig.supylabel(r'Rel. pos. $x_2$ (dimensionless)',fontsize=14)
+    fig.supxlabel(r'Rel. pos. $x_1$ (m)',fontsize=14)
+    fig.supylabel(r'Rel. pos. $x_2$ (m)',fontsize=14)
     fig.suptitle(title,fontsize=15)
     cax=fig.add_subplot(grid[:2,-1]);cb=fig.colorbar(value_im,cax=cax,ticks=np.linspace(-value_max,value_max,5))
     # The title clears the extension tip. The error colorbar has no extension.
@@ -86,7 +99,8 @@ def game(full,reference,path,title,headings,extent):
     cax2=fig.add_subplot(grid[2,-1]);cb2=fig.colorbar(error_im,cax=cax2,
         ticks=np.linspace(0,error_max,4),format='%.3g')
     cb2.ax.set_title('Abs. diff.',fontsize=11,pad=20)
-    save(fig,path)
+    save(fig,path,provenance=dict(full=native_identity(full),reference=native_identity(reference),
+                                 headings=list(map(float,headings)),observation_half_width=extent,slice_grid=[161,161]))
 
 
 def double(full,path):
@@ -97,14 +111,14 @@ def double(full,path):
         im=ax.contourf(X,Y,V,levels=np.linspace(-1,1,21),cmap='RdBu_r',extend='both')
         if np.min(V)<0<np.max(V):ax.contour(X,Y,V,levels=[0],colors='k',linewidths=1)
         ax.set_xlim(-2,2);ax.set_ylim(-2,2);ax.set_aspect('equal')
-        ax.set_title(rf'$t={t:.2f}$',fontsize=13,pad=7)
+        ax.set_title(rf'$t={t:.2f}\,\mathrm{{s}}$',fontsize=13,pad=7)
         ax.tick_params(labelbottom=i>=2)
-        if i>=2:ax.set_xlabel('Position (dimensionless)')
-        if i%2==0:ax.set_ylabel('Velocity (dimensionless)')
+    fig.supxlabel('Position (m)',fontsize=14)
+    fig.supylabel('Velocity (m/s)',fontsize=14)
     cb=fig.colorbar(im,ax=axs.ravel().tolist(),fraction=.035,pad=.035,ticks=[-1,-.5,0,.5,1])
     cb.ax.set_title('Value',fontsize=12,pad=20)
     fig.suptitle('Double integrator: full residual',fontsize=15)
-    save(fig,path)
+    save(fig,path,provenance=dict(full=native_identity(full),snapshot_times=[.2,.5,.8,1.]))
 
 
 def main():
@@ -124,14 +138,14 @@ def main():
         config=selection.get(name,dict(n=128,steps=800))
         n=args.n or config['n'];steps=config.get('steps',800);method=config.get('method','etd2')
         full=load(args.root,key(name,n,steps=steps,method=method))
-        if name=='double_integrator':double(full,args.figure_dir/'double_integrator_fullsource.png');continue
+        if name=='double_integrator':double(full,args.figure_dir/'double_integrator.jpg');continue
         reference=load(args.root,key(name,n,'reference',steps=steps,method=method))
         headings=[-np.pi/2,0,np.pi/2] if name!='dubins_single' else [-np.pi/2,0,np.pi/4,np.pi/2]
         titles={'rockets':'Rockets: fixed-horizon value comparison',
                 'dubins_relative':'Relative Dubins game: fixed-horizon values',
                 'dubins_single':'Single Dubins vehicle: pose-target values'}
-        files={'rockets':'rockets_3d_slices_fullsource.png','dubins_relative':'dubins_3d_comparison_fullsource.png',
-               'dubins_single':'dubins_single_fullsource.png'}
+        files={'rockets':'rockets_3d_slices.jpg','dubins_relative':'dubins_3d_comparison.jpg',
+               'dubins_single':'dubins_single.jpg'}
         game(full,reference,args.figure_dir/files[name],titles[name],headings,3. if name=='rockets' else 2.)
 
 if __name__=='__main__':main()

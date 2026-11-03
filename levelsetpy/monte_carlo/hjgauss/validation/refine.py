@@ -2,7 +2,7 @@
 from concurrent.futures import ProcessPoolExecutor,as_completed
 from pathlib import Path
 import argparse,json
-from validation_loop import job, _atomic_json
+from hjgauss.validation.run import job, _atomic_json
 
 SELECTION={
  'double_integrator':dict(n=128,steps=800,medium=96,medium_steps=800),

@@ -8,7 +8,7 @@ derivatives are spectral, including the corrected real-FFT Nyquist handling.
 from __future__ import annotations
 import time
 import numpy as np
-from full_residual_nd import mesh,variable_coefficient,fd_derivatives,full_source,spectral_derivatives
+from hjgauss.core.spectral import mesh,variable_coefficient,fd_derivatives,full_source,spectral_derivatives
 
 
 def solve(initial,hamiltonian,*,bounds,shape,delta,horizon,steps,coefficient=None,snapshots=()):

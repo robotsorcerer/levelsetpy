@@ -1,8 +1,8 @@
 """Independent chain-rule identities and multidimensional refinement checks."""
 import numpy as np
 import pytest
-from full_residual_nd import mesh, variable_coefficient, full_source, solve, spectral_derivatives
-from multidimensional_validation import manufactured, game_case
+from hjgauss.core.spectral import mesh, variable_coefficient, full_source, solve, spectral_derivatives
+from hjgauss.validation.cases import manufactured, game_case
 
 
 @pytest.mark.parametrize('dimension',[2,3])

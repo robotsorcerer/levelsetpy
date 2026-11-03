@@ -1,11 +1,9 @@
-"""Reproducible manufactured-solution diagnostic; run as python -m benchmark."""
+"""Reproducible manufactured-solution diagnostic."""
+import argparse
 import json
 from pathlib import Path
 import numpy as np
-try:
-    from .solver import Coefficient, solve_periodic
-except ImportError:  # direct module execution from this project root
-    from solver import Coefficient, solve_periodic
+from hjgauss.core.transform import Coefficient, solve_periodic
 
 
 def varying_coefficient(t, x):
@@ -39,6 +37,9 @@ def run():
 
 
 if __name__ == "__main__":
-    path = Path(__file__).with_name("benchmark_results.json")
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--out',type=Path,default=Path('results/benchmark.json'))
+    args=parser.parse_args();path=args.out
+    path.parent.mkdir(parents=True,exist_ok=True)
     path.write_text(json.dumps(run(), indent=2)+"\n")
     print(path)

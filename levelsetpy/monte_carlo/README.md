@@ -1,6 +1,6 @@
-# Full residual Hamilton–Jacobi computations
+# Full-residual Hamilton–Jacobi computations
 
-This directory implements the generalized Cole–Hopf transformation with the complete residual in equation B.10 of the HJ-Gauss manuscript. For elapsed time from the initial condition,
+This package implements the variable-coefficient exponential transformation used in equation B.10 of the HJ-Gauss manuscript. With elapsed time measured from the initial condition,
 
 ```text
 v_t + H(t,x,Dv) = (delta/2) Delta v,
@@ -8,56 +8,67 @@ omega = exp(-c v),
 omega_t = (delta/2) Delta omega + omega (R_alg + R_der).
 ```
 
-The prescribed coefficient is positive and smooth. Both residual terms are retained. The inverse gradient includes the spatial derivative of `1/c`. See [FULL_TRANSFORMATION.md](FULL_TRANSFORMATION.md) for the identity, interfaces, assumptions, and limitations.
+The coefficient `c` is prescribed, positive, and smooth. The implementation retains the complete algebraic and derivative residual, including the spatial derivative of `1/c` in the inverse-gradient formula. The transformation is exact. The nonlinear solver may be described as a quasilinearized fixed-point iteration because each update freezes the transformed source and solves the resulting linear parabolic problem.
 
-## Implementations
+## Layout
 
-- `solver.py`: one-dimensional periodic Fourier integration of the transformed equation and a Gaussian Duhamel estimator for a supplied source.
-- `full_residual_nd.py`: direct multidimensional full residual ETD2 integration and an independent FD4/RK4 reference.
-- `benchmark.py`: manufactured advection–diffusion refinement experiment.
-- `plot_validation.py`: manufactured-solution figure and generated LaTeX numbers.
-- `multidimensional_validation.py`, `validation_loop.py`, and `refine_failed_cases.py`: manufactured verification, game refinement, and sensitivity loops.
-- `render_multidimensional_validation.py` and `render_population_validation.py`: figures from current native fields; producer font metadata is saved alongside each raster.
-- `generate_royal_soc_animations.py`: matched GIF comparisons of LevelsetPy reference fields, full residual approximations, and absolute value errors for starling, double-integrator, Dubins, and rocket cases.
-- `test_solver.py`: chain-rule, inverse-gradient, refinement, positivity, and Gaussian-integral checks.
+| Path | Purpose |
+|---|---|
+| `hjgauss/core/` | Exact transformation, spectral solver, and finite-difference solver |
+| `hjgauss/validation/` | Manufactured cases, game runs, refinement, evidence checks, and reports |
+| `hjgauss/render/` | Publication figures, GIFs, and generated LaTeX |
+| `tests/` | Transformation, solver, and provenance regression tests |
 
-Run from this directory:
+The filenames are intentionally short within these functional namespaces: for example, `core/spectral.py`, `validation/report.py`, and `render/figures.py`.
 
-```sh
-python -m pip install -r requirements.txt
-python -m pytest -q test_solver.py
-python -m benchmark
-python -m plot_validation --help
-python -m validation_loop --stage refinement --workers 3
-python -m validation_loop --stage sensitivity --workers 3
-python -m validation_report --selection results/multidimensional/selection.json
-```
+## Installation and quick checks
 
-Generate the Royal Society GIFs from the saved archives without rerunning the PDEs. The source
-defaults to `results/multidimensional`; pass the blog animation directory explicitly:
+Run commands from this directory:
 
 ```sh
-python generate_royal_soc_animations.py \
-  --output /path/to/robotsorcerer.github.io/downloads/Papers/assets/anim
+python -m pip install -e '.[dev]'
+python -m pytest -q
+python -m hjgauss.validation.benchmark
+python -m hjgauss.render.plot --help
 ```
 
-Each frame uses matching saved times and solver settings. Its columns show the independent
-LevelsetPy reference, the full residual approximation, and the absolute value difference. The
-error color scale is shared across time within each GIF and reported in the final animation
-manifest. Maximum errors appear in scientific notation in each frame heading, and colorbar ticks
-use scientific notation as well. Rocket comparisons require matching the coefficient, horizon,
-grid, and viscosity. The script checks these settings before rendering.
+The benchmark is a deterministic one-dimensional manufactured check. The unit tests and imports do not require saved multidimensional results.
 
-The `full` mode is the theoretical model. The `drop_derivative` and `heat` modes in the manufactured benchmark are negative controls that solve altered equations; their presence tests the necessity of the full residual. The quadratic constant-coefficient heat limit remains a valid special case.
+## Generated results
 
-## Evidence and scope
+`results/` is generated output and is excluded from version control. It need not exist before a run: every producer creates its required directories. The standard output location is `results/multidimensional/`.
 
-`full_transformation_benchmark_results.json` records manufactured-solution errors. Gaussian Duhamel sampling evaluates one supplied-source map; it does not implement an entire stochastic nonlinear source iteration. Periodic spatial grids require storage growing with dimension. Neither routine establishes high-dimensional efficiency, reach–avoid guarantees, or population safety certificates.
+The following sequence regenerates the multidimensional evidence. These are paper-grade PDE computations and can be expensive:
 
-Current multidimensional runs solve the complete transformed equation directly, with a fixed collocation source-mode cutoff. Defects are checked against the untruncated equation. The original fixed-per-step-filter reference and inconsistent game implementations have been removed. See `results/multidimensional/VALIDATION_REPORT.md` and `LOOP_STATE.md` for the current numerical status; failed and pending checks remain explicit. A numerical pass does not establish editorial acceptance or a continuum certificate.
+```sh
+python -m hjgauss.validation.cases --suite manufactured
+python -m hjgauss.validation.refine --stage refinement --workers 3
+python -m hjgauss.validation.refine --stage sensitivity --workers 3
+python -m hjgauss.validation.boundary \
+  --cases rockets dubins_relative dubins_single double_integrator murmuration \
+  --workers 3
+python -m hjgauss.validation.population --n 192 --steps 800 --method fd
+python -m hjgauss.validation.report
+python -m hjgauss.validation.seal
+```
 
-`population_validation.py` saves all 100,000 fresh query states, values, paired references, counts, seed, and archive hashes. It evaluates one altitude-invariant relative-state field; it does not simulate a joint flock trajectory.
+`validation/refine.py` writes the selected resolutions to `results/multidimensional/selection.json`. The report refuses stale archives when their stored source digests no longer match the numerical producers.
 
-`write_validation_tex.py` generates the manuscript tables and numeric macros from native results. Final figures resolve under the manuscript's `arxiv/figures/`. Re-rendering existing fields does not rerun the PDE. Source and data digests must match before using cached results.
+Generate manuscript assets only after the native validation records pass their declared checks:
 
-The package exports only full residual interfaces. The audit and removed-path inventory are in [THEORY_AUDIT.md](THEORY_AUDIT.md) and `theory_audit_removed_paths.json`.
+```sh
+python -m hjgauss.render.figures \
+  --figure-dir /path/to/HJ_Gauss/arxiv/figures
+python -m hjgauss.render.population \
+  --figure-dir /path/to/HJ_Gauss/arxiv/figures \
+  --n 192 --steps 800 --method fd
+python -m hjgauss.render.latex --paper-root /path/to/HJ_Gauss
+python -m hjgauss.render.animations \
+  --output /path/to/blog/downloads/Papers/assets/anim
+```
+
+The animation renderer uses matched saved times and settings; it does not rerun the PDEs.
+
+## Numerical scope
+
+The multidimensional solvers retain the full transformed residual. Their deterministic grids still grow rapidly with dimension. Gaussian Duhamel sampling evaluates one frozen-source update, not the complete nonlinear iteration. The 100,000-state murmuration experiment evaluates one altitude-invariant relative-state field at a seeded cohort; it is neither a coupled 100,000-agent trajectory simulation nor a population-safety certificate. Sampled equation residuals and finite-query discrepancies support the reported numerical comparisons but do not alone provide a continuum error or safety guarantee.

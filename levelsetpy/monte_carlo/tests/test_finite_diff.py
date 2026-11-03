@@ -1,8 +1,8 @@
 """Independent Fourier-mode and manufactured checks for local full-source solves."""
 import numpy as np
 import pytest
-from full_residual_fd import solve,original_reference,sixth_derivatives
-from multidimensional_validation import manufactured
+from hjgauss.core.finite_diff import solve,original_reference,sixth_derivatives
+from hjgauss.validation.cases import manufactured
 
 
 @pytest.mark.parametrize('dimension',[2,3])

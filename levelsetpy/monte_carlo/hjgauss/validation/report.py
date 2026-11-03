@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
-from multidimensional_validation import game_case
-from validation_loop import CASES
+from hjgauss.validation.cases import game_case
+from hjgauss.validation.run import CASES
 
 
 def key(name,n,kind='full',steps=800,length=6.,base=.2,angle=None,method='etd2'):
@@ -22,7 +22,7 @@ def load(root,k,check_source=True):
         raise ValueError(f'Archive digest mismatch: {k}')
     if check_source:
         for name,digest in rec['source_digests'].items():
-            if hashlib.sha256((Path(__file__).parent/name).read_bytes()).hexdigest()!=digest:
+            if hashlib.sha256((Path(__file__).resolve().parents[1]/name).read_bytes()).hexdigest()!=digest:
                 raise ValueError(f'Stale source: {k}/{name}')
     with np.load(archive) as f:
         data={name:f[name] for name in f.files}
@@ -30,7 +30,7 @@ def load(root,k,check_source=True):
     if data['value'].shape!=tuple(rec['shape']) or any(len(a)!=n or not np.all(np.diff(a)>0) for a,n in zip(axes,rec['shape'])):
         raise ValueError(f'Archive shape or axes mismatch: {k}')
     if not np.all(np.isfinite(data['value'])):raise ValueError(f'Nonfinite archive: {k}')
-    return dict(record=rec,axes=axes,data=data,value=data['value'],key=k)
+    return dict(record=rec,axes=axes,data=data,value=data['value'],key=k,archive_path=str(archive.resolve()))
 
 
 def interpolate(sol,queries,field=None):
@@ -71,6 +71,8 @@ def population_evidence(root,config):
                 issues.append('Population/native run mismatch: '+label)
             elif hashlib.sha256(path.read_bytes()).hexdigest()!=rec.get(label+'_archive_sha256'):
                 issues.append('Native archive hash mismatch: '+label)
+            else:
+                native=load(root,expected);del native
         archive=root/'population_values_100000.npz'
         if hashlib.sha256(archive.read_bytes()).hexdigest()!=rec.get('archive_sha256'):
             issues.append('Population archive hash mismatch')
@@ -84,6 +86,16 @@ def population_evidence(root,config):
                     positive_count=int(np.sum(v>0)),nonpositive_count=int(np.sum(v<=0)),
                     reference_positive_count=int(np.sum(r>0)),sign_disagreement_count=int(np.sum((v>0)!=(r>0))))
         if any(rec.get(k)!=n for k,n in counts.items()):issues.append('Population count metadata mismatch')
+        paired=dict(both_nonpositive_count=int(np.sum((v<=0)&(r<=0))),
+                    both_positive_count=int(np.sum((v>0)&(r>0))),
+                    full_nonpositive_reference_positive_count=int(np.sum((v<=0)&(r>0))),
+                    full_positive_reference_nonpositive_count=int(np.sum((v>0)&(r<=0))))
+        if any(rec.get(k)!=n for k,n in paired.items()):issues.append('Paired sign table metadata mismatch')
+        mismatched=(v>0)!=(r>0)
+        near=float(np.max(np.abs(r[mismatched]))) if np.any(mismatched) else 0.
+        if rec.get('max_reference_magnitude_at_disagreement')!=near:issues.append('Disagreement magnitude mismatch')
+        if rec.get('population_producer_sha256')!=hashlib.sha256((Path(__file__).parent/'population.py').read_bytes()).hexdigest():
+            issues.append('Population producer changed')
         rng=np.random.default_rng(seed)
         replay=np.column_stack([rng.uniform(-3,3,100000),rng.uniform(-3,3,100000),
                                 rng.uniform(-1,1,100000),rng.uniform(-np.pi,np.pi,100000)])
@@ -95,6 +107,30 @@ def population_evidence(root,config):
         return rec
     except (OSError,ValueError,KeyError) as e:
         return dict(passed=False,missing=str(e))
+
+
+def topology_evidence(root,config):
+    """Check integer counts and their bindings to the selected native fields."""
+    if isinstance(config,int):config=dict(n=config,steps=800)
+    try:
+        rec=json.loads((root/'topology_validation.json').read_text());issues=[]
+        for label,kind in [('full','full'),('reference','reference')]:
+            expected=key('murmuration',config['n'],kind,steps=config['steps'],method=config.get('method','etd2'))
+            native=load(root,expected);del native
+            if rec.get(label+'_run')!=expected:issues.append('Topology run mismatch')
+            if rec.get(label+'_archive_sha256')!=hashlib.sha256((root/(expected+'.npz')).read_bytes()).hexdigest():
+                issues.append('Topology native archive mismatch')
+        fine=np.asarray(rec['fine_counts']);reference=np.asarray(rec['reference_counts'])
+        if fine.shape!=(len(rec['times']),3) or reference.shape!=fine.shape:issues.append('Topology count shape mismatch')
+        else:
+            for counts in [fine,reference]:
+                if not np.all(counts==np.round(counts)) or np.any(counts[:,:2]<0):issues.append('Invalid topology counts')
+                if not np.array_equal(counts[:,2],counts[:,0]-counts[:,1]):issues.append('Euler characteristic mismatch')
+            if rec.get('topology_matches_reference')!=bool(np.array_equal(fine,reference)):issues.append('Topology agreement flag mismatch')
+        rec['passed']=not issues
+        if issues:rec['issues']=issues
+        return rec
+    except (OSError,ValueError,KeyError) as e:return dict(passed=False,missing=str(e))
 
 
 def assess(root,selection=None):
@@ -155,14 +191,15 @@ def assess(root,selection=None):
             except (OSError,KeyError,ValueError) as e:
                 manufactured.append(dict(dimension=d,kind=kind,scheme=scheme,passed=False,missing=str(e)))
     population=population_evidence(root,selection.get('murmuration',128))
+    topology=topology_evidence(root,selection.get('murmuration',128))
     game_pass=all(r.get('passed',False) for r in results.values())
-    summary=dict(criteria=criteria,cases=results,manufactured=manufactured,population=population,
+    summary=dict(criteria=criteria,cases=results,manufactured=manufactured,population=population,topology=topology,
                  game_checks_passed=game_pass,
-                 passed=game_pass and all(r['passed'] for r in manufactured) and population.get('passed',False),
-                 interpretation='Scoped numerical validation; sampled defects do not certify continuum error or safety')
+                 passed=game_pass and all(r['passed'] for r in manufactured) and population.get('passed',False) and topology.get('passed',False),
+                 interpretation='Scoped numerical validation; sampled residuals do not certify continuum error or safety')
     (root/'validation_summary.json').write_text(json.dumps(summary,indent=2)+'\n')
     lines=['# Multidimensional numerical validation','',summary['interpretation'],'',
-           'Discrepancies are maxima on 4,225 common interpolated queries in 2D or 135,200 in 3D (65 × 65 × 32 headings). Field refinement can change both grid and time steps; fixed-grid time halving is reported separately. Equation defects are sampled at native collocation nodes at three interior times. The box check combines domain extension, a smaller time step, and a changed smooth coefficient wavelength; it is not an isolated boundary-error estimate.','',
+           'Discrepancies are maxima on 4,225 common interpolated queries in 2D or 135,200 in 3D (65 × 65 × 32 headings). Field refinement can change both grid and time steps; fixed-grid time halving is reported separately. Equation residuals are sampled at native collocation nodes at three interior times. The box check combines domain extension, a smaller time step, and a changed smooth coefficient wavelength; it is not an isolated boundary-error estimate.','',
            '| Case | Fine grid | Space | Independent | Time | Coefficient | Combined box | Sampled defect (sup) | Status |',
            '|---|---|---|---|---|---|---|---|---|']
     for name,r in results.items():

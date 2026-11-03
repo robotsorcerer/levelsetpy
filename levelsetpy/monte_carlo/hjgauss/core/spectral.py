@@ -87,9 +87,9 @@ def fd_derivatives(u, h):
 
 def solve(initial, hamiltonian, *, bounds, shape, delta, horizon, steps,
           coefficient=None, kind="full", snapshots=()):
-    """Return final field, snapshots and centered-time equation defects.
+    """Return final field, snapshots and centered-time equation residuals.
 
-    Defects are computed independently from centered adjacent-time values
+    Residuals are computed independently from centered adjacent-time values
     and spectral spatial derivatives. Initial and final times are excluded
     from the defect, and the reporting mask is supplied by the caller.
     """
@@ -125,7 +125,7 @@ def solve(initial, hamiltonian, *, bounds, shape, delta, horizon, steps,
     defects = []
     previous = None
     middle = u.copy()
-    # Sample defects at a fixed set of physical times; compare at identical
+    # Sample residuals at a fixed set of physical times; compare at identical
     # times across refinements, avoiding an initial compatibility transient.
     defect_steps = {int(round(s*steps)) for s in (.25,.5,.75)}
     min_transform = float(np.min(u)) if kind == "full" else None
@@ -160,7 +160,7 @@ def solve(initial, hamiltonian, *, bounds, shape, delta, horizon, steps,
                 p=tuple(-q/(c*middle)+np.log(middle)*d/c**2 for q,d in zip(grad,dc))
                 fmid=full_source(at,middle,grad,x,coefficient,hamiltonian,delta)
                 transformed_defect=ut-.5*delta*lap-fmid
-                # The exact B.10 identity relates the two continuum defects.
+                # The exact B.10 identity relates the two continuum residuals.
                 # Independently differentiated recovered v below detects
                 # spatial chain-rule/collocation discrepancies as well.
                 vp=-np.log(previous)/coefficient(at-dt,x)[0]
