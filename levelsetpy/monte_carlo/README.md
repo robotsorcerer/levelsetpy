@@ -1,4 +1,4 @@
-# Full-residual Hamilton–Jacobi computations
+# Sampling-based HJ Reachability
 
 This package implements the variable-coefficient exponential transformation used in equation B.10 of the HJ-Gauss manuscript. With elapsed time measured from the initial condition,
 
