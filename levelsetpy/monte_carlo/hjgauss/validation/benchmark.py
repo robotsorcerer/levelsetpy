@@ -1,4 +1,4 @@
-"""Reproducible manufactured-solution diagnostic."""
+"""Reproducible analytic-solution diagnostic."""
 import argparse
 import json
 from pathlib import Path
@@ -28,7 +28,7 @@ def run():
             results.append(dict(mode=mode, steps=steps, points=128,
                                 value_sup_error=float(err),
                                 gradient_sup_error=float(np.max(np.abs(out["gradient"]-grad_ref)))))
-    return dict(problem="periodic linear advection-diffusion, manufactured sine",
+    return dict(problem="periodic linear advection-diffusion with an analytic sine solution",
                 delta=.4, speed=.7, horizon=.5, length=float(2*np.pi),
                 coefficient="1 + .2 cos(x) + .1 sin(t)",
                 method="Fourier collocation, exponential Euler; no dealiasing",

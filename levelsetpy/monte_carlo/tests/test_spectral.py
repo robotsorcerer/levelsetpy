@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 from hjgauss.core.spectral import mesh, variable_coefficient, full_source, solve, spectral_derivatives
-from hjgauss.validation.cases import manufactured, game_case
+from hjgauss.validation.cases import analytic_case,game_case
 
 
 @pytest.mark.parametrize('dimension',[2,3])
@@ -41,8 +41,8 @@ def test_nd_full_chain_rule_with_time_and_space_dependent_coefficient(dimension)
 
 
 @pytest.mark.parametrize('dimension',[2,3])
-def test_full_nd_manufactured_time_refinement(dimension):
-    case=manufactured(dimension)
+def test_full_nd_analytic_time_refinement(dimension):
+    case=analytic_case(dimension)
     errors=[]
     for steps in [40,80]:
         sol=solve(case['initial'],case['hamiltonian'],bounds=case['bounds'],
@@ -54,7 +54,7 @@ def test_full_nd_manufactured_time_refinement(dimension):
 
 
 def test_independent_reference_refines_against_analytic_solution():
-    case=manufactured(2);errors=[]
+    case=analytic_case(2);errors=[]
     for n in [16,32]:
         sol=solve(case['initial'],case['hamiltonian'],bounds=case['bounds'],
                   shape=(n,n),delta=.3,horizon=.4,steps=80,kind='reference')
@@ -64,7 +64,7 @@ def test_independent_reference_refines_against_analytic_solution():
 
 
 def test_invalid_time_steps_and_snapshot_requests_are_rejected():
-    case=manufactured(2)
+    case=analytic_case(2)
     kwargs=dict(bounds=case['bounds'],shape=(16,16),delta=.3,horizon=.4)
     for steps,snapshots in [(0,()),(20,(-.1,)),(20,(.5,)),(20,(.001,.002))]:
         with pytest.raises(ValueError):

@@ -12,7 +12,7 @@ def test_rejected_population_is_not_emitted_as_selected_run_numbers(tmp_path,mon
     cases['rockets']['gates']={'defect':dict(value=.2,limit=.15,passed=False)}
     summary=dict(population=dict(passed=False,count=100000,positive_count=99828,
                                 sign_disagreement_count=17),cases=cases,
-                 manufactured=[],passed=False)
+                 analytic=[],passed=False)
     monkeypatch.setattr(paper_tex,'assess',lambda root,selection:summary)
     paper_tex.generate(tmp_path,tmp_path/'paper',{})
     out=tmp_path/'paper/sec_roysoc/figures'

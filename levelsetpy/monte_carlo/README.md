@@ -15,7 +15,7 @@ The coefficient `c` is prescribed, positive, and smooth. The implementation reta
 | Path | Purpose |
 |---|---|
 | `hjgauss/core/` | Exact transformation, spectral solver, and finite-difference solver |
-| `hjgauss/validation/` | Manufactured cases, game runs, refinement, evidence checks, and reports |
+| `hjgauss/validation/` | Analytic checks, game runs, refinement, evidence checks, and reports |
 | `hjgauss/render/` | Publication figures, GIFs, and generated LaTeX |
 | `tests/` | Transformation, solver, and provenance regression tests |
 
@@ -32,7 +32,7 @@ python -m hjgauss.validation.benchmark
 python -m hjgauss.render.plot --help
 ```
 
-The benchmark is a deterministic one-dimensional manufactured check. The unit tests and imports do not require saved multidimensional results.
+The benchmark is a deterministic one-dimensional analytic check. The unit tests and imports do not require saved multidimensional results.
 
 ## Generated results
 
@@ -41,7 +41,7 @@ The benchmark is a deterministic one-dimensional manufactured check. The unit te
 The following sequence regenerates the multidimensional evidence. These are paper-grade PDE computations and can be expensive:
 
 ```sh
-python -m hjgauss.validation.cases --suite manufactured
+python -m hjgauss.validation.cases --suite analytic
 python -m hjgauss.validation.refine --stage refinement --workers 3
 python -m hjgauss.validation.refine --stage sensitivity --workers 3
 python -m hjgauss.validation.boundary \

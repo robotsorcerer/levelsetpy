@@ -1,4 +1,4 @@
-"""Render new manufactured-solution diagnostics; never reuse old paper values.
+"""Render new analytic-solution diagnostics; never reuse old paper values.
 
 Run from the repository root with
 python -m hjgauss.render.plot --out-dir /path/to/sec_roysoc/figures
@@ -131,7 +131,7 @@ def render(out_dir, placement_width_in=384.1122/72.27, figure_dir=None):
     fig.savefig(path,dpi=300,facecolor='white',pil_kwargs={'quality':98,'subsampling':0,'optimize':True})
     plt.close(fig)
     metadata = {
-        "scope": "Deterministic one-dimensional periodic manufactured verification",
+        "scope": "Deterministic one-dimensional periodic analytic verification",
         "producer": "plot_1d.render",
         "data_producer": "benchmark.run",
         "data_file": data_path.name,

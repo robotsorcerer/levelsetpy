@@ -208,7 +208,7 @@ viz.visGrid([g], g.dim, title='Simple 2D Grid')
 
 ## HJ-Gauss full residual computations
 
-The research code in [`levelsetpy/monte_carlo/`](levelsetpy/monte_carlo/) retains the complete generalized Cole–Hopf residual. It is organized as `hjgauss/core`, `hjgauss/validation`, and `hjgauss/render`, with tests under `tests/`. It includes transformed-equation solvers, a supplied-source Gaussian Duhamel estimator, manufactured-solution checks, and reproducible multidimensional validation workflows.
+The research code in [`levelsetpy/monte_carlo/`](levelsetpy/monte_carlo/) retains the complete generalized Cole–Hopf residual. It is organized as `hjgauss/core`, `hjgauss/validation`, and `hjgauss/render`, with tests under `tests/`. It includes transformed-equation solvers, a supplied-source Gaussian Duhamel estimator, analytic-solution checks, and reproducible multidimensional validation workflows.
 
 See the [implementation README](levelsetpy/monte_carlo/README.md) for commands, provenance checks, and numerical scope. Generated native fields and reports live under the ignored `results/` directory and are recreated by the validation commands.
 

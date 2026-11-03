@@ -16,7 +16,7 @@ from hjgauss.core.spectral import solve, variable_coefficient
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 
 
-def manufactured(dimension, delta=.3):
+def analytic_case(dimension, delta=.3):
     bounds=((-np.pi,np.pi),)*dimension
     speed=np.arange(1,dimension+1)*.15
     def exact(t,x):
@@ -139,10 +139,10 @@ def run_game(out,name,n,steps,kind='full',length=6.,coefficient_base=.2,angle_n=
     return sol,rec
 
 
-def run_manufactured(out):
+def run_analytic(out):
     rows=[]
     for d in (2,3):
-        case=manufactured(d)
+        case=analytic_case(d)
         for n,steps in [(16,40),(24,80),(32,160),(48,320)]:
             for kind in ['full','reference']:
                 sol=solve(case['initial'],case['hamiltonian'],bounds=case['bounds'],
@@ -152,18 +152,18 @@ def run_manufactured(out):
                 coords=np.meshgrid(*sol['axes'],indexing='ij',sparse=True)
                 truth=case['exact'](.4,coords)[0]
                 rec['exact_sup_error']=float(np.max(np.abs(sol['value']-truth)))
-                rec['case']=f'manufactured_{d}d'
-                name=f'manufactured_{d}d_{kind}_{n}_{steps}'
+                rec['case']=f'analytic_{d}d'
+                name=f'analytic_{d}d_{kind}_{n}_{steps}'
                 store(out,name,sol,rec);rows.append(rec)
                 print(json.dumps(rec),flush=True)
-    (out/'manufactured_summary.json').write_text(json.dumps(rows,indent=2)+'\n')
+    (out/'analytic_summary.json').write_text(json.dumps(rows,indent=2)+'\n')
     return rows
 
 
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--out',type=Path,default=Path('results/multidimensional'))
-    parser.add_argument('--suite',choices=['manufactured','games'],default='manufactured')
+    parser.add_argument('--suite',choices=['analytic','games'],default='analytic')
     parser.add_argument('--cases',nargs='+',default=['double_integrator','dubins_single','dubins_relative','rockets','murmuration'])
     parser.add_argument('--n',type=int,default=64)
     parser.add_argument('--steps',type=int,default=400)
@@ -172,7 +172,7 @@ def main():
     parser.add_argument('--coefficient-base',type=float,default=.2)
     parser.add_argument('--angle-n',type=int)
     args=parser.parse_args()
-    if args.suite=='manufactured':run_manufactured(args.out)
+    if args.suite=='analytic':run_analytic(args.out)
     else:
         for name in args.cases:
             try:

@@ -4,29 +4,29 @@ import hashlib,json
 import numpy as np
 from hjgauss.core.finite_diff import solve,original_reference
 from hjgauss.core.spectral import variable_coefficient
-from hjgauss.validation.cases import game_case,diagnostics,manufactured
+from hjgauss.validation.cases import analytic_case,game_case,diagnostics
 
 PACKAGE_ROOT=Path(__file__).resolve().parents[1]
 SOURCES=['core/spectral.py','validation/cases.py','core/finite_diff.py','validation/fd.py']
 
 
-def run_manufactured(out):
+def run_analytic(out):
     here=PACKAGE_ROOT;out=Path(out);out.mkdir(parents=True,exist_ok=True)
     digests={f:hashlib.sha256((here/f).read_bytes()).hexdigest() for f in SOURCES}
     records=[]
     for d in (2,3):
-        case=manufactured(d)
+        case=analytic_case(d)
         for n,steps in [(16,40),(24,80),(32,160),(48,320)]:
             for kind,method in [('full',solve),('reference',original_reference)]:
                 sol=method(case['initial'],case['hamiltonian'],bounds=case['bounds'],shape=(n,)*d,
                            delta=case['delta'],horizon=case['horizon'],steps=steps)
                 coords=np.meshgrid(*sol['axes'],indexing='ij',sparse=True)
                 rec=diagnostics(sol,case['interior'])
-                rec.update(case=f'manufactured_{d}d',method=sol['method'],source_digests=digests,
+                rec.update(case=f'analytic_{d}d',method=sol['method'],source_digests=digests,
                            exact_sup_error=float(np.max(np.abs(sol['value']-case['exact'](.4,coords)[0]))))
                 if any(hashlib.sha256((here/f).read_bytes()).hexdigest()!=h for f,h in digests.items()):
-                    raise RuntimeError('Source drift during manufactured suite')
-                name=f'manufactured_{d}d_{kind}_{n}_{steps}_fd'
+                    raise RuntimeError('Source drift during analytic suite')
+                name=f'analytic_{d}d_{kind}_{n}_{steps}_fd'
                 np.savez_compressed(out/(name+'.npz'),value=sol['value'],
                                     **{f'axis_{i}':a for i,a in enumerate(sol['axes'])})
                 (out/(name+'.json')).write_text(json.dumps(rec,indent=2)+'\n')

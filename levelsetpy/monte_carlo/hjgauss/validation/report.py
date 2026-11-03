@@ -175,27 +175,27 @@ def assess(root,selection=None):
         v=interpolate(fine,q)
         row['zero_sublevel_query_count']=int(np.sum(v<=0))
         # An empty reachable set is a scientific outcome, not automatically a
-        # failed solver; disclose it instead of manufacturing a zero contour.
+        # failed solver; disclose it instead of fabricating a zero contour.
         row['has_zero_contour']=bool(np.min(v)<0<np.max(v))
         row['passed']=not row['missing'] and all(v['passed'] for v in row['gates'].values())
         results[name]=row
-    manufactured=[]
+    analytic=[]
     schemes=['etd2']+(['fd'] if any(isinstance(c,dict) and c.get('method')=='fd' for c in selection.values()) else [])
     for d in [2,3]:
       for scheme in schemes:
         for kind in ['full','reference']:
             try:
-                rec=load(root,f'manufactured_{d}d_{kind}_48_320'+('_fd' if scheme=='fd' else ''))['record']
-                manufactured.append(dict(dimension=d,kind=kind,scheme=scheme,error=rec['exact_sup_error'],
-                    passed=rec['exact_sup_error']<=criteria['manufactured_exact_sup']))
+                rec=load(root,f'analytic_{d}d_{kind}_48_320'+('_fd' if scheme=='fd' else ''))['record']
+                analytic.append(dict(dimension=d,kind=kind,scheme=scheme,error=rec['exact_sup_error'],
+                    passed=rec['exact_sup_error']<=criteria['analytic_exact_sup']))
             except (OSError,KeyError,ValueError) as e:
-                manufactured.append(dict(dimension=d,kind=kind,scheme=scheme,passed=False,missing=str(e)))
+                analytic.append(dict(dimension=d,kind=kind,scheme=scheme,passed=False,missing=str(e)))
     population=population_evidence(root,selection.get('murmuration',128))
     topology=topology_evidence(root,selection.get('murmuration',128))
     game_pass=all(r.get('passed',False) for r in results.values())
-    summary=dict(criteria=criteria,cases=results,manufactured=manufactured,population=population,topology=topology,
+    summary=dict(criteria=criteria,cases=results,analytic=analytic,population=population,topology=topology,
                  game_checks_passed=game_pass,
-                 passed=game_pass and all(r['passed'] for r in manufactured) and population.get('passed',False) and topology.get('passed',False),
+                 passed=game_pass and all(r['passed'] for r in analytic) and population.get('passed',False) and topology.get('passed',False),
                  interpretation='Scoped numerical validation; sampled residuals do not certify continuum error or safety')
     (root/'validation_summary.json').write_text(json.dumps(summary,indent=2)+'\n')
     lines=['# Multidimensional numerical validation','',summary['interpretation'],'',

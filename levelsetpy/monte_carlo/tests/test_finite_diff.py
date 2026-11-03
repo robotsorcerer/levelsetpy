@@ -1,13 +1,13 @@
-"""Independent Fourier-mode and manufactured checks for local full-source solves."""
+"""Independent Fourier-mode and analytic checks for local full-source solves."""
 import numpy as np
 import pytest
 from hjgauss.core.finite_diff import solve,original_reference,sixth_derivatives
-from hjgauss.validation.cases import manufactured
+from hjgauss.validation.cases import analytic_case
 
 
 @pytest.mark.parametrize('dimension',[2,3])
 def test_full_fd4_spatial_refinement_with_variable_coefficient(dimension):
-    c=manufactured(dimension);errors=[]
+    c=analytic_case(dimension);errors=[]
     for n in [24,48]:
         sol=solve(c['initial'],c['hamiltonian'],bounds=c['bounds'],shape=(n,)*dimension,
                   delta=c['delta'],horizon=c['horizon'],steps=160)
@@ -34,8 +34,8 @@ def test_full_fd4_heat_limit_has_fourth_order_time_refinement():
 
 
 @pytest.mark.parametrize('dimension',[2,3])
-def test_fd6_original_reference_against_exact_manufactured_solution(dimension):
-    c=manufactured(dimension);n=32
+def test_fd6_original_reference_against_exact_analytic_solution(dimension):
+    c=analytic_case(dimension);n=32
     sol=original_reference(c['initial'],c['hamiltonian'],bounds=c['bounds'],shape=(n,)*dimension,
                            delta=c['delta'],horizon=c['horizon'],steps=160)
     x=np.meshgrid(*sol['axes'],indexing='ij',sparse=True)
