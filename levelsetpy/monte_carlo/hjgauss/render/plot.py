@@ -14,7 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
 from matplotlib.font_manager import FontProperties
-from matplotlib.ticker import ScalarFormatter
+from matplotlib.ticker import FuncFormatter, ScalarFormatter
 import numpy as np
 
 from hjgauss.validation.benchmark import run
@@ -23,6 +23,13 @@ from hjgauss.validation.benchmark import run
 def _tex_scientific(value):
     mantissa, exponent = f"{value:.3e}".split("e")
     return rf"{mantissa}\times10^{{{int(exponent)}}}"
+
+
+def _plot_scientific(value, _position=None):
+    if value == 0:
+        return "0"
+    mantissa, exponent = f"{value:.1e}".split("e")
+    return f"{mantissa.rstrip('0').rstrip('.')}e{int(exponent)}"
 
 
 def write_numbers(record, out_dir):
@@ -100,6 +107,7 @@ def render(out_dir, placement_width_in=384.1122/72.27, figure_dir=None):
         ax.set_ylabel("Maximum error on grid")
         ax.set_xticks([100, 200, 400, 800])
         ax.xaxis.set_major_formatter(ScalarFormatter())
+        ax.yaxis.set_major_formatter(FuncFormatter(_plot_scientific))
         ax.minorticks_off()
         ax.grid(True, which="major", color=".85", linewidth=.5)
         for text in ax.get_xticklabels()+ax.get_yticklabels():

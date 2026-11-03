@@ -8,12 +8,21 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 from hjgauss.validation.report import load,key,interpolate,assess
 
 plt.rcParams.update({'font.family':'DejaVu Sans','font.weight':'bold',
     'axes.labelweight':'bold','axes.titleweight':'bold','figure.titleweight':'bold',
     'font.size':12,'axes.labelsize':14,'xtick.labelsize':11,'ytick.labelsize':11,
     'mathtext.fontset':'dejavusans','mathtext.default':'bf'})
+
+
+def scientific(value, _position=None):
+    """Compact scientific notation for plotted residuals and errors."""
+    if value == 0:return '0'
+    mantissa,exponent=f'{value:.1e}'.split('e')
+    mantissa=mantissa.rstrip('0').rstrip('.')
+    return f'{mantissa}e{int(exponent)}'
 
 
 def native_identity(sol):
@@ -97,7 +106,7 @@ def game(full,reference,path,title,headings,extent):
     # The title clears the extension tip. The error colorbar has no extension.
     cb.ax.set_title('Value',fontsize=12,pad=20)
     cax2=fig.add_subplot(grid[2,-1]);cb2=fig.colorbar(error_im,cax=cax2,
-        ticks=np.linspace(0,error_max,4),format='%.3g')
+        ticks=np.linspace(0,error_max,4),format=FuncFormatter(scientific))
     cb2.ax.set_title('Abs. diff.',fontsize=11,pad=20)
     save(fig,path,provenance=dict(full=native_identity(full),reference=native_identity(reference),
                                  headings=list(map(float,headings)),observation_half_width=extent,slice_grid=[161,161]))

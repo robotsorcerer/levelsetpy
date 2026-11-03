@@ -68,6 +68,7 @@ python -m hjgauss.render.animations \
 ```
 
 The animation renderer uses matched saved times and settings; it does not rerun the PDEs.
+Static error colorbars and animation error scales use compact scientific notation (for example, `6e-3`).
 
 ## Numerical scope
 
