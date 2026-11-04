@@ -26,7 +26,7 @@ HJ-Gauss combines that exact transformation with Gaussian evaluation of the init
 
 ## Animations
 
-Each animation reads left to right as **reference → HJ-Gauss → absolute difference**.
+Each animation reads left to right as **ground truth → HJ-Gauss → absolute error**.
 
 <table>
   <tr>

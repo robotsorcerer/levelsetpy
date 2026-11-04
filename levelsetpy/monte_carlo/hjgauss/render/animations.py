@@ -63,7 +63,7 @@ def render(root,out,case):
     for t,a,b,E in fields:
         fig,axs=plt.subplots(1,3,figsize=(12,4.5),dpi=90,layout='constrained')
         vmax=max(1.,float(np.max(np.abs(np.r_[a.ravel(),b.ravel()]))));im=None
-        for ax,z,ttl in zip(axs,[a,b,E],['LevelsetPy reference','HJ-Gauss',f'Absolute error (max {scientific(maxerr)})']):
+        for ax,z,ttl in zip(axs,[a,b,E],['Ground truth','HJ-Gauss',f'Absolute error (max {scientific(maxerr)})']):
             error=ttl.startswith('Absolute')
             im=ax.contourf(X,Y,z,levels=np.linspace(0,maxerr,25) if error else np.linspace(-vmax,vmax,25),cmap='magma' if error else 'RdBu_r',extend='max' if error else 'both')
             if not ttl.startswith('Absolute') and z.min()<0<z.max(): ax.contour(X,Y,z,[0],colors='black',linewidths=1)
@@ -86,6 +86,6 @@ def main():
     default_source=Path(__file__).resolve().parents[2]/'results/multidimensional'
     p=argparse.ArgumentParser();p.add_argument('--source',type=Path,default=default_source);p.add_argument('--output',type=Path,required=True,help='Output animation directory');a=p.parse_args();a.output.mkdir(parents=True,exist_ok=True)
     records=[render(a.source,a.output,c) for c in CASES]
-    (a.output/'roysoc_animations.json').write_text(json.dumps(dict(animations=records,columns=['LevelsetPy reference','HJ-Gauss','Absolute value error'],temporal_interpolation=False),indent=2)+'\n')
+    (a.output/'roysoc_animations.json').write_text(json.dumps(dict(animations=records,columns=['Ground truth','HJ-Gauss','Absolute error'],temporal_interpolation=False),indent=2)+'\n')
     print('Rendered four matched comparison animations.')
 if __name__=='__main__':main()
