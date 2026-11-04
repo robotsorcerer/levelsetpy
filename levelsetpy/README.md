@@ -1,1 +1,11 @@
-Please go through the `README.md` file in each individual directory in order to understand the usage and examples of these libraries.
+# LevelSetPy package projects
+
+## Contents
+
+- [HJ-Gauss](monte_carlo/README.md)
+- [MAPF execution comparisons](mapf/README.md)
+- [Core LevelSetPy library](../README.md#levelsetpy-overview)
+
+This package directory contains the grid-based solver modules and the research subprojects [`monte_carlo/`](monte_carlo/) and [`mapf/`](mapf/). Each subproject has its own README with usage, data provenance, and limitations. Run both projects from their respective directory roots.
+
+The HJ-Gauss project groups its scripts by function under `hjgauss/core`, `hjgauss/validation`, and `hjgauss/render`, and generates its ignored `results/` tree on demand. See [`monte_carlo/README.md`](monte_carlo/README.md) for the validated workflow and its stated scope.
