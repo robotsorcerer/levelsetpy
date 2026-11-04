@@ -14,7 +14,7 @@ def test_selected_pipeline_covers_every_reported_game_and_fixes_all_gates():
     criteria=json.loads(refine.CRITERIA.read_text())
     assert criteria['game_space_refinement_sup']==.01
     assert criteria['game_independent_reference_sup']==.02
-    assert criteria['game_original_defect_sampled_sup']==.15
+    assert criteria['game_original_residual_sampled_sup']==.15
 
 
 def test_report_rejects_post_run_gate_changes(tmp_path):
@@ -27,7 +27,7 @@ def test_report_rejects_post_run_gate_changes(tmp_path):
 
 def test_rejected_population_is_not_emitted_as_selected_run_numbers(tmp_path,monkeypatch):
     cases={name:dict(gates={},missing=['not yet computed']) for name in run.CASES}
-    cases['rockets']['gates']={'defect':dict(value=.2,limit=.15,passed=False)}
+    cases['rockets']['gates']={'residual':dict(value=.2,limit=.15,passed=False)}
     summary=dict(population=dict(passed=False,count=100000,positive_count=99828,
                                 sign_disagreement_count=17),cases=cases,
                  analytic=[],passed=False)

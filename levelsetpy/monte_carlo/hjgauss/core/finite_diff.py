@@ -27,7 +27,7 @@ def solve(initial,hamiltonian,*,bounds,shape,delta,horizon,steps,coefficient=Non
     indices={int(round(t/dt)):t for t in targets}
     if any(t<0 or t>horizon for t in targets) or len(indices)!=len(targets) or any(abs(i*dt-t)>1e-9 for i,t in indices.items()):
         raise ValueError('Snapshots must be distinct, in range, and align with steps')
-    saved={0.:v.copy()};defects=[];previous=None
+    saved={0.:v.copy()};residuals=[];previous=None
     check_steps={int(round(s*steps)) for s in (.25,.5,.75)}
     def rhs(t,z):
         grad,lap=fd_derivatives(z,h)
@@ -48,11 +48,11 @@ def solve(initial,hamiltonian,*,bounds,shape,delta,horizon,steps,coefficient=Non
             original=(vn-vp)/(2*dt)+hamiltonian(t,x,pv)-.5*delta*lapv
             pu,lapu=spectral_derivatives(u,waves)
             transformed=(updated-previous)/(2*dt)-.5*delta*lapu-full_source(t,u,pu,x,coefficient,hamiltonian,delta)
-            defects.append((t,original,transformed,transformed+c*u*original))
+            residuals.append((t,original,transformed,transformed+c*u*original))
         previous=u;u=updated
         if j+1 in indices:
             saved[indices[j+1]]=-np.log(u)/coefficient((j+1)*dt,x)[0]
-    return dict(axes=axes,value=saved[horizon],snapshots=saved,defects=defects,
+    return dict(axes=axes,value=saved[horizon],snapshots=saved,residuals=residuals,
                 steps=steps,dt=dt,shape=shape,bounds=bounds,delta=delta,horizon=horizon,
                 kind='full',method='FD4/RK4 complete transformed equation',
                 min_transform=minimum,runtime=time.perf_counter()-start)
@@ -81,7 +81,7 @@ def original_reference(initial,hamiltonian,*,bounds,shape,delta,horizon,steps,sn
     targets=sorted(set([0.,horizon,*map(float,snapshots)]));indices={int(round(t/dt)):t for t in targets}
     if any(t<0 or t>horizon for t in targets) or len(indices)!=len(targets) or any(abs(i*dt-t)>1e-9 for i,t in indices.items()):
         raise ValueError('Invalid snapshot times')
-    saved={0.:v.copy()};previous=None;defects=[]
+    saved={0.:v.copy()};previous=None;residuals=[]
     check_steps={int(round(s*steps)) for s in (.25,.5,.75)}
     def rhs(t,w):
         p,lap=sixth_derivatives(w,h)
@@ -93,11 +93,11 @@ def original_reference(initial,hamiltonian,*,bounds,shape,delta,horizon,steps,sn
         if not np.all(np.isfinite(updated)):raise FloatingPointError('Nonfinite FD6 reference')
         if j in check_steps and previous is not None:
             p,lap=spectral_derivatives(v,waves)
-            defect=(updated-previous)/(2*dt)+hamiltonian(t,x,p)-.5*delta*lap
-            defects.append((t,defect,None,None))
+            residual=(updated-previous)/(2*dt)+hamiltonian(t,x,p)-.5*delta*lap
+            residuals.append((t,residual,None,None))
         previous=v;v=updated
         if j+1 in indices:saved[indices[j+1]]=v.copy()
-    return dict(axes=axes,value=saved[horizon],snapshots=saved,defects=defects,
+    return dict(axes=axes,value=saved[horizon],snapshots=saved,residuals=residuals,
                 steps=steps,dt=dt,shape=shape,bounds=bounds,delta=delta,horizon=horizon,
                 kind='reference',method='FD6/RK4 original viscous equation',
                 min_transform=None,runtime=time.perf_counter()-start)

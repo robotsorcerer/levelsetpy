@@ -152,8 +152,8 @@ def assess(root,selection=None):
         except (OSError,KeyError,ValueError) as e:
             row['missing'].append(str(e));results[name]=row;continue
         row['record']=r
-        for metric,limit in [('original_defect_sup','game_original_defect_sampled_sup'),
-                             ('original_defect_rms','game_original_defect_sampled_rms')]:
+        for metric,limit in [('original_residual_sup','game_original_residual_sampled_sup'),
+                             ('original_residual_rms','game_original_residual_sampled_rms')]:
             row['gates'][metric]=dict(value=r[metric],limit=criteria[limit],passed=r[metric]<=criteria[limit])
         row['gates']['positivity']=dict(value=r['min_transform'],passed=r['min_transform']>0)
         comparisons=[('space',key(name,config['medium'],steps=config['medium_steps'],method=method),'game_space_refinement_sup'),
@@ -205,12 +205,12 @@ def assess(root,selection=None):
     (root/'validation_summary.json').write_text(json.dumps(summary,indent=2)+'\n')
     lines=['# Multidimensional numerical validation','',summary['interpretation'],'',
            'Discrepancies are maxima on 4,225 common interpolated queries in 2D or 135,200 in 3D (65 × 65 × 32 headings). Field refinement can change both grid and time steps; fixed-grid time halving is reported separately. Equation residuals are sampled at native collocation nodes at three interior times. The box check combines domain extension, a smaller time step, and a changed smooth coefficient wavelength; it is not an isolated boundary-error estimate.','',
-           '| Case | Fine grid | Space | Independent | Time | Coefficient | Combined box | Sampled defect (sup) | Status |',
+           '| Case | Fine grid | Space | Independent | Time | Coefficient | Combined box | Sampled residual (sup) | Status |',
            '|---|---|---|---|---|---|---|---|---|']
     for name,r in results.items():
         vals=[f"{r.get(v,{}).get('sup',float('nan')):.3g}" for v in ['space','independent','time','coefficient','domain']]
-        defect=r.get('record',{}).get('original_defect_sup',float('nan'))
-        lines.append('| '+' | '.join([name,str(r['fine_n']),*vals,f'{defect:.3g}','pass' if r.get('passed') else 'pending or failed'])+' |')
+        residual=r.get('record',{}).get('original_residual_sup',float('nan'))
+        lines.append('| '+' | '.join([name,str(r['fine_n']),*vals,f'{residual:.3g}','pass' if r.get('passed') else 'pending or failed'])+' |')
     (root/'VALIDATION_REPORT.md').write_text('\n'.join(lines)+'\n')
     return summary
 

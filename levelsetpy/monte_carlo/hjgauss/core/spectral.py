@@ -91,7 +91,7 @@ def solve(initial, hamiltonian, *, bounds, shape, delta, horizon, steps,
 
     Residuals are computed independently from centered adjacent-time values
     and spectral spatial derivatives. Initial and final times are excluded
-    from the defect, and the reporting mask is supplied by the caller.
+    from the residual calculation, and the reporting mask is supplied by the caller.
     """
     start = time.perf_counter()
     if kind not in {"full", "reference"}: raise ValueError(kind)
@@ -122,12 +122,12 @@ def solve(initial, hamiltonian, *, bounds, shape, delta, horizon, steps,
     if any(abs(i*dt-t)>1e-9 for i, t in indices.items()):
         raise ValueError("Snapshots must align with time steps")
     saved = {0.: v.copy()}
-    defects = []
+    residuals = []
     previous = None
     middle = u.copy()
     # Sample residuals at a fixed set of physical times; compare at identical
     # times across refinements, avoiding an initial compatibility transient.
-    defect_steps = {int(round(s*steps)) for s in (.25,.5,.75)}
+    residual_steps = {int(round(s*steps)) for s in (.25,.5,.75)}
     min_transform = float(np.min(u)) if kind == "full" else None
     for j in range(steps):
         t = j*dt
@@ -150,7 +150,7 @@ def solve(initial, hamiltonian, *, bounds, shape, delta, horizon, steps,
             k3=rhs(t+dt/2,u+dt*k2/2);k4=rhs(t+dt,u+dt*k3)
             updated=u+dt*(k1+2*k2+2*k3+k4)/6
             if not np.all(np.isfinite(updated)):raise FloatingPointError("Nonfinite reference")
-        if j in defect_steps and previous is not None:
+        if j in residual_steps and previous is not None:
             at = j*dt
             grad, lap = spectral_derivatives(middle, waves)
             ut = (updated-previous)/(2*dt)
@@ -159,24 +159,24 @@ def solve(initial, hamiltonian, *, bounds, shape, delta, horizon, steps,
                 val=-np.log(middle)/c
                 p=tuple(-q/(c*middle)+np.log(middle)*d/c**2 for q,d in zip(grad,dc))
                 fmid=full_source(at,middle,grad,x,coefficient,hamiltonian,delta)
-                transformed_defect=ut-.5*delta*lap-fmid
+                transformed_residual=ut-.5*delta*lap-fmid
                 # The exact B.10 identity relates the two continuum residuals.
                 # Independently differentiated recovered v below detects
                 # spatial chain-rule/collocation discrepancies as well.
                 vp=-np.log(previous)/coefficient(at-dt,x)[0]
                 vn=-np.log(updated)/coefficient(at+dt,x)[0]
                 pv, lapv=spectral_derivatives(val,waves)
-                original_defect=(vn-vp)/(2*dt)+hamiltonian(at,x,pv)-.5*delta*lapv
-                chain_gap=transformed_defect+c*middle*original_defect
-                defects.append((at, original_defect, transformed_defect, chain_gap))
+                original_residual=(vn-vp)/(2*dt)+hamiltonian(at,x,pv)-.5*delta*lapv
+                chain_gap=transformed_residual+c*middle*original_residual
+                residuals.append((at, original_residual, transformed_residual, chain_gap))
             else:
-                original_defect=ut+hamiltonian(at,x,grad)-.5*delta*lap
-                defects.append((at,original_defect,None,None))
+                original_residual=ut+hamiltonian(at,x,grad)-.5*delta*lap
+                residuals.append((at,original_residual,None,None))
         previous=middle;middle=updated;u=updated
         if j+1 in indices:
             saved[indices[j+1]]=(-np.log(u)/coefficient((j+1)*dt,x)[0]
                                  if kind=="full" else u.copy())
-    return dict(axes=axes, value=saved[horizon], snapshots=saved, defects=defects,
+    return dict(axes=axes, value=saved[horizon], snapshots=saved, residuals=residuals,
                 steps=steps, dt=dt, shape=shape, bounds=bounds, delta=delta,
                 horizon=horizon, kind=kind, min_transform=min_transform,
                 runtime=time.perf_counter()-start)

@@ -46,9 +46,9 @@ def diagnostics(sol, interior):
     out={k:sol[k] for k in ['steps','dt','shape','bounds','delta','horizon','kind',
                            'min_transform','runtime']}
     out['value_range_interior']=[float(np.min(sol['value'][mask])),float(np.max(sol['value'][mask]))]
-    out['defect_sample_times']=[r[0] for r in sol['defects']]
-    for i,name in [(1,'original_defect'),(2,'transformed_defect'),(3,'chain_rule_gap')]:
-        arrays=[r[i][mask] for r in sol['defects'] if r[i] is not None]
+    out['residual_sample_times']=[r[0] for r in sol['residuals']]
+    for i,name in [(1,'original_residual'),(2,'transformed_residual'),(3,'chain_rule_gap')]:
+        arrays=[r[i][mask] for r in sol['residuals'] if r[i] is not None]
         if arrays:
             out[name+'_sup']=max(float(np.max(np.abs(a))) for a in arrays)
             out[name+'_rms']=max(float(np.sqrt(np.mean(a*a))) for a in arrays)

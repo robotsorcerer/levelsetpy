@@ -54,7 +54,7 @@ def generate(root,paper,selection):
         r=summary['cases'][name];rec=r.get('record',{});shape=rec.get('shape')
         grid=(str(shape[0])+'^2'+(r'\times'+str(shape[2]) if len(shape)==3 else '')) if shape else r'\text{pending}'
         vals=[r.get(k,{}).get('sup') for k in ['space','independent']]
-        vals.append(rec.get('original_defect_sup'))
+        vals.append(rec.get('original_residual_sup'))
         status='Pass' if r.get('passed') else 'Fail' if any(not g['passed'] for g in r.get('gates',{}).values()) else 'Pending'
         table.append(NAMES[name]+' & $'+grid+'$ & '+' & '.join('$'+number(v)+'$' for v in vals)+' & '+status+r'\\')
         vals=[r.get(k,{}).get('sup') for k in ['time','coefficient','boundary','domain']]

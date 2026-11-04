@@ -1,11 +1,11 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "analytic_exact_sup": 1e-05,
   "game_space_refinement_sup": 0.01,
   "game_independent_reference_sup": 0.02,
   "game_time_halving_sup": 0.002,
   "game_coefficient_change_sup": 0.002,
   "game_domain_extension_sup": 0.005,
-  "game_original_defect_sampled_sup": 0.15,
-  "game_original_defect_sampled_rms": 0.02
+  "game_original_residual_sampled_sup": 0.15,
+  "game_original_residual_sampled_rms": 0.02
 }
