@@ -1,7 +1,7 @@
 [project]
 name = "hj-reach-murmuration"
 version = "0.2.0"
-description = "Generalized Cole-Hopf research solvers retaining the full residual"
+description = "HJ-Gauss generalized Cole-Hopf research solvers"
 authors = [{name = "Lekan Molu", email = "lekan.molu@amazon.com"}]
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.24", "scipy>=1.10", "matplotlib>=3.7", "scikit-image>=0.20"]

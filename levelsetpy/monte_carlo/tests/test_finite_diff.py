@@ -1,4 +1,4 @@
-"""Independent Fourier-mode and analytic checks for local full-source solves."""
+"""Independent Fourier-mode and analytic checks for local HJ-Gauss solves."""
 import numpy as np
 import pytest
 from hjgauss.core.finite_diff import solve,original_reference,sixth_derivatives

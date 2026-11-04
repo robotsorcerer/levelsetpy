@@ -9,6 +9,8 @@ from scipy.interpolate import RegularGridInterpolator
 from hjgauss.validation.cases import game_case
 from hjgauss.validation.run import CASES
 
+CRITERIA=Path(__file__).with_name('criteria.json')
+
 
 def key(name,n,kind='full',steps=800,length=6.,base=.2,angle=None,method='etd2'):
     k=f'{name}_{kind}_{n}_{steps}_L{length:g}_c{base:g}'
@@ -135,6 +137,9 @@ def topology_evidence(root,config):
 
 def assess(root,selection=None):
     criteria=json.loads((root/'acceptance_criteria.json').read_text())
+    fixed=json.loads(CRITERIA.read_text())
+    if criteria!=fixed:
+        raise ValueError('Acceptance criteria differ from the versioned pre-run gates')
     results={}
     selection=selection or {}
     for name in CASES:

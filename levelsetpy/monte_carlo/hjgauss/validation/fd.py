@@ -1,4 +1,5 @@
 """Native-run producer for the full FD4 source solve and FD6 original reference."""
+import argparse
 from pathlib import Path
 import hashlib,json
 import numpy as np
@@ -61,3 +62,13 @@ def run_game(out,name,n,steps,kind='full',length=6.,coefficient_base=.2,angle_n=
     (out/(name_key+'.json')).write_text(json.dumps(rec,indent=2)+'\n')
     print(json.dumps(rec),flush=True)
     return sol,rec
+
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--out',type=Path,default=Path('results/multidimensional'))
+    args=parser.parse_args()
+    run_analytic(args.out)
+
+
+if __name__=='__main__':main()

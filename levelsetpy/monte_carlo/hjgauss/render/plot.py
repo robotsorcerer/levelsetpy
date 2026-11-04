@@ -90,7 +90,7 @@ def render(out_dir, placement_width_in=384.1122/72.27, figure_dir=None):
     legend_ax.set_axis_off()
     fig.set_constrained_layout_pads(w_pad=.035, h_pad=.035, wspace=.06)
     styles = [
-        ("full", "Full source", "#C23B86", "o", "-"),
+        ("full", "HJ-Gauss", "#C23B86", "o", "-"),
         ("heat", "Heat only", "#333333", "^", ":"),
     ]
     for ax, metric, title in zip(
@@ -127,7 +127,7 @@ def render(out_dir, placement_width_in=384.1122/72.27, figure_dir=None):
         raise ValueError("declared placement makes a font role smaller than 7 pt")
     figure_dir = Path(figure_dir) if figure_dir is not None else out_dir
     figure_dir.mkdir(parents=True, exist_ok=True)
-    path = figure_dir / "full_residual_validation.jpg"
+    path = figure_dir / "hjgauss_validation.jpg"
     fig.savefig(path,dpi=300,facecolor='white',pil_kwargs={'quality':98,'subsampling':0,'optimize':True})
     plt.close(fig)
     metadata = {

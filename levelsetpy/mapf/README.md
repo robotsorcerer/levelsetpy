@@ -1,5 +1,13 @@
 # Reproducing the ICRA MAPF execution comparisons
 
+## Contents
+
+- [Reproduction commands](#reproducing-the-icra-mapf-execution-comparisons)
+- [CCBS on MAPF_R](#ccbs-on-mapf_r)
+- [Controller definitions and limitations](#controller-definitions-and-limitations)
+- [Paper figures and compilation](#paper-figures-and-compilation)
+- [HJ-Gauss workflow](../monte_carlo/README.md)
+
 This project now resides at `levelsetpy/mapf/` inside the LevelSetPy package
 source tree. Run the commands below from this directory; data paths are
 relative to this project root.
@@ -123,4 +131,4 @@ inevitability sets. The reported node fraction is domain dependent.
 Derivation and safety assumptions: [COMPATIBLE_CONTROL.md](COMPATIBLE_CONTROL.md).
 External comparison protocol and audit: [BASELINE_REVIEW.md](BASELINE_REVIEW.md).
 
-The Monte Carlo sampler precomputation is disabled pending a full residual source solver. Use `experiments/precompute_brt_grid.py` for the independent grid reference. Existing cache results are not evidence for the full residual algorithm.
+The Monte Carlo sampler precomputation is disabled pending an HJ-Gauss source solver. Use `experiments/precompute_brt_grid.py` for the independent grid reference. Existing cache results are not evidence for HJ-Gauss.

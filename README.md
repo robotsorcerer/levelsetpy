@@ -1,4 +1,47 @@
-### **LevelSetsPy Library**
+# LevelSetPy Library
+
+## Contents
+
+- [HJ-Gauss](#hj-gauss)
+- [LevelSetPy overview](#levelsetpy-overview)
+- [Installation and prerequisites](#installation-and-prerequisites)
+- [Examples](#examples)
+- [MAPF research workflow](levelsetpy/mapf/README.md)
+- [Citing this work](#citing-this-work)
+
+## HJ-Gauss
+
+[HJ-Gauss](levelsetpy/monte_carlo/) is an HJ reachability algorithm built from an exact variable-coefficient exponential transformation followed by a quasilinearized fixed-point iteration. The implementation retains both algebraic and derivative residual components, evaluates the associated Gaussian initial-condition and nonlinear source terms, and binds every numerical result to its source code and native field archive. The validation workflow includes analytic solutions, independent same-viscosity references, spatial and temporal refinement, coefficient and boundary sensitivity, and a seeded 100,000-state bird-model query.
+
+<table>
+  <tr>
+    <th>Rockets</th>
+    <th>Dubins vehicles</th>
+  </tr>
+  <tr>
+    <td><img src="https://scriptedonachip.com/downloads/Papers/assets/anim/roysoc_rockets.gif" width="440" alt="HJ-Gauss rockets comparison"></td>
+    <td><img src="https://scriptedonachip.com/downloads/Papers/assets/anim/roysoc_dubins.gif" width="440" alt="HJ-Gauss Dubins-vehicle comparison"></td>
+  </tr>
+  <tr>
+    <th>Double integrator</th>
+    <th>Murmurations</th>
+  </tr>
+  <tr>
+    <td><img src="https://scriptedonachip.com/downloads/Papers/assets/anim/roysoc_double_integrator.gif" width="440" alt="HJ-Gauss double-integrator comparison"></td>
+    <td><img src="https://scriptedonachip.com/downloads/Papers/assets/anim/roysoc_murmuration.gif" width="440" alt="HJ-Gauss murmuration comparison"></td>
+  </tr>
+</table>
+
+See the [HJ-Gauss implementation README](levelsetpy/monte_carlo/README.md) for commands, fixed acceptance gates, provenance checks, and numerical scope. Generated fields and reports live under the ignored `results/` directory and are recreated by the validation commands. The separate [MAPF workflow](levelsetpy/mapf/README.md) retains its independently generated grid-reference controller table.
+
+```sh
+cd levelsetpy/monte_carlo
+python -m pip install -e '.[dev]'
+python -m pytest -q
+python -m hjgauss.validation.benchmark
+```
+
+## LevelSetPy overview
 
 #### BLUF - May 2024. 
 
@@ -203,25 +246,6 @@ viz.visGrid([g], g.dim, title='Simple 2D Grid')
 </div>
 
 
-
----
-
-## HJ-Gauss full residual computations
-
-The research code in [`levelsetpy/monte_carlo/`](levelsetpy/monte_carlo/) retains the complete generalized Cole–Hopf residual. It is organized as `hjgauss/core`, `hjgauss/validation`, and `hjgauss/render`, with tests under `tests/`. It includes transformed-equation solvers, a supplied-source Gaussian Duhamel estimator, analytic-solution checks, and reproducible multidimensional validation workflows.
-
-See the [implementation README](levelsetpy/monte_carlo/README.md) for commands, provenance checks, and numerical scope. Generated native fields and reports live under the ignored `results/` directory and are recreated by the validation commands.
-
-The separate [`levelsetpy/mapf/`](levelsetpy/mapf/) project retains its independent grid-reference precomputation. Its sampler-dependent precomputation requires a full residual implementation and currently raises an explicit error.
-
-```sh
-cd levelsetpy/monte_carlo
-python -m pip install -e '.[dev]'
-python -m pytest -q
-python -m hjgauss.validation.benchmark
-```
-
----
 
 ### Citing this work
 

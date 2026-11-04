@@ -3,8 +3,26 @@ import hashlib
 import json
 from pathlib import Path
 import numpy as np
+import pytest
 from hjgauss.validation import cases, run
+from hjgauss.validation import refine, report
 from hjgauss.render import latex as paper_tex
+
+
+def test_selected_pipeline_covers_every_reported_game_and_fixes_all_gates():
+    assert set(refine.CASES)==set(run.CASES)==set(refine.SELECTION)
+    criteria=json.loads(refine.CRITERIA.read_text())
+    assert criteria['game_space_refinement_sup']==.01
+    assert criteria['game_independent_reference_sup']==.02
+    assert criteria['game_original_defect_sampled_sup']==.15
+
+
+def test_report_rejects_post_run_gate_changes(tmp_path):
+    altered=json.loads(refine.CRITERIA.read_text())
+    altered['game_space_refinement_sup']=1.
+    (tmp_path/'acceptance_criteria.json').write_text(json.dumps(altered))
+    with pytest.raises(ValueError,match='versioned pre-run gates'):
+        report.assess(tmp_path)
 
 
 def test_rejected_population_is_not_emitted_as_selected_run_numbers(tmp_path,monkeypatch):

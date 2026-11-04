@@ -11,7 +11,7 @@ dynamics-blind grid/disc conflict test used by classical CBS/RHCR.
 
 Two-phase design so the online MAPF loop and the multiseed harness stay
 numpy-only (no JAX/scipy in the loop):
-  * precompute_brt(...)  -- ONE-TIME, requires a full residual solver and currently raises
+  * precompute_brt(...)  -- ONE-TIME, requires an HJ-Gauss solver and currently raises
     NotImplementedError; use the independent grid precomputation instead.
   * BRTPredicate         -- loads the .npz and answers membership with a
     hand-rolled, vectorized trilinear interpolation (periodic in heading),
@@ -86,12 +86,12 @@ def precompute_brt(
     monte_carlo_root: str | None = None,
     verbose: bool = True,
 ):
-    """Unavailable until a full residual source solver is implemented.
+    """Unavailable until an HJ-Gauss source solver is implemented.
 
     Use experiments/precompute_brt_grid.py for independent grid computation.
     """
     raise NotImplementedError(
-        "This precomputation requires a full residual source solver. "
+        "This precomputation requires an HJ-Gauss source solver. "
         "Use experiments/precompute_brt_grid.py for the independent grid reference."
     )
 

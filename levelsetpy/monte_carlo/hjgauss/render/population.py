@@ -1,4 +1,4 @@
-"""Render saved full-residual bird-model slices and the fresh query population."""
+"""Render saved HJ-Gauss bird-model slices and the fresh query population."""
 from pathlib import Path
 import argparse,json
 import numpy as np
@@ -54,7 +54,7 @@ def main():
     fig=plt.figure(figsize=(8,3),layout='constrained');grid=fig.add_gridspec(2,3,height_ratios=[.22,1])
     legend_ax=fig.add_subplot(grid[0,:]);legend_ax.axis('off');handles=None
     for j,title in enumerate([r'Components $\beta_0$',r'Holes $\beta_1$',r'Euler characteristic $\chi$']):
-        ax=fig.add_subplot(grid[1,j]);h1,=ax.plot(times,counts[:,j],'-o',color='k',markersize=4,label='Full residual')
+        ax=fig.add_subplot(grid[1,j]);h1,=ax.plot(times,counts[:,j],'-o',color='k',markersize=4,label='HJ-Gauss')
         h2,=ax.plot(times,rcounts[:,j],'--x',color='.45',markersize=5,label='Independent reference')
         ax.set_title(title,fontsize=13);ax.set_xticks([0,1,2]);ax.grid(alpha=.2)
         ax.set_yticks(np.unique(np.r_[counts[:,j],rcounts[:,j]]));handles=[h1,h2]
