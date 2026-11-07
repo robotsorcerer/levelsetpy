@@ -1,3 +1,4 @@
+import numpy as np
 from levelsetpy.boundarycondition import addGhostAllDims
 from levelsetpy.utilities import *
 
