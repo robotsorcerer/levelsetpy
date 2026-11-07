@@ -76,7 +76,13 @@ def store(out,name,sol,record):
     (out/(name+'.json')).write_text(json.dumps(record,indent=2)+'\n')
 
 
-def game_case(name, length=6.):
+# Predator configurations for the murmuration events (paper appendix D.1.9 to D.1.13).
+# (number of predators, ring radius, capture radius). 'cordon' is the default seven-disk ring.
+MURMUR_EVENTS={'cordon':(7,1.15,.6),'splitting':(7,1.9,.6),'flocking':(7,.4,.6),
+               'vacuole':(6,1.15,.6),'flash':(1,0.,.5)}
+
+
+def game_case(name, length=6., event='cordon'):
     """Canonical elapsed-time Hamiltonians derived from physical controls.
 
     Target minimization uses H_elapsed=-min_u p.f; pursuit/evasion uses
@@ -84,12 +90,13 @@ def game_case(name, length=6.):
     """
     dim=2 if name=='double_integrator' else 3
     bounds=((-length,length),)*2+(((-np.pi,np.pi),) if dim==3 else ())
-    radius=1.5 if name=='rockets' else .6 if name=='murmuration' else .5
+    npred,ring,mur_r=MURMUR_EVENTS[event]
+    radius=1.5 if name=='rockets' else mur_r if name=='murmuration' else .5
     def initial(x):
         if name=='murmuration':
-            angles=np.arange(7)*2*np.pi/7
+            angles=np.arange(npred)*2*np.pi/npred
             raw=np.minimum.reduce(np.broadcast_arrays(*[
-                np.sqrt((x[0]-1.15*np.cos(a))**2+(x[1]-1.15*np.sin(a))**2+.08**2)
+                np.sqrt((x[0]-ring*np.cos(a))**2+(x[1]-ring*np.sin(a))**2+.08**2)
                 -np.sqrt(radius**2+.08**2) for a in angles]))
         else:
             r2=x[0]**2+x[1]**2
@@ -121,8 +128,8 @@ def game_case(name, length=6.):
                 interior=((-extent,extent),)*2+(((-np.pi,np.pi),) if dim==3 else ()))
 
 
-def run_game(out,name,n,steps,kind='full',length=6.,coefficient_base=.2,angle_n=None):
-    case=game_case(name,length)
+def run_game(out,name,n,steps,kind='full',length=6.,coefficient_base=.2,angle_n=None,event='cordon'):
+    case=game_case(name,length,event)
     shape=(n,n) if name=='double_integrator' else (n,n,angle_n or max(16,n//2))
     snapshots=np.linspace(0,case['horizon'],11)
     sol=solve(case['initial'],case['hamiltonian'],bounds=case['bounds'],shape=shape,
@@ -133,6 +140,7 @@ def run_game(out,name,n,steps,kind='full',length=6.,coefficient_base=.2,angle_n=
     rec['coefficient_base']=coefficient_base
     rec['interpretation']='terminal-horizon reachable set; no stopping/obstacle'
     key=f'{name}_{kind}_{n}_{steps}_L{length:g}_c{coefficient_base:g}'
+    if event!='cordon': key=key.replace(name,f'{name}_{event}',1)
     if angle_n: key+=f'_A{angle_n}'
     store(out,key,sol,rec)
     print(json.dumps(rec),flush=True)
@@ -171,12 +179,13 @@ def main():
     parser.add_argument('--length',type=float,default=6.)
     parser.add_argument('--coefficient-base',type=float,default=.2)
     parser.add_argument('--angle-n',type=int)
+    parser.add_argument('--event',choices=list(MURMUR_EVENTS),default='cordon')
     args=parser.parse_args()
     if args.suite=='analytic':run_analytic(args.out)
     else:
         for name in args.cases:
             try:
-                run_game(args.out,name,args.n,args.steps,args.kind,args.length,args.coefficient_base,args.angle_n)
+                run_game(args.out,name,args.n,args.steps,args.kind,args.length,args.coefficient_base,args.angle_n,args.event)
             except (FloatingPointError,ValueError) as exc:
                 record=dict(case=name,n=args.n,steps=args.steps,kind=args.kind,
                             length=args.length,error=str(exc),status='failed')
