@@ -98,7 +98,7 @@ def game(full,reference,path,title,headings,extent):
             ax.tick_params(labelbottom=row==2,labelleft=col==0)
             ax.set_xticks([-extent,0,extent]);ax.set_yticks([-extent,0,extent])
             if row==0:ax.set_title(rf'$\theta={theta/np.pi:g}\pi$',fontsize=13,pad=8)
-            if col==0:ax.set_ylabel(['Reference','HJ-Gauss','Abs. difference'][row],fontsize=13)
+            if col==0:ax.set_ylabel(['Levelset Reference','HJ-Gauss','Abs. difference'][row],fontsize=13)
     fig.supxlabel(r'Rel. pos. $x_1$ (m)',fontsize=14)
     fig.supylabel(r'Rel. pos. $x_2$ (m)',fontsize=14)
     fig.suptitle(title,fontsize=15)
@@ -112,22 +112,55 @@ def game(full,reference,path,title,headings,extent):
                                  headings=list(map(float,headings)),observation_half_width=extent,slice_grid=[161,161]))
 
 
+def minimum_time_to_origin(position,velocity):
+    """Closed-form double-integrator ATTR used by examples/dint_basic.py."""
+    switching_curve=-.5*velocity*np.abs(velocity)
+    above=position>switching_curve;below=position<switching_curve
+    on=~(above|below)
+    reach_above=(velocity+np.sqrt(np.maximum(0.,4*position+2*velocity**2)))*above
+    reach_below=(-velocity+np.sqrt(np.maximum(0.,-4*position+2*velocity**2)))*below
+    return reach_above+reach_below+np.abs(velocity)*on
+
+
 def double(full,path):
-    fig,axs=plt.subplots(1,4,figsize=(10.4,3.0),layout='constrained')
-    X,Y=np.meshgrid(*full['axes'],indexing='ij')
-    for ax,t in zip(axs,[.2,.5,.8,1.]):
-        V=full['data'][f't_{t:g}']
-        im=ax.contourf(X,Y,V,levels=np.linspace(-1,1,21),cmap='RdBu_r',extend='both')
-        if np.min(V)<0<np.max(V):ax.contour(X,Y,V,levels=[0],colors='k',linewidths=1)
-        ax.set_xlim(-2,2);ax.set_ylim(-2,2);ax.set_aspect('equal')
-        ax.set_title(rf'$t={t:.2f}\,\mathrm{{s}}$',fontsize=13,pad=7)
-        ax.tick_params(labelbottom=True)
+    times=[.2,.5,.8,1.];extent=2.;target_time=.2
+    axis=np.linspace(-extent,extent,321);X,Y=np.meshgrid(axis,axis,indexing='xy')
+    queries=np.c_[X.ravel(),Y.ravel()]
+    reach_time=minimum_time_to_origin(X,Y)
+    data=[]
+    for t in times:
+        V=interpolate(full,queries,full['data'][f't_{t:g}']).reshape(X.shape)
+        R=np.clip(reach_time-target_time-t,-1.,1.)
+        data.append((R,V,np.abs(R-V)))
+    error_max=max(float(np.max(row[2])) for row in data)
+    fig=plt.figure(figsize=(10.4,7.9),layout='constrained')
+    grid=fig.add_gridspec(3,5,width_ratios=[1,1,1,1,.12])
+    labels=['Levelset Reference','HJ-Gauss','Abs. difference']
+    for row in range(3):
+        for col,(t,fields) in enumerate(zip(times,data)):
+            ax=fig.add_subplot(grid[row,col]);Z=fields[row]
+            if row<2:
+                im=ax.contourf(X,Y,Z,levels=np.linspace(-1,1,21),cmap='RdBu_r',extend='both')
+                if np.min(Z)<0<np.max(Z):ax.contour(X,Y,Z,levels=[0],colors='k',linewidths=1)
+                if row==0:value_im=im
+            else:
+                error_im=ax.contourf(X,Y,Z,levels=np.linspace(0,error_max,17),cmap='magma')
+            ax.set_xlim(-extent,extent);ax.set_ylim(-extent,extent);ax.set_aspect('equal')
+            ax.set_xticks([-extent,0,extent]);ax.set_yticks([-extent,0,extent])
+            ax.tick_params(labelbottom=row==2,labelleft=col==0)
+            if row==0:ax.set_title(rf'$t={t:.2f}\,\mathrm{{s}}$',fontsize=13,pad=7)
+            if col==0:ax.set_ylabel(labels[row],fontsize=13)
     fig.supxlabel('Position (m)',fontsize=14)
-    fig.supylabel('Velocity (m/s)',fontsize=14)
-    cb=fig.colorbar(im,ax=axs.tolist(),fraction=.025,pad=.025,ticks=[-1,-.5,0,.5,1])
+    fig.supylabel('Velocity',fontsize=14)
+    fig.suptitle('Double Integrator: HJ-Gauss and Analytical Reach Time',fontsize=15)
+    cax=fig.add_subplot(grid[:2,-1]);cb=fig.colorbar(value_im,cax=cax,ticks=[-1,-.5,0,.5,1])
     cb.ax.set_title('Value',fontsize=12,pad=20)
-    fig.suptitle('Double integrator: HJ-Gauss',fontsize=15)
-    save(fig,path,provenance=dict(full=native_identity(full),snapshot_times=[.2,.5,.8,1.]))
+    cax2=fig.add_subplot(grid[2,-1]);cb2=fig.colorbar(error_im,cax=cax2,
+        ticks=np.linspace(0,error_max,4),format=FuncFormatter(scientific))
+    cb2.ax.set_title('Abs. diff.',fontsize=11,pad=20)
+    save(fig,path,provenance=dict(full=native_identity(full),snapshot_times=times,
+        analytical_reference='DoubleIntegrator.mttr() - 0.2 - t',display_clip=[-1.,1.],
+        observation_half_width=extent,slice_grid=[321,321]))
 
 
 def main():
