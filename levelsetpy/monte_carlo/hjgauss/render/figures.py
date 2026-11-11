@@ -184,7 +184,7 @@ def main():
         reference=load(args.root,key(name,n,'reference',steps=steps,method=method))
         headings=[-np.pi/2,0,np.pi/2] if name!='dubins_single' else [-np.pi/2,0,np.pi/4,np.pi/2]
         titles={'rockets':'Rockets: fixed-horizon value comparison',
-                'dubins_relative':'Dubins vehicles: fixed-horizon values',
+                'dubins_relative':'Dubins Vehicles: Fixed-Horizon Values',
                 'dubins_single':'Single Dubins vehicle: pose-target values'}
         files={'rockets':'rockets_3d_slices.jpg','dubins_relative':'dubins_3d_comparison.jpg',
                'dubins_single':'dubins_single.jpg'}
