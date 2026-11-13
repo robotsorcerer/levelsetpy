@@ -2,7 +2,7 @@
 
 Each composite has two rows.
 
-- **Top row:** saved value-function strip (ground truth, HJ-Gauss, absolute error), cropped from the original animation GIF.
+- **Top row:** saved value-function strip (reference field, transformed solver, absolute difference), cropped from the original animation GIF.
 - **Bottom row:** vehicles under the benchmark (reference) field, vehicles under the HJ-Gauss (full) field, and a state-norm gap chart.
 
 Vehicle controls come from the sign of ∇v of each field, not from heuristics (`fieldcontrol.py`). Rockets and Dubins vehicles are the Fig. 4 shuttle from `levtoms.pdf`. Starlings are quadrotors.

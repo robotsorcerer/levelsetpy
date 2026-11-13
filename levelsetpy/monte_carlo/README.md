@@ -26,7 +26,7 @@ HJ-Gauss combines that exact transformation with Gaussian evaluation of the init
 
 ## Animations
 
-Each animation reads left to right as **ground truth → HJ-Gauss → absolute error**.
+Each animation reads left to right as **reference field → transformed solver → absolute difference**. The reference is an independent discretization of the same viscous equation, not the unknown continuum solution.
 
 <table>
   <tr>

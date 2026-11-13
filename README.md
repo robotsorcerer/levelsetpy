@@ -32,7 +32,7 @@
   </tr>
 </table>
 
-The animations read left to right as **ground truth → HJ-Gauss → absolute error**. See the [HJ-Gauss implementation README](levelsetpy/monte_carlo/README.md) for commands, fixed acceptance gates, provenance checks, and numerical scope. Generated fields and reports live under the ignored `results/` directory and are recreated by the validation commands. The separate [MAPF workflow](levelsetpy/mapf/README.md) retains its independently generated grid-reference controller table.
+The animations read left to right as **reference field → transformed solver → absolute difference**. See the [HJ-Gauss implementation README](levelsetpy/monte_carlo/README.md) for commands, fixed acceptance gates, provenance checks, and numerical scope. Generated fields and reports live under the ignored `results/` directory and are recreated by the validation commands. The separate [Cole--Hopf point-query implementation](levelsetpy/cole-hopf/README.md) records nonlinear Monte Carlo Picard runtime and memory scaling. The [MAPF workflow](levelsetpy/mapf/README.md) retains its independently generated grid-reference controller table.
 
 ```sh
 cd levelsetpy/monte_carlo

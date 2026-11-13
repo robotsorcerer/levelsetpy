@@ -10,7 +10,7 @@ from PIL import Image
 from scipy.interpolate import RegularGridInterpolator
 
 CASES = [
-    ('murmuration', 'murmuration_full_192_800_L6_c0.2_fd', 'murmuration_reference_192_800_L6_c0.2_fd', 'roysoc_murmuration', 'Starlings validation', 3, ('Relative position x₁', 'Relative position x₂'), 0),
+    ('murmuration', 'murmuration_full_192_800_L6_c0.2_fd', 'murmuration_reference_192_800_L6_c0.2_fd', 'roysoc_murmuration', 'Starling-inspired relative state', 3, ('Relative position x₁', 'Relative position x₂'), 0),
     ('double_integrator', 'double_integrator_full_128_800_L6_c0.2', 'double_integrator_reference_128_800_L6_c0.2', 'roysoc_double_integrator', 'Double integrator', 2, ('Position', 'Velocity'), None),
     ('dubins_relative', 'dubins_relative_full_224_400_L6_c0.2', 'dubins_relative_reference_224_400_L6_c0.2', 'roysoc_dubins', 'Dubins vehicles', 2, ('Relative position x₁', 'Relative position x₂'), 0),
     ('rockets', 'rockets_full_160_400_L6_c0.2', 'rockets_reference_160_400_L6_c0.2', 'roysoc_rockets', 'Rockets', 3, ('Relative position x₁', 'Relative position x₂'), 0),
@@ -63,7 +63,7 @@ def render(root,out,case):
     for t,a,b,E in fields:
         fig,axs=plt.subplots(1,3,figsize=(12,4.5),dpi=90,layout='constrained')
         vmax=max(1.,float(np.max(np.abs(np.r_[a.ravel(),b.ravel()]))));im=None
-        for ax,z,ttl in zip(axs,[a,b,E],['Ground truth','HJ-Gauss',f'Absolute error (max {scientific(maxerr)})']):
+        for ax,z,ttl in zip(axs,[a,b,E],['Reference field','Transformed solver',f'Absolute difference (max {scientific(maxerr)})']):
             error=ttl.startswith('Absolute')
             im=ax.contourf(X,Y,z,levels=np.linspace(0,maxerr,25) if error else np.linspace(-vmax,vmax,25),cmap='magma' if error else 'RdBu_r',extend='max' if error else 'both')
             if not ttl.startswith('Absolute') and z.min()<0<z.max(): ax.contour(X,Y,z,[0],colors='black',linewidths=1)
@@ -71,7 +71,7 @@ def render(root,out,case):
             ax.set_ylabel(labels[1] if ax is axs[0] else '')
         heading_text = title if 'validation' in title.lower() else f'{title} validation'
         fig.suptitle(f'{heading_text} · Elapsed horizon {t:g}', fontsize=16, fontweight='bold')
-        cb=fig.colorbar(im,ax=axs.ravel().tolist(),shrink=.78,label='Absolute error')
+        cb=fig.colorbar(im,ax=axs.ravel().tolist(),shrink=.78,label='Absolute difference')
         cb.set_ticks(np.linspace(0,maxerr,5))
         cb.set_ticklabels([scientific(v) for v in np.linspace(0,maxerr,5)])
         if heading is not None: fig.text(.5,.005,f'Heading = {heading} rad · matched saved snapshots',ha='center',fontsize=8)
@@ -86,6 +86,6 @@ def main():
     default_source=Path(__file__).resolve().parents[2]/'results/multidimensional'
     p=argparse.ArgumentParser();p.add_argument('--source',type=Path,default=default_source);p.add_argument('--output',type=Path,required=True,help='Output animation directory');a=p.parse_args();a.output.mkdir(parents=True,exist_ok=True)
     records=[render(a.source,a.output,c) for c in CASES]
-    (a.output/'roysoc_animations.json').write_text(json.dumps(dict(animations=records,columns=['Ground truth','HJ-Gauss','Absolute error'],temporal_interpolation=False),indent=2)+'\n')
+    (a.output/'roysoc_animations.json').write_text(json.dumps(dict(animations=records,columns=['Reference field','Transformed solver','Absolute difference'],temporal_interpolation=False),indent=2)+'\n')
     print('Rendered four matched comparison animations.')
 if __name__=='__main__':main()

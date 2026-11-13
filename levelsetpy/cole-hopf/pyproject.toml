@@ -1,0 +1,14 @@
+[project]
+name = "cole-hopf-picard-scaling"
+version = "0.1.0"
+description = "Nested nonlinear Monte Carlo Picard scaling experiments"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "matplotlib>=3.7"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = ["test_*.py"]
+addopts = "-q --tb=short"

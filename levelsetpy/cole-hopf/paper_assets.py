@@ -1,0 +1,207 @@
+"""Generate Royal Society scaling assets from the native benchmark record."""
+from __future__ import annotations
+
+import argparse
+import io
+import json
+from pathlib import Path
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from PIL import Image
+
+
+def _series(record: dict):
+    sweeps = record["sweeps"]
+    return sweeps["dimension"], sweeps["samples"], sweeps["picard_level"]
+
+
+def _style() -> None:
+    plt.rcParams.update(
+        {
+            "font.family": "DejaVu Sans",
+            "font.size": 10,
+            "axes.labelsize": 10,
+            "axes.titlesize": 11,
+            "legend.fontsize": 8,
+            "xtick.labelsize": 9,
+            "ytick.labelsize": 9,
+        }
+    )
+
+
+def render_figure(record: dict, output: Path) -> None:
+    dimensions, samples, levels = _series(record)
+    _style()
+    fig, axes = plt.subplots(1, 3, figsize=(10.5, 3.2), constrained_layout=True)
+
+    axes[0].loglog(
+        [row["dimension"] for row in dimensions],
+        [row["runtime_seconds"] for row in dimensions],
+        "o-",
+        color="#2166ac",
+    )
+    axes[0].set(
+        xlabel="State dimension",
+        ylabel="Runtime (s)",
+        title="Point-query dimension sweep",
+    )
+
+    axes[1].loglog(
+        [row["dimension"] for row in dimensions],
+        [row["traced_peak_bytes"] / 2**20 for row in dimensions],
+        "o-",
+        color="#2166ac",
+        label="Measured peak",
+    )
+    axes[1].loglog(
+        [row["dimension"] for row in dimensions],
+        [row["depth_linear_coordinate_bound_bytes"] / 2**20 for row in dimensions],
+        "s--",
+        color="#d95f02",
+        label="Coordinate payload",
+    )
+    axes[1].set(
+        xlabel="State dimension",
+        ylabel="Memory (MiB)",
+        title="Live point-query memory",
+    )
+    axes[1].legend(frameon=False)
+
+    axes[2].loglog(
+        [row["samples"] for row in samples],
+        [row["runtime_seconds"] for row in samples],
+        "o-",
+        color="#2166ac",
+        label="Sample count",
+    )
+    depth_axis = axes[2].twiny()
+    depth_axis.semilogy(
+        [row["level"] for row in levels],
+        [row["runtime_seconds"] for row in levels],
+        "s--",
+        color="#b2182b",
+        label="Picard level",
+    )
+    axes[2].set(
+        xlabel="Samples per update",
+        ylabel="Runtime (s)",
+        title="Nested-work growth",
+    )
+    depth_axis.set_xlabel("Picard level")
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output, dpi=300, metadata={"Software": "levelsetpy cole-hopf/paper_assets.py"})
+    plt.close(fig)
+
+
+def render_animation(record: dict, output: Path) -> None:
+    dimensions, samples, _ = _series(record)
+    _style()
+    frames: list[Image.Image] = []
+    count = max(len(dimensions), len(samples))
+    for index in range(1, count + 1):
+        dim_rows = dimensions[: min(index, len(dimensions))]
+        sample_rows = samples[: min(index, len(samples))]
+        fig, axes = plt.subplots(1, 2, figsize=(10, 4), constrained_layout=True)
+        axes[0].loglog(
+            [row["dimension"] for row in dim_rows],
+            [row["runtime_seconds"] for row in dim_rows],
+            "o-",
+            color="#2166ac",
+        )
+        axes[0].set(
+            xlim=(6, 2600),
+            ylim=(0.035, 0.1),
+            xlabel="State dimension",
+            ylabel="Runtime (s)",
+            title="Point-query dimension sweep",
+        )
+        axes[1].loglog(
+            [row["samples"] for row in sample_rows],
+            [row["runtime_seconds"] for row in sample_rows],
+            "s-",
+            color="#b2182b",
+        )
+        axes[1].set(
+            xlim=(3.5, 55),
+            ylim=(0.003, 1.3),
+            xlabel="Samples per update",
+            ylabel="Runtime (s)",
+            title="Nested-work growth",
+        )
+        fig.suptitle(
+            "Nonlinear Monte Carlo Picard scaling: point-query storage, not end-to-end linear runtime",
+            fontsize=12,
+        )
+        with io.BytesIO() as buffer:
+            fig.savefig(buffer, format="png", dpi=110)
+            buffer.seek(0)
+            frames.append(
+                Image.open(buffer)
+                .convert("P", palette=Image.Palette.ADAPTIVE, colors=192)
+                .copy()
+            )
+        plt.close(fig)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    durations = [450] * (len(frames) - 1) + [1800]
+    frames[0].save(
+        output,
+        save_all=True,
+        append_images=frames[1:],
+        duration=durations,
+        loop=0,
+        optimize=False,
+        disposal=2,
+    )
+
+
+def write_macros(record: dict, output: Path) -> None:
+    dimensions, samples, levels = _series(record)
+    slopes = record["slopes"]
+    max_error = max(row["absolute_value_error"] for row in dimensions)
+    mantissa, exponent = f"{max_error:.2e}".split("e")
+    latex_max_error = rf"{mantissa}\times10^{{{int(exponent)}}}"
+    lines = [
+        "% Generated by cole-hopf/paper_assets.py; do not hand-edit.",
+        rf"\newcommand{{\MCPicardReplicates}}{{{record['replicates']}}}",
+        rf"\newcommand{{\MCPicardDimensionMin}}{{{dimensions[0]['dimension']}}}",
+        rf"\newcommand{{\MCPicardDimensionMax}}{{{dimensions[-1]['dimension']}}}",
+        rf"\newcommand{{\MCPicardDimensionSamples}}{{{dimensions[0]['samples']}}}",
+        rf"\newcommand{{\MCPicardDimensionLevel}}{{{dimensions[0]['level']}}}",
+        rf"\newcommand{{\MCPicardDimensionRuntimeMin}}{{{dimensions[0]['runtime_seconds']:.4f}}}",
+        rf"\newcommand{{\MCPicardDimensionRuntimeMax}}{{{dimensions[-1]['runtime_seconds']:.4f}}}",
+        rf"\newcommand{{\MCPicardDimensionSlope}}{{{slopes['runtime_vs_dimension']:.3f}}}",
+        rf"\newcommand{{\MCPicardMemorySlope}}{{{slopes['traced_memory_vs_dimension']:.3f}}}",
+        rf"\newcommand{{\MCPicardDimensionErrorMax}}{{{latex_max_error}}}",
+        rf"\newcommand{{\MCPicardSampleMin}}{{{samples[0]['samples']}}}",
+        rf"\newcommand{{\MCPicardSampleMax}}{{{samples[-1]['samples']}}}",
+        rf"\newcommand{{\MCPicardSampleRuntimeMin}}{{{samples[0]['runtime_seconds']:.4f}}}",
+        rf"\newcommand{{\MCPicardSampleRuntimeMax}}{{{samples[-1]['runtime_seconds']:.4f}}}",
+        rf"\newcommand{{\MCPicardSampleSlope}}{{{slopes['runtime_vs_samples']:.2f}}}",
+        rf"\newcommand{{\MCPicardLevelMin}}{{{levels[0]['level']}}}",
+        rf"\newcommand{{\MCPicardLevelMax}}{{{levels[-1]['level']}}}",
+        rf"\newcommand{{\MCPicardLevelRuntimeMin}}{{{levels[0]['runtime_seconds']:.5f}}}",
+        rf"\newcommand{{\MCPicardLevelRuntimeMax}}{{{levels[-1]['runtime_seconds']:.5f}}}",
+    ]
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text("\n".join(lines) + "\n")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--input", type=Path, default=Path("results/scaling.json"))
+    parser.add_argument("--figure", type=Path, required=True)
+    parser.add_argument("--gif", type=Path, required=True)
+    parser.add_argument("--macros", type=Path, required=True)
+    args = parser.parse_args()
+    record = json.loads(args.input.read_text())
+    render_figure(record, args.figure)
+    render_animation(record, args.gif)
+    write_macros(record, args.macros)
+
+
+if __name__ == "__main__":
+    main()
