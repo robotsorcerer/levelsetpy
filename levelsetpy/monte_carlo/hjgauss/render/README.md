@@ -34,7 +34,7 @@ From `monte_carlo/`:
   --work /path/to/scratch
 ```
 
-This writes `WORK/fields/*.npz` (value fields, about 130 MB each at n=160) and `WORK/composites/roysoc_{rockets,dubins,murmuration}.gif` plus `_poster.png` files. The solves take tens of minutes each on a laptop; the three renders take a few minutes each.
+This writes `WORK/fields/*.npz` (value functions, about 130 MB each at n=160) and `WORK/composites/roysoc_{rockets,dubins,murmuration}.gif` plus `_poster.png` files. The solves take tens of minutes each on a laptop; the three renders take a few minutes each.
 
 To run a single step by hand:
 

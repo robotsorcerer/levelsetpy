@@ -1,4 +1,4 @@
-"""Vehicle trajectories driven by the gradient of a saved HJ value field.
+"""Vehicle trajectories driven by the gradient of a saved HJ value function.
 
 For each game the optimal rate controls follow from the Hamiltonian used in
 hjgauss.validation.cases (evader maximizes, pursuer minimizes). The costate

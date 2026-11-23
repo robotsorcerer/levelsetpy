@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render matched solver/reference/error GIFs from native saved value fields."""
+"""Render matched solver/reference/error GIFs from saved value functions."""
 import argparse, hashlib, io, json
 from pathlib import Path
 import matplotlib

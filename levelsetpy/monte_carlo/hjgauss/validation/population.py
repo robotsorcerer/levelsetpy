@@ -1,6 +1,6 @@
 """Fresh seeded 100,000-state evaluation of the altitude-invariant bird model.
 
-This evaluates one reduced relative-state value field. It does not simulate
+This evaluates one reduced relative-state value function. It does not simulate
 a coupled flock trajectory or certify the signs of approximate values.
 """
 from pathlib import Path

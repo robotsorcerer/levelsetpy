@@ -1,4 +1,4 @@
-"""Render same-viscosity comparisons from native HJ-Gauss run archives."""
+"""Render comparisons whose solvers use the same viscosity parameter."""
 from __future__ import annotations
 import argparse
 import json
@@ -112,30 +112,26 @@ def game(full,reference,path,title,headings,extent):
                                  headings=list(map(float,headings)),observation_half_width=extent,slice_grid=[161,161]))
 
 
-def minimum_time_to_origin(position,velocity):
-    """Closed-form double-integrator ATTR used by examples/dint_basic.py."""
-    switching_curve=-.5*velocity*np.abs(velocity)
-    above=position>switching_curve;below=position<switching_curve
-    on=~(above|below)
-    reach_above=(velocity+np.sqrt(np.maximum(0.,4*position+2*velocity**2)))*above
-    reach_below=(-velocity+np.sqrt(np.maximum(0.,-4*position+2*velocity**2)))*below
-    return reach_above+reach_below+np.abs(velocity)*on
-
-
-def double(full,path):
-    times=[.2,.5,.8,1.];extent=2.;target_time=.2
+def double(full,reference,path):
+    """Render matched viscous double-integrator fields at saved times."""
+    if any(full['record'][k]!=reference['record'][k]
+           for k in ['case','delta','horizon','bounds','shape','steps']):
+        raise ValueError('Double-integrator comparison settings differ')
+    times=[.2,.5,.8,1.];extent=2.
     axis=np.linspace(-extent,extent,321);X,Y=np.meshgrid(axis,axis,indexing='xy')
     queries=np.c_[X.ravel(),Y.ravel()]
-    reach_time=minimum_time_to_origin(X,Y)
-    data=[]
+    data=[];metrics=[]
     for t in times:
         V=interpolate(full,queries,full['data'][f't_{t:g}']).reshape(X.shape)
-        R=np.clip(reach_time-target_time-t,-1.,1.)
-        data.append((R,V,np.abs(R-V)))
+        R=interpolate(reference,queries,reference['data'][f't_{t:g}']).reshape(X.shape)
+        error=np.abs(R-V)
+        data.append((R,V,error))
+        metrics.append(dict(time=t,maximum_absolute_difference=float(np.max(error)),
+                            root_mean_square_difference=float(np.sqrt(np.mean(error*error)))))
     error_max=max(float(np.max(row[2])) for row in data)
     fig=plt.figure(figsize=(10.4,7.9),layout='constrained')
     grid=fig.add_gridspec(3,5,width_ratios=[1,1,1,1,.12])
-    labels=['Levelset Reference','HJ-Gauss','Abs. difference']
+    labels=['Original PDE','HJ-Gauss','Abs. difference']
     for row in range(3):
         for col,(t,fields) in enumerate(zip(times,data)):
             ax=fig.add_subplot(grid[row,col]);Z=fields[row]
@@ -147,20 +143,24 @@ def double(full,path):
                 error_im=ax.contourf(X,Y,Z,levels=np.linspace(0,error_max,17),cmap='magma')
             ax.set_xlim(-extent,extent);ax.set_ylim(-extent,extent);ax.set_aspect('equal')
             ax.set_xticks([-extent,0,extent]);ax.set_yticks([-extent,0,extent])
-            ax.tick_params(labelbottom=row==2,labelleft=col==0)
-            if row==0:ax.set_title(rf'$t={t:.2f}\,\mathrm{{s}}$',fontsize=13,pad=7)
-            if col==0:ax.set_ylabel(labels[row],fontsize=13)
-    fig.supxlabel('Position (m)',fontsize=14)
-    fig.supylabel('Velocity',fontsize=14)
-    fig.suptitle('Double Integrator: HJ-Gauss and Analytical Reach Time',fontsize=15)
+            ax.tick_params(labelbottom=row==2,labelleft=col==0,labelsize=18)
+            if row==0:ax.set_title(rf'$t={t:.2f}\,\mathrm{{s}}$',fontsize=18,pad=7)
+            if col==0:ax.set_ylabel(labels[row],fontsize=18)
+    fig.supxlabel('Position (m)',fontsize=18)
+    fig.supylabel('Velocity',fontsize=18)
+    fig.suptitle('Double integrator: matched viscous values',fontsize=19)
     cax=fig.add_subplot(grid[:2,-1]);cb=fig.colorbar(value_im,cax=cax,ticks=[-1,-.5,0,.5,1])
-    cb.ax.set_title('Value',fontsize=12,pad=20)
+    cb.ax.set_title('Value',fontsize=18,pad=20)
+    cb.ax.tick_params(labelsize=18)
     cax2=fig.add_subplot(grid[2,-1]);cb2=fig.colorbar(error_im,cax=cax2,
         ticks=np.linspace(0,error_max,4),format=FuncFormatter(scientific))
-    cb2.ax.set_title('Abs. diff.',fontsize=11,pad=20)
-    save(fig,path,provenance=dict(full=native_identity(full),snapshot_times=times,
-        analytical_reference='DoubleIntegrator.mttr() - 0.2 - t',display_clip=[-1.,1.],
-        observation_half_width=extent,slice_grid=[321,321]))
+    cb2.ax.set_title('Abs. diff.',fontsize=18,pad=20)
+    cb2.ax.tick_params(labelsize=18)
+    save(fig,path,placement_width=.8*384.1122/72.27,
+        provenance=dict(full=native_identity(full),reference=native_identity(reference),
+        snapshot_times=times,display_clip=[-1.,1.],observation_half_width=extent,
+        slice_grid=[321,321],snapshot_discrepancies=metrics,
+        maximum_displayed_absolute_difference=error_max))
 
 
 def main():
@@ -180,8 +180,9 @@ def main():
         config=selection.get(name,dict(n=128,steps=800))
         n=args.n or config['n'];steps=config.get('steps',800);method=config.get('method','etd2')
         full=load(args.root,key(name,n,steps=steps,method=method))
-        if name=='double_integrator':double(full,args.figure_dir/'double_integrator.jpg');continue
         reference=load(args.root,key(name,n,'reference',steps=steps,method=method))
+        if name=='double_integrator':
+            double(full,reference,args.figure_dir/'double_integrator.jpg');continue
         headings=[-np.pi/2,0,np.pi/2] if name!='dubins_single' else [-np.pi/2,0,np.pi/4,np.pi/2]
         titles={'rockets':'Rockets: fixed-horizon value comparison',
                 'dubins_relative':'Dubins Vehicles: Fixed-Horizon Values',
