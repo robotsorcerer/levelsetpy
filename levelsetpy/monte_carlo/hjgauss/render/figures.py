@@ -1,4 +1,4 @@
-"""Render same-viscosity comparisons from native HJ-Gauss run archives."""
+"""Render comparisons whose solvers use the same viscosity parameter."""
 from __future__ import annotations
 import argparse
 import json

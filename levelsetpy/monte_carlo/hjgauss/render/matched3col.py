@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bottom row for the 2x3 composites, driven by saved value fields.
+"""Bottom row for the 2x3 composites, driven by saved value functions.
 
 Column 1: vehicles under the levelsetpy benchmark (reference field).
 Column 2: vehicles under HJ-Gauss (full field).
@@ -710,7 +710,7 @@ def value_strip(name, hj_root, times, gap=6):
                 cb = fig.colorbar(cf, cax=cax)
                 cb.set_ticks(np.linspace(0, emax, 4))
                 cb.set_ticklabels(['%.1e' % v for v in np.linspace(0, emax, 4)])
-                cb.ax.tick_params(labelsize=8)
+                cb.ax.tick_params(labelsize=12, colors='black', width=1.2)
                 for tl in cb.ax.get_yticklabels():
                     tl.set_fontweight('bold')
             else:
@@ -766,7 +766,7 @@ def compose(name, hj_root, out_gif, poster, T, dt, anim_dir, sub=None, step_ms=N
     font = ImageFont.truetype(font_manager.findfont('DejaVu Sans:bold'), 13)
     gap = 6
     cap = {'ref': None, 'hj': None}
-    if name == 'rockets':   # capture is decided by the value field at the horizon, shown in the last moments
+    if name == 'rockets':   # capture is decided by the value function at the horizon, shown in the last moments
         for k, fld in (('ref', fr_rock), ('hj', fh_rock)):
             vT = fld[0](float(t[-1]), ro[k][-1:, 0, :])   # relative (x1, x2, heading) at the horizon
             if float(np.ravel(vT)[0]) < 0:
@@ -859,7 +859,7 @@ FLOCK_SPACING = 2.4   # distance of each flock's centre from the display origin
 
 
 def set_murmuration_event(event):
-    """Point the renderer at one murmuration event: its value fields, drone starts, and title."""
+    """Point the renderer at one murmuration event: its value functions, drone starts, and title."""
     npred, ring, rd = MURMUR_EVENTS[event]
     suffix = '' if event == 'cordon' else '_' + event
     FIELDS['murmuration'] = ('murmuration%s_reference_160_400_L6_c0.2' % suffix,
@@ -892,7 +892,7 @@ def set_murmuration_event(event):
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('--case', choices=list(FIELDS), required=True)
-    ap.add_argument('--hj-root', type=Path, required=True, help='directory of value-field .npz archives')
+    ap.add_argument('--hj-root', type=Path, required=True, help='directory of value-function .npz archives')
     ap.add_argument('--anim-dir', type=Path, required=True, help='directory holding the original 1x3 value GIFs')
     ap.add_argument('--out', type=Path, required=True)
     ap.add_argument('--T', type=float, default=None)
