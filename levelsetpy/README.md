@@ -2,10 +2,15 @@
 
 ## Contents
 
-- [HJ-Gauss](monte_carlo/README.md)
+- [Cole--Hopf transformed solvers](cole-hopf/README.md)
+- [HJ-Gauss Monte Carlo evaluator](hjgauss/README.md)
 - [MAPF execution comparisons](mapf/README.md)
 - [Core LevelSetPy library](../README.md#levelsetpy-overview)
 
-This package directory contains the grid-based solver modules and the research subprojects [`monte_carlo/`](monte_carlo/) and [`mapf/`](mapf/). Each subproject has its own README with usage, data provenance, and limitations. Run both projects from their respective directory roots.
+This package directory contains the core grid-based solver modules and three research subprojects:
 
-The HJ-Gauss project groups its scripts by function under `hjgauss/core`, `hjgauss/validation`, and `hjgauss/render`, and generates its ignored `results/` tree on demand. See [`monte_carlo/README.md`](monte_carlo/README.md) for the validated workflow and its stated scope.
+- [`cole-hopf/`](cole-hopf/) contains the deterministic generalized Cole--Hopf solvers, independent references, validation workflow, and publication renderers for the Cole--Hopf paper.
+- [`hjgauss/`](hjgauss/) contains the depth-first nonlinear Monte Carlo Picard point evaluator and scaling evidence for the sampling-based HJ reachability paper.
+- [`mapf/`](mapf/) contains the separate multi-agent path-finding execution comparisons.
+
+Each project README states its objective, reproduction commands, recorded results, data provenance, and limitations.

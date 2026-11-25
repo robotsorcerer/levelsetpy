@@ -1,14 +1,30 @@
 [project]
-name = "cole-hopf-picard-scaling"
-version = "0.1.0"
-description = "Nested nonlinear Monte Carlo Picard scaling experiments"
+name = "cole-hopf-transformed-solvers"
+version = "0.2.0"
+description = "Deterministic generalized Cole-Hopf solvers and validation workflows"
+authors = [{name = "Lekan Molu", email = "lekan.molu@amazon.com"}]
 requires-python = ">=3.10"
-dependencies = ["numpy>=1.24", "matplotlib>=3.7"]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+    "scikit-image>=0.20",
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0"]
+render = ["pillow>=9.0", "mujoco>=3.0"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-testpaths = ["."]
-python_files = ["test_*.py"]
-addopts = "-q --tb=short"
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m not slow')",
+]
+addopts = "-v --tb=short"
+
+[tool.setuptools.packages.find]
+include = ["colehopf*"]

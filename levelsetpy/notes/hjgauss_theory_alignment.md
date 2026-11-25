@@ -6,7 +6,7 @@ The HJ-Gauss algorithm (hjgauss.pdf, NeurIPS 2026) uses Monte Carlo sampling to 
 
 1. How the two implementations (`monte_carlo_icml`, `monte_carlo_neurips`) differ
 2. Which is more faithful to the paper
-3. How the merged `monte_carlo/` implementation combines the best of both
+3. How the merged `hjgauss/` implementation combines the best of both
 4. Extension to 4D aerial murmuration with multi-predator games
 5. Phase-transition topology tracking of backward reachable tubes (BRTs)
 
@@ -185,7 +185,7 @@ $$
 
 ### Theory Alignment
 
-**Conclusion:** Both estimators are **unbiased** for $\nabla v^{\delta}$. However, **Eq. B.17 is the canonical paper formula** and has lower variance. The merged `monte_carlo/` implementation defaults to B.17 (`gradient_mode="b17"`) but offers `"autodiff"` as an optional mode.
+**Conclusion:** Both estimators are **unbiased** for $\nabla v^{\delta}$. However, **Eq. B.17 is the canonical paper formula** and has lower variance. The merged `hjgauss/` implementation defaults to B.17 (`gradient_mode="b17"`) but offers `"autodiff"` as an optional mode.
 
 ---
 
@@ -406,11 +406,11 @@ Animate the 2D slice $v(t; x_1, x_2)$ through time, overlaying:
 
 ---
 
-## 11. Implementation Decisions: Merged monte_carlo/ Architecture
+## 11. Implementation Decisions: Merged `hjgauss/` Architecture
 
 ### Canonical Structure
 
-The merged `monte_carlo/` adopts the **ICML OOP architecture** (Hamiltonian ABC, SolverConfig NamedTuple, HJReachabilitySampler class) as the forward-facing API, while embedding the **NeurIPS B.17 gradient formula** as the default inside `heat_solver.py`.
+The merged `hjgauss/` adopts the **ICML OOP architecture** (Hamiltonian ABC, SolverConfig NamedTuple, HJReachabilitySampler class) as the forward-facing API, while embedding the **NeurIPS B.17 gradient formula** as the default inside `heat_solver.py`.
 
 ### Key Changes
 
@@ -470,4 +470,4 @@ The **4D aerial extension + multi-predator HJI game** models realistic starling 
 
 ---
 
-*This document serves as the reference specification for HJ-Gauss deployment in `monte_carlo/` and the murmuration safety certification system.*
+*This document serves as the reference specification for HJ-Gauss deployment in `hjgauss/` and the murmuration safety certification system.*

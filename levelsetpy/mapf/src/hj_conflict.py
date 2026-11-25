@@ -83,7 +83,7 @@ def precompute_brt(
     n_xy: int = 31,
     n_theta: int = 21,
     seed: int = 0,
-    monte_carlo_root: str | None = None,
+    hjgauss_root: str | None = None,
     verbose: bool = True,
 ):
     """Unavailable until an HJ-Gauss source solver is implemented.

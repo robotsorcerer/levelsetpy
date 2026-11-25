@@ -6,7 +6,7 @@
 - [CCBS on MAPF_R](#ccbs-on-mapf_r)
 - [Controller definitions and limitations](#controller-definitions-and-limitations)
 - [Paper figures and compilation](#paper-figures-and-compilation)
-- [HJ-Gauss workflow](../monte_carlo/README.md)
+- [HJ-Gauss workflow](../hjgauss/README.md)
 
 This project now resides at `levelsetpy/mapf/` inside the LevelSetPy package
 source tree. Run the commands below from this directory; data paths are

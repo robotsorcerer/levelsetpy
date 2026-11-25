@@ -1,0 +1,22 @@
+[project]
+name = "hjgauss-monte-carlo"
+version = "0.1.0"
+description = "Depth-first nonlinear Monte Carlo Picard point evaluator for HJ reachability"
+authors = [{name = "Lekan Molu", email = "lekan.molu@amazon.com"}]
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "matplotlib>=3.7", "pillow>=9.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q --tb=short"
+
+[tool.setuptools]
+py-modules = ["picard", "scaling", "plot_scaling", "paper_assets"]

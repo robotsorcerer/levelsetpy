@@ -1,42 +1,106 @@
-# Cole--Hopf nested Picard scaling
+# Cole--Hopf Transformed Solvers for Viscous HJ Reachability
 
-This directory implements a depth-first nonlinear Monte Carlo Picard evaluator
-for point queries of the transformed viscous Hamilton--Jacobi equation. It is
-separate from the deterministic tensor-grid solvers under `monte_carlo/hjgauss`.
+Paper: [Cole--Hopf Transformed Solvers for Viscous Hamilton--Jacobi Reachability](https://scriptedonachip.com/downloads/Papers/colehopf.pdf)
 
-The evaluator retains the complete transformed source. Level zero evaluates
-homogeneous heat flow. Each higher level freezes the nonlinear source at the
-preceding Picard level and evaluates the Duhamel value and score-gradient
-formulas by Gaussian sampling. Source-time importance sampling controls the
-terminal-time gradient singularity.
+## Objective
 
-Depth-first recursion avoids a state-space tensor grid. For fixed Picard depth,
-the live coordinate payload is linear in sample count and state dimension.
-Runtime is not dimension independent: nested work grows rapidly with sample
-count and Picard depth. The benchmark reports both properties.
+This project implements the deterministic numerical work behind the Cole--Hopf paper. For
 
-## Run
-
-From this directory:
-
-```sh
-python -m pytest -q test_picard.py
-python scaling.py --output results/scaling.json --replicates 3
-python plot_scaling.py --input results/scaling.json --output results/scaling.pdf
+```text
+v_t + H(t, x, Dv) = (delta/2) Delta v,
+omega = exp(-c v),
 ```
 
-`paper_assets.py` reads the same JSON record and generates the manuscript PNG,
-companion scaling GIF, and LaTeX number macros. It does not rerun or modify the
-benchmark measurements.
+with a prescribed positive, smooth coefficient `c(t, x)`, the code evolves
 
-The JSON record contains source hashes, environment metadata, every replicate,
-operation counts, gross and incremental peak resident memory, Python-traced
-peak memory, and log--log slopes. The CSV file contains the rows used for plots.
+```text
+omega_t = (delta/2) Delta omega + omega (R_alg + R_der).
+```
 
-## Claim scope
+Both residual terms are retained. The inverse-gradient formula includes the spatial derivative of `1/c`; dropping it or `R_der` changes the equation. The objective is to verify this exact transformation numerically, compare recovered fields with independent discretizations of the same viscous equation, and bind every accepted result to the source that produced it.
 
-The results measure point-query evaluation for a bounded advection--diffusion
-problem with a nonlinear Cole--Hopf source and a known viscous solution. They
-can support a grid-free point-query storage claim. They do not establish
-favorable end-to-end runtime, continuum field reconstruction, reachable-set
-accuracy between queries, or a population-wide safety certificate.
+The nested Monte Carlo Picard evaluator from the companion sampling paper is intentionally separate under [`../hjgauss/`](../hjgauss/).
+
+## Layout
+
+| Path | Purpose |
+|---|---|
+| `colehopf/core/transform.py` | One-dimensional transform identities, inverse map, deterministic periodic solve, and one frozen-source Gaussian Duhamel diagnostic |
+| `colehopf/core/spectral.py` | Multidimensional Fourier/exponential transformed solver and independent finite-difference reference |
+| `colehopf/core/finite_diff.py` | Fourth-order transformed solver and sixth-order original-equation reference |
+| `colehopf/validation/` | Analytic cases, game runs, refinement, sensitivity, evidence checks, reports, and archive sealing |
+| `colehopf/render/` | Static figures, animations, composite renderers, and generated LaTeX |
+| `tests/` | Chain-rule, refinement, solver, and provenance regression tests |
+
+## Reported results
+
+The paper's selected multidimensional runs compare the transformed solver with an independent solver at the same viscosity. The reported maximum discrepancies are:
+
+| Case | Maximum absolute discrepancy |
+|---|---:|
+| Double integrator | `5.6024e-4` |
+| Single Dubins vehicle | `1.7754e-3` |
+| Relative Dubins game | `2.4724e-3` |
+| Rockets game | `3.2232e-3` |
+| Starling-inspired geometry | `2.9126e-3` |
+
+The validation workflow also checks analytic solutions, temporal and spatial refinement, coefficient sensitivity, boundary sensitivity, sampled equation residuals, positivity of the transformed field, fixed acceptance criteria, and source/archive hashes.
+
+These comparisons are evidence for the implemented finite-grid solvers. The independent reference solves the same viscous PDE; it is not the unknown continuum solution, and the sampled residual checks are not global error bounds.
+
+## Install and test
+
+Run from this directory:
+
+```sh
+python -m pip install -e '.[dev]'
+python -m pytest -q
+python -m colehopf.validation.benchmark
+```
+
+Install the optional rendering dependencies when rebuilding animations or MuJoCo composites:
+
+```sh
+python -m pip install -e '.[dev,render]'
+```
+
+The benchmark is a deterministic one-dimensional analytic diagnostic. Tests do not require saved multidimensional archives.
+
+## Reproduce the multidimensional evidence
+
+The paper-grade computations can be expensive. Generated output is written below the ignored `results/` directory.
+
+```sh
+python -m colehopf.validation.cases --suite analytic
+python -m colehopf.validation.fd
+python -m colehopf.validation.refine --stage refinement --workers 1
+python -m colehopf.validation.refine --stage sensitivity --workers 1
+python -m colehopf.validation.boundary \
+  --cases rockets dubins_relative dubins_single double_integrator murmuration \
+  --workers 1
+python -m colehopf.validation.population --n 192 --steps 800 --method fd
+python -m colehopf.validation.report
+python -m colehopf.validation.seal
+```
+
+`validation/refine.py` records the selected resolutions in `results/multidimensional/selection.json`. The report rejects changed acceptance criteria, stale source digests, and invalid or tampered archives. A single worker is the conservative default for the largest three-dimensional fields.
+
+## Publication assets
+
+After the native validation records pass:
+
+```sh
+python -m colehopf.render.figures --figure-dir /path/to/HJ_Gauss/arxiv/figures
+python -m colehopf.render.population \
+  --figure-dir /path/to/HJ_Gauss/arxiv/figures \
+  --n 192 --steps 800 --method fd
+python -m colehopf.render.latex --paper-root /path/to/HJ_Gauss
+python -m colehopf.render.animations \
+  --output /path/to/blog/downloads/Papers/assets/anim
+```
+
+The renderers consume saved native results; they do not silently rerun the PDEs. See [`colehopf/render/README.md`](colehopf/render/README.md) for the matched vehicle-composite workflow.
+
+## Scope
+
+The deterministic tensor grids still grow rapidly with state dimension. The seeded 100,000-state starling query evaluates one altitude-invariant relative-state field at a cohort of query points; it is not a coupled 100,000-agent trajectory simulation or a population-wide safety certificate.

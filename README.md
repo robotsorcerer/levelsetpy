@@ -2,16 +2,48 @@
 
 ## Contents
 
-- [HJ-Gauss](#hj-gauss)
+- [Research implementations](#research-implementations)
+  - [Cole--Hopf transformed solvers](#cole--hopf-transformed-solvers)
+  - [HJ-Gauss sampling-based reachability](#hj-gauss-sampling-based-reachability)
 - [LevelSetPy overview](#levelsetpy-overview)
 - [Installation and prerequisites](#installation-and-prerequisites)
 - [Examples](#examples)
 - [MAPF research workflow](levelsetpy/mapf/README.md)
 - [Citing this work](#citing-this-work)
 
-## HJ-Gauss - 2026.
+## Research implementations
 
-[HJ-Gauss](levelsetpy/monte_carlo/) is an HJ reachability algorithm built from an exact variable-coefficient exponential transformation followed by a quasilinearized fixed-point iteration. The implementation retains both algebraic and derivative residual components, evaluates the associated Gaussian initial-condition and nonlinear source terms, and binds every numerical result to its source code and native field archive. The validation workflow includes analytic solutions, independent same-viscosity references, spatial and temporal refinement, coefficient and boundary sensitivity, and a seeded 100,000-state bird-model query.
+### Cole--Hopf transformed solvers
+
+Paper: [Cole--Hopf Transformed Solvers for Viscous Hamilton--Jacobi Reachability](https://scriptedonachip.com/downloads/Papers/colehopf.pdf)
+
+The [`levelsetpy/cole-hopf/`](levelsetpy/cole-hopf/) project studies an exact variable-coefficient exponential transformation of a viscous Hamilton--Jacobi equation. Its objective is to retain the complete algebraic and derivative residual, solve the transformed semilinear PDE deterministically, and check the recovered value field against analytic solutions and independent discretizations of the same viscous equation.
+
+The implementation contains Fourier/exponential and finite-difference/RK4 solvers, independent same-viscosity references, refinement and boundary-sensitivity workflows, source-bound result archives, and publication renderers. The paper reports maximum transformed-versus-reference discrepancies of `5.6024e-4` for the double integrator, `1.7754e-3` for the single Dubins vehicle, `2.4724e-3` for relative Dubins, `3.2232e-3` for rockets, and `2.9126e-3` for the starling-inspired case. These are finite-grid comparisons, not continuum error bounds.
+
+```sh
+cd levelsetpy/cole-hopf
+python -m pip install -e '.[dev]'
+python -m pytest -q
+python -m colehopf.validation.benchmark
+```
+
+### HJ-Gauss sampling-based reachability
+
+Paper: [Sampling-based HJ Reachability](https://scriptedonachip.com/downloads/Papers/roysoc.pdf)
+
+The [`levelsetpy/hjgauss/`](levelsetpy/hjgauss/) project implements the paper's grid-free point evaluator. It applies depth-first nonlinear Picard iteration to the transformed mild equation, estimates the heat and Duhamel terms with Gaussian samples, and uses source-time importance sampling for the score-gradient estimator. The deterministic transformation and field-validation machinery shared with the paper lives in [`levelsetpy/cole-hopf/`](levelsetpy/cole-hopf/); it is not duplicated here.
+
+The checked-in scaling record evaluates a bounded advection--diffusion problem with a known viscous solution. At fixed Picard level two and 12 samples per update, increasing state dimension from 8 to 2048 changed median point-query runtime from `0.0437 s` to `0.0748 s` and the directly counted live coordinate payload from `0.004 MiB` to `0.938 MiB`. At dimension eight and Picard level two, increasing samples from 4 to 48 raised runtime from `0.0050 s` to `0.9103 s`; with six samples, increasing Picard level from 0 to 3 raised runtime from `0.00059 s` to `0.05296 s`. The results support grid-free point-query storage for fixed depth, not dimension-independent runtime or whole-field reconstruction.
+
+```sh
+cd levelsetpy/hjgauss
+python -m pip install -e '.[dev]'
+python -m pytest -q
+python scaling.py --output results/scaling.json --replicates 3
+```
+
+The animations below show the shared deterministic evidence, left to right as **independent same-viscosity reference → transformed solver → absolute difference**.
 
 <table>
   <tr>
@@ -32,14 +64,7 @@
   </tr>
 </table>
 
-The animations read left to right as **reference field → transformed solver → absolute difference**. See the [HJ-Gauss implementation README](levelsetpy/monte_carlo/README.md) for commands, fixed acceptance gates, provenance checks, and numerical scope. Generated fields and reports live under the ignored `results/` directory and are recreated by the validation commands. The separate [Cole--Hopf point-query implementation](levelsetpy/cole-hopf/README.md) records nonlinear Monte Carlo Picard runtime and memory scaling. The [MAPF workflow](levelsetpy/mapf/README.md) retains its independently generated grid-reference controller table.
-
-```sh
-cd levelsetpy/monte_carlo
-python -m pip install -e '.[dev]'
-python -m pytest -q
-python -m hjgauss.validation.benchmark
-```
+See the [Cole--Hopf README](levelsetpy/cole-hopf/README.md) for deterministic validation and rendering commands, the [HJ-Gauss README](levelsetpy/hjgauss/README.md) for the Monte Carlo evaluator and scaling study, and the [MAPF workflow](levelsetpy/mapf/README.md) for its independent grid-reference controller experiments.
 
 ## LevelSetPy overview
 
@@ -278,6 +303,6 @@ year    = {2026},
       archivePrefix={arXiv},
       primaryClass={eess.SY},
       url={https://arxiv.org/abs/2605.18566}, 
-      howpublished = {\url{https://github.com/robotsorcerer/levelsetpy/tree/main/levelsetpy/monte_carlo}},
+      howpublished = {\url{https://github.com/robotsorcerer/levelsetpy/tree/main/levelsetpy/hjgauss}},
 }
 ```
