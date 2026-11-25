@@ -2,14 +2,30 @@
 
 ## Contents
 
+- [LevelSetPy overview](#levelsetpy-overview)
 - [Research implementations](#research-implementations)
   - [Cole--Hopf transformed solvers](#cole--hopf-transformed-solvers)
   - [HJ-Gauss sampling-based reachability](#hj-gauss-sampling-based-reachability)
-- [LevelSetPy overview](#levelsetpy-overview)
+  - [Simultaneous pairwise reachability filtering for lifelong MAPF](#simultaneous-pairwise-reachability-filtering-for-lifelong-mapf)
 - [Installation and prerequisites](#installation-and-prerequisites)
 - [Examples](#examples)
-- [MAPF research workflow](levelsetpy/mapf/README.md)
 - [Citing this work](#citing-this-work)
+
+## LevelSetPy overview
+
+### BLUF — May 2024
+
+**What?** GPU-accelerated software package for solving initial value  hyperbolic partial differential equations, particularly of the evolution form of Cauchy-type Hamilton-Jacobi (HJ) equations. These HJ equations are increasingly attracting attention in the control community for analyzing reachability problems in robotics, transport, biology and other problem domains of late.
+
+**Focus:** Safety-critical analysis of automated systems in optimal control and reachability settings.
+
+**Plug:** Easy portability and extensibility to modern libraries for the analyses of safety-critical (reinforcement) learning, control, robotics, transport, and flow problems among others.
+
+<div align="center">
+ <img src="figures/rocket.jpg" height="250px" width="250px">
+ <img src="figures/rocket_zerolev.jpg" height="250px" width="250px">
+ <img src="figures/rocket_ls_final.jpg" height="250px" width="250px">
+</div>
 
 ## Research implementations
 
@@ -64,34 +80,31 @@ The animations below show the shared deterministic evidence, left to right as **
   </tr>
 </table>
 
-See the [Cole--Hopf README](levelsetpy/cole-hopf/README.md) for deterministic validation and rendering commands, the [HJ-Gauss README](levelsetpy/hjgauss/README.md) for the Monte Carlo evaluator and scaling study, and the [MAPF workflow](levelsetpy/mapf/README.md) for its independent grid-reference controller experiments.
+### Simultaneous pairwise reachability filtering for lifelong MAPF
 
-## LevelSetPy overview
+Paper: [Simultaneous Pairwise Reachability Filtering for Lifelong MAPF](https://scriptedonachip.com/downloads/Papers/icra27.pdf)
 
-#### BLUF - May 2024. 
+The [`levelsetpy/mapf/`](levelsetpy/mapf/) project studies continuous execution of lifelong multi-agent path-finding plans under vehicle dynamics and disturbance. A three-dimensional Hamilton--Jacobi backward-reachable tube supplies a numerical candidate barrier for each ordered robot pair. The controller intersects the resulting affine steering constraints and selects the turn rate closest to the nominal command, with a least-violation fallback when the intersection is empty.
 
-**What?** GPU-accelerated software package for solving initial value  hyperbolic partial differential equations, particularly of the evolution form of Cauchy-type Hamilton-Jacobi (HJ) equations. These HJ equations are increasingly attracting attention in the control community for analyzing reachability problems in robotics, transport, biology and other problem domains of late.  
-**Focus:** Safety-critical analysis of automated systems in optimal control and reachability settings. 
-**Plug:** Easy portability and extensibility to modern libraries for the analyses of safety-critical (reinforcement) learning, control, robotics, transport, and flow problems among others.
+Across 30 paired 14-robot warehouse episodes, mean contacts decrease from `52.47` under geometric execution to `1.07` under simultaneous filtering. The one-constraint ablation records `0.73` contacts, so the paired comparison does not establish an advantage for either barrier controller. On 25 solved continuous-time conflict-based search schedules, simultaneous filtering decreases mean contacts from `17.56` to `0.44` while increasing final goal distance from `0.98` to `7.50` cells. These experiments measure contact reduction and its tracking cost; numerical barrier feasibility at sampled states is not a continuous-time safety guarantee.
 
-<div align="center">
- <img src="figures/rocket.jpg" height="250px" width="250px">
- <img src="figures/rocket_zerolev.jpg" height="250px" width="250px">
- <img src="figures/rocket_ls_final.jpg" height="250px" width="250px">
-</div>
+```sh
+cd levelsetpy/mapf
+OPENBLAS_NUM_THREADS=1 pytest -q
+python3 experiments/compatible_control_demo.py --plot
+```
 
+See the [Cole--Hopf README](levelsetpy/cole-hopf/README.md) for deterministic validation and rendering commands, the [HJ-Gauss README](levelsetpy/hjgauss/README.md) for the Monte Carlo evaluator and scaling study, and the [MAPF README](levelsetpy/mapf/README.md) for controller definitions, external baselines, reproduction commands, and limitations.
 
-### **Installation and Prerequisites**
+## Installation and prerequisites
 
-### **Dependencies** 
+### Dependencies
 
+| :--: | :--: | :--: | :--: | :--: | :--: |
+| [Numpy](https://numpy.org/) | [Scipy](https://scipy.org/) | [PyTorch](https://pytorch.org/) | [Absl-py](https://abseil.io/docs/python/quickstart) | [Scikit-image](https://scikit-image.org/) | [Matplotlib](https://matplotlib.org/) |
+| :--: | :--: | :--: | :--: | :--: | :--: |
 
-| :--:     | :---:               | :---:               | 
-| [Numpy](https://numpy.org/)  | [Scipy](https://scipy.org/)  | [PyTorch](https://pytorch.org/) |
-| [Absl-py](https://abseil.io/docs/python/quickstart)   | [Scikit-image](https://scikit-image.org/) | [Matplotlib](https://matplotlib.org/)     | 
-
-
-### **Build and Install**
+### Build and install
 
 Activate your `conda` or `virtualven` environment, then install as follows
 
@@ -103,9 +116,9 @@ pip install -e .
 
 A separate `README.md` file is left in the respective folders.
 
-### **Examples**
+## Examples
 
-#### **Initial Value Problems (IVP)**
+### Initial value problems (IVP)
 
 + Making a 2D Grid 
 
@@ -238,7 +251,7 @@ viz.visGrid([g], g.dim, title='Simple 2D Grid')
   </tr>
 </table>
 
-#### Robustly Controlled Backward Reachable Tubes (RCBRTs)
+### Robustly Controlled Backward Reachable Tubes (RCBRTs)
 
 
 
@@ -272,37 +285,51 @@ viz.visGrid([g], g.dim, title='Simple 2D Grid')
 
 
 
-### Citing this work
+## Citing this work
 
-If you have found this library of routines and packages useful, please cite it:
+The entries below follow the titles, authors, venues, and manuscript links on the [publications page](https://scriptedonachip.com/pubs).
 
-```
-@article{LevPy,
-title   = {LevelSetPy: A GPU-Accelerated Python Software Package for HJ Reachability Analysis and Level Set Evolutions.},
-publisher={ACM Transactions on Mathematical Software},
-author  = {Molu, Lekan},
-howpublished = {\url{https://github.com/robotsorcerer/levelsetpy}},
-note = {Accessed July 31, 2026}
-year    = {2026},
+```bibtex
+@article{molu2025levelsetpy,
+  title = {LevelSetPy: A GPU-Accelerated Package for Hyperbolic Hamilton--Jacobi Partial Differential Equations},
+  author = {Molu, Lekan},
+  journal = {ACM Transactions on Mathematical Software},
+  year = {2025},
+  doi = {10.1145/3730407},
+  url = {https://scriptedonachip.com/downloads/Papers/levelsetpy.pdf}
 }
 
 @inproceedings{molu2024python,
-  title={The Python LevelSet Toolbox (LevelSetPy)},
-  author={Molu, Lekan},
-  booktitle={2024 IEEE 63rd Conference on Decision and Control (CDC)},
-  pages={8938--8945},
-  year={2024},
-  organization={IEEE}
+  title = {The Python LevelSet Toolbox (LevelSetPy)},
+  author = {Molu, Lekan},
+  booktitle = {2024 IEEE 63rd Conference on Decision and Control (CDC)},
+  pages = {8938--8945},
+  year = {2024},
+  organization = {IEEE},
+  url = {https://scriptedonachip.com/downloads/Papers/levelsetpy_cdc.pdf}
 }
 
-@article{HJGauss,
-      title={HJ-Gauss: A Monte-Carlo HJ Reachability Scheme}, 
-      author={Molu, Lekan and Renganathan, Venkatraman and Cho, Namhoon},
-      year={2026},
-      eprint={2605.18566},
-      archivePrefix={arXiv},
-      primaryClass={eess.SY},
-      url={https://arxiv.org/abs/2605.18566}, 
-      howpublished = {\url{https://github.com/robotsorcerer/levelsetpy/tree/main/levelsetpy/hjgauss}},
+@unpublished{molu2026colehopf,
+  title = {Cole--Hopf Transformed Solvers for Viscous Hamilton--Jacobi Reachability},
+  author = {Molu, Lekan},
+  note = {Submitted to the Proceedings of the National Academy of Sciences},
+  year = {2026},
+  url = {https://scriptedonachip.com/downloads/Papers/colehopf.pdf}
+}
+
+@unpublished{molu2026samplinghj,
+  title = {Sampling-based HJ Reachability},
+  author = {Molu, Lekan and Renganathan, Venkatraman and Cho, Namhoon},
+  note = {Submitted to Proceedings of the Royal Society A: Mathematical, Physical and Engineering Sciences},
+  year = {2026},
+  url = {https://scriptedonachip.com/downloads/Papers/roysoc.pdf}
+}
+
+@unpublished{molu2026mapf,
+  title = {Simultaneous Pairwise Reachability Filtering for Lifelong MAPF},
+  author = {Molu, Lekan},
+  note = {Submitted to the 2027 IEEE International Conference on Robotics and Automation},
+  year = {2026},
+  url = {https://scriptedonachip.com/downloads/Papers/icra27.pdf}
 }
 ```
