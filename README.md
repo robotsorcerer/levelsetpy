@@ -88,6 +88,27 @@ The [`levelsetpy/mapf/`](levelsetpy/mapf/) project studies continuous execution 
 
 Across 30 paired 14-robot warehouse episodes, mean contacts decrease from `52.47` under geometric execution to `1.07` under simultaneous filtering. The one-constraint ablation records `0.73` contacts, so the paired comparison does not establish an advantage for either barrier controller. On 25 solved continuous-time conflict-based search schedules, simultaneous filtering decreases mean contacts from `17.56` to `0.44` while increasing final goal distance from `0.98` to `7.50` cells. These experiments measure contact reduction and its tracking cost; numerical barrier feasibility at sampled states is not a continuous-time safety guarantee.
 
+The animations below show the backward-reachable-tube headings and the pairwise steering geometry used by the filter.
+
+<table>
+  <tr>
+    <th>BRT headings</th>
+    <th>Heading geometry</th>
+  </tr>
+  <tr>
+    <td><img src="https://scriptedonachip.com/downloads/Papers/assets/anim/brt_heading.gif" width="440" alt="MAPF backward-reachable-tube headings animation"></td>
+    <td><img src="https://scriptedonachip.com/downloads/Papers/assets/anim/heading_geometry.gif" width="440" alt="MAPF pairwise heading geometry animation"></td>
+  </tr>
+  <tr>
+    <th>Common steering</th>
+    <th>Infeasible steering</th>
+  </tr>
+  <tr>
+    <td><img src="https://scriptedonachip.com/downloads/Papers/assets/anim/common_steering.gif" width="440" alt="MAPF common feasible steering animation"></td>
+    <td><img src="https://scriptedonachip.com/downloads/Papers/assets/anim/infeasible_steering.gif" width="440" alt="MAPF infeasible steering fallback animation"></td>
+  </tr>
+</table>
+
 ```sh
 cd levelsetpy/mapf
 OPENBLAS_NUM_THREADS=1 pytest -q
@@ -100,7 +121,6 @@ See the [Cole--Hopf README](levelsetpy/cole-hopf/README.md) for deterministic va
 
 ### Dependencies
 
-| :--: | :--: | :--: | :--: | :--: | :--: |
 | [Numpy](https://numpy.org/) | [Scipy](https://scipy.org/) | [PyTorch](https://pytorch.org/) | [Absl-py](https://abseil.io/docs/python/quickstart) | [Scikit-image](https://scikit-image.org/) | [Matplotlib](https://matplotlib.org/) |
 | :--: | :--: | :--: | :--: | :--: | :--: |
 
